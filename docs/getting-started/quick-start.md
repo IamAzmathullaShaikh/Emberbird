@@ -45,7 +45,7 @@ WSA requires the Windows **Virtual Machine Platform** feature:
 
 ## 4. Step 3: Download the Recommended Release
 
-1. Go to the [WSABuilds Releases Page](https://github.com/IamAzmathullaShaikh/WSABuilds/releases) or the [Release Portal](https://wsabuilds.azmathulla.dev/downloads).
+1. Go to the [WSABuilds Releases Page](https://github.com/IamAzmathullaShaikh/WSABuilds/releases) (Web Release Portal: Status: Planned Feature).
 2. Download the recommended standard package for your computer:
    - **For Intel/AMD Processors**:  
      `WSA_2311.40000.5.0_x64_Magisk-v30.6_GApps-Pico.7z` (or `.zip`)

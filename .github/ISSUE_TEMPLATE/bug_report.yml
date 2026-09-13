@@ -46,7 +46,7 @@ body:
       label: Installation Method
       description: How did you install or update WSA?
       options:
-        - "WSABuilds Manager Desktop Application"
+        - "WSABuilds Manager Desktop Application (Status: Planned Feature)"
         - "Scripted Install.ps1 (Run with PowerShell)"
         - "Manual AppxManifest registration (Add-AppxPackage)"
         - "Other / Custom script"

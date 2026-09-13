@@ -1,4 +1,4 @@
-# Compatibility Hub Data
+# Compatibility Hub Data (Status: Planned Feature)
 
 This directory contains verified application compatibility records for Windows Subsystem for Android (WSA).
 

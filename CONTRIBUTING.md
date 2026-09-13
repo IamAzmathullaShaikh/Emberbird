@@ -25,7 +25,7 @@ Our repository operates on a strict three-tier branch hierarchy:
 |---|---|---|
 | **`master`** | Production releases and verified stable builds. | Requires 2 maintainer reviews; all CI checks must pass; linear history enforced. |
 | **`experimental`** | Feature development, automation testing, and prototypes. | Requires 1 maintainer review; automated CI checks must pass. |
-| **`gh-pages`** | Static website deployment (`wsabuilds.azmathulla.dev`). | Automated deployment via GitHub Actions; direct pushes restricted to CI. |
+| **`gh-pages`** | Static website deployment (`wsabuilds.azmathulla.dev` - Status: Planned Feature). | Automated deployment via GitHub Actions; direct pushes restricted to CI. |
 
 All pull requests should target `experimental` for new features or `master` for critical bug fixes and documentation corrections.
 
