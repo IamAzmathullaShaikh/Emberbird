@@ -87,7 +87,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Pass to Windows 💸
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.wsa.outputs.artifact }}-${{ steps.wsa.outputs.built }}
           path: MagiskOnWSA/output
