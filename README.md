@@ -208,7 +208,7 @@ To prevent user confusion, WSABuilds maintains total transparency regarding supp
 | **Web Portal & Search** | [website/README.md](website/README.md) | Astro static site, Tailwind styling, Pagefind search, doc sync pipeline |
 | **Validation Tooling** | [scripts/README.md](scripts/README.md) | 10 CLI validation tools (links, security, distribution, schema, identity) |
 | **Privacy Telemetry** | [services/README.md](services/README.md) | Privacy-first telemetry aggregation engine, Zero-PII schema, metrics |
-| **CI/CD Workflows** | [.github/README.md](.github/README.md) | 11 GitHub Actions workflows, tag triggers, secrets, and issue forms |
+| **CI/CD Workflows** | [.github/WORKFLOWS.md](.github/WORKFLOWS.md) | 11 GitHub Actions workflows, tag triggers, secrets, and issue forms |
 | **App Compatibility Hub** | [compatibility/README.md](compatibility/README.md) | Compatibility database schema, app records, and PR moderation rules |
 | **Distribution Specs** | [deployment/SPECIFICATION.md](deployment/SPECIFICATION.md) | Versioning layer, artifact naming grammar, and Winget packaging rules |
 | **Windows 11 Build Guide** | [WINDOWS11_BUILD_GUIDE.md](WINDOWS11_BUILD_GUIDE.md) | Exhaustive step-by-step developer compilation guide using WSL2 Ubuntu |
