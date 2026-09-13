@@ -65,7 +65,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Python dependencies 🐍
-        run: pip3 install --quiet beautifulsoup4 lxml requests packaging
+        run: pip3 install --quiet beautifulsoup4 lxml requests packaging certifi
 
       # Check Magisk stable version using repository-local script
       - name: Check Magisk Stable version ✅
