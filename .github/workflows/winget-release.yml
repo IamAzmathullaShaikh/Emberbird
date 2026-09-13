@@ -15,17 +15,6 @@ on:
         required: false
         type: boolean
         default: false
-  workflow_dispatch:
-    inputs:
-      target_version:
-        description: 'Version tag to package and validate (e.g. 0.2.0)'
-        required: false
-        default: '0.2.0'
-      dry_run:
-        description: 'Dry run execution (do not publish external artifacts)'
-        required: false
-        type: boolean
-        default: false
 
 concurrency:
   group: winget-ci-${{ github.ref }}
