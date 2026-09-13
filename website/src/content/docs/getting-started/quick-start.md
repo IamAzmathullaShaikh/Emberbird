@@ -83,7 +83,10 @@ WSA requires the Windows **Virtual Machine Platform** feature:
 
 ---
 
-## Next Steps
+## Next Steps & Community Tools
 
+- **Interactive Diagnostic Wizard**: Experiencing an installation error, virtualization failure, or ADB connection problem? Use the [Interactive Diagnostic Wizard](/troubleshoot/wizard) for instant, guided decision trees and copyable PowerShell remediation commands.
 - **Banking & UPI Apps**: Review the [Play Integrity Guide](../configuration/play-integrity-setup.md) to configure root cloaking for apps like PhonePe, Paytm, and SBI YONO.
-- **Troubleshooting**: Encountering an error? Consult the [Error Codes Guide](../troubleshooting/error-codes.md).
+- **Application Compatibility**: Check real-world community test results in the [Compatibility Directory](/compatibility).
+- **Subsystem Management**: Manage cold VHDX backups, safe restores, and guided updates with the **WSABuilds Manager** desktop client.
+- **Error Codes Reference**: Consult the [Error Codes Guide](../troubleshooting/error-codes.md) for root-cause analysis and manual recovery instructions.
