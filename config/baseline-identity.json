@@ -1,0 +1,17 @@
+{
+  "package_name": "MicrosoftCorporationII.WindowsSubsystemForAndroid",
+  "publisher": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+  "publisher_id": "8wekyb3d8bbwe",
+  "package_family_name": "MicrosoftCorporationII.WindowsSubsystemForAndroid_8wekyb3d8bbwe",
+  "processor_architectures": ["x64", "arm64"],
+  "target_device_family": "Windows.Desktop",
+  "min_version_win11": "10.0.22000.120",
+  "min_version_win10": "10.0.19041.264",
+  "required_dependencies": [
+    "Microsoft.UI.Xaml.2.8",
+    "Microsoft.VCLibs.140.00.UWPDesktop",
+    "Microsoft.VCLibs.140.00"
+  ],
+  "allowed_deployment_model": "LooseFolderDeveloperRegistration",
+  "verification_status": "VERIFIED"
+}
