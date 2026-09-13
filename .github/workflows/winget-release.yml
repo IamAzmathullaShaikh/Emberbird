@@ -56,6 +56,10 @@ jobs:
     needs: validate-metadata
     runs-on: windows-latest
     timeout-minutes: 25
+    env:
+      VITE_PUBLIC_GITHUB_REPO: IamAzmathullaShaikh/WSABuilds
+      VITE_PUBLIC_GITHUB_REPO_URL: https://github.com/IamAzmathullaShaikh/WSABuilds
+      VITE_PUBLIC_RELEASES_URL: https://github.com/IamAzmathullaShaikh/WSABuilds/releases
     permissions:
       contents: write
 
@@ -147,7 +151,7 @@ jobs:
 
   publish-manager-release:
     name: Publish GitHub Release
-    needs: [package-manager]
+    needs: package-manager
     runs-on: windows-latest
     timeout-minutes: 15
     permissions:
@@ -181,7 +185,7 @@ jobs:
 
   prepare-winget:
     name: Prepare Winget Release Manifests
-    needs: [validate-metadata]
+    needs: validate-metadata
     runs-on: windows-latest
     timeout-minutes: 10
 
