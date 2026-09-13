@@ -8,7 +8,10 @@
     "start": "astro dev",
     "build": "astro build && pagefind --site dist",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "prebuild": "node scripts/import-docs.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@astrojs/tailwind": "^5.1.5",
