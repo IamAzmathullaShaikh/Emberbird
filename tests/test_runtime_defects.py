@@ -21,6 +21,7 @@ from env_helpers import (
     fetch_stored_version,
     configure_ssl_session,
     get_ca_bundle_path,
+    MICROSOFT_ROOT_CA_2011_PEM,
     MICROSOFT_UPDATE_CA_PEM,
 )
 
@@ -89,15 +90,16 @@ class TestRuntimeDefectsRemediation(unittest.TestCase):
     # Defect RT-02: FE3 SSL validation failures
     # -------------------------------------------------------------------------
     def test_rt02_ssl_configuration_security_rules(self):
-        """Verify SSL configuration uses certifi CA bundle and NEVER disables verification."""
+        """Verify SSL configuration uses certifi CA bundle with Microsoft Root + Intermediate CAs."""
         session = configure_ssl_session()
         self.assertNotEqual(session.verify, False)
         self.assertTrue(isinstance(session.verify, str))
         self.assertTrue(os.path.exists(session.verify))
 
-        # Ensure the CA bundle contains the Microsoft Update Intermediate CA
+        # Ensure the CA bundle contains both the Microsoft Root 2011 and Intermediate CA 2.1
         with open(session.verify, "r", encoding="utf-8", errors="ignore") as f:
             bundle_content = f.read()
+        self.assertIn("Microsoft Root Certificate Authority 2011", bundle_content)
         self.assertIn("Microsoft Update Secure Server CA 2.1", bundle_content)
 
     def test_rt02_fe3_endpoint_ssl_handshake(self):
@@ -114,6 +116,21 @@ class TestRuntimeDefectsRemediation(unittest.TestCase):
             self.assertIn(resp.status_code, [200, 400, 500])
         except Exception as exc:
             self.fail(f"FE3 SSL verification failed unexpectedly: {exc}")
+
+    def test_rt02_isolated_openssl_verification(self):
+        """Verify OpenSSL strictly trusts fe3.delivery.mp.microsoft.com via CA bundle without OS store."""
+        import socket
+        import ssl
+        bundle_path = get_ca_bundle_path()
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        ctx.load_verify_locations(bundle_path)
+        try:
+            with socket.create_connection(("fe3.delivery.mp.microsoft.com", 443), timeout=15) as sock:
+                with ctx.wrap_socket(sock, server_hostname="fe3.delivery.mp.microsoft.com") as ssock:
+                    cert = ssock.getpeercert()
+                    self.assertIsNotNone(cert)
+        except Exception as exc:
+            self.fail(f"Isolated OpenSSL verification failed with custom CA bundle: {exc}")
 
     # -------------------------------------------------------------------------
     # Defect RT-03: OpenGApps asset detection
