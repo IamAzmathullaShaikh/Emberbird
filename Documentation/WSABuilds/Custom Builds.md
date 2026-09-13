@@ -9,7 +9,7 @@
    
 > [!IMPORTANT]
 > - State the [Device Model](https://github.com/WSABuilds/MagiskOnWSALocal#--custom-model) (Default: Pixel 5)? 
-> - State the Root Solution (Magisk, KernelSU or none)?
+> - State the Root Solution (Magisk or none)?
 > - State if you want a WSA build with Magisk, what [variant of magisk](https://github.com/WSABuilds/MagiskOnWSALocal#--magisk-ver) would you like? 
 > - State if you would you like GApps (Google Play Store and Play Services (GMS))? <br/> 
 > - State if you would you like to keep the Amazon Appstore? 

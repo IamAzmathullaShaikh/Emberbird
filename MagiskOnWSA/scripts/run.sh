@@ -79,12 +79,7 @@ RELEASE_TYPE=$(
 declare -A RELEASE_TYPE_MAP=(["retail"]="retail" ["release preview"]="RP" ["insider slow"]="WIS" ["insider fast"]="WIF")
 COMMAND_LINE=(--arch "$ARCH" --release-type "${RELEASE_TYPE_MAP[$RELEASE_TYPE]}")
 if (YesNoBox '([title]="Root" [text]="Do you want to Root WSA?")'); then
-    ROOT_SOL=$(
-        Radiolist '([title]="Root solution"
-                    [default]="magisk")' \
-            'magisk' "Magisk" 'on' \
-            'kernelsu' "KernelSU" 'off'
-    )
+    ROOT_SOL="magisk"
     COMMAND_LINE+=(--root-sol "$ROOT_SOL")
 fi
 

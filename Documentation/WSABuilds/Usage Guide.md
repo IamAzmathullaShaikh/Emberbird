@@ -13,9 +13,6 @@
 ### Moving WSA to another drive or partition:
 [<img src="https://img.shields.io/badge/-How%20to%20Move%20WSA%20to%20another%20drive%20or%20partition-474154?style=for-the-badge&amp;logoColor=white&amp;logo=github"/>](https://github.com/MustardChef/WSABuilds/blob/master/Documentation/Usage%20Guides/General%20Usage%20Guides/MoveToExtDrive.md)
 
-### Installing KernelSU:
-[<img src="https://img.shields.io/badge/-How%20to%20install%20KernelSU-474154?style=for-the-badge&amp;logoColor=white&amp;logo=github"/>](https://github.com/MustardChef/WSABuilds/blob/master/Documentation/Usage%20Guides/General%20Usage%20Guides/KernelSU.md)
-
 ### Installing BusyBox:
 
 [<img src="https://img.shields.io/badge/-How%20to%20install%20BusyBox-474154?style=for-the-badge&amp;logoColor=white&amp;logo=github"/>](https://github.com/MustardChef/WSABuilds/blob/master/Documentation/Usage%20Guides/General%20Usage%20Guides/BusyBox.md)

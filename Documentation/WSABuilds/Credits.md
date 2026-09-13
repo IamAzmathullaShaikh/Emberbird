@@ -93,8 +93,6 @@
 
 - [Magisk](https://github.com/topjohnwu/Magisk): The Magic Mask for Android
 
-- [KernelSU](https://github.com/tiann/KernelSU): A Kernel based root solution for Android
-
 - [WSAGAScript](https://github.com/ADeltaX/WSAGAScript): The first GApps integration script for WSA
 
 - [MagiskOnWSA](https://github.com/LSPosed/MagiskOnWSA): `Deprecated` Integrate Magisk root and Google Apps into WSA

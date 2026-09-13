@@ -159,10 +159,6 @@
 
   It has no effect on the user data partition. Check the logs if there is a failure to boot.
 
-- How to install KernelSU?
-
-  [Tutorial](KernelSU.md)
-
 </details>
 
 ---
