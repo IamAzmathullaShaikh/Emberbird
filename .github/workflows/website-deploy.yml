@@ -1,0 +1,68 @@
+name: Website Deployment
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'website/**'
+  pull_request:
+    branches: [master, experimental]
+    paths:
+      - 'website/**'
+  workflow_dispatch:
+
+concurrency:
+  group: website-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy Astro Portal
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'website/package.json'
+
+      - name: Install Dependencies
+        working-directory: website
+        run: |
+          npm install
+
+      - name: Build Static Site
+        working-directory: website
+        run: |
+          npm run build
+
+      - name: Verify Build Output
+        working-directory: website
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "[-] Build failed: dist directory not found."
+            exit 1
+          fi
+          echo "[+] Astro build successful. Output artifacts verified in website/dist/."
+
+      - name: Deploy to Cloudflare Pages
+        if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request'
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: 'wsabuilds-website'
+          directory: 'website/dist'
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
