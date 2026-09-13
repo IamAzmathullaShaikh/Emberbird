@@ -4,7 +4,13 @@ This guide provides cause analysis, symptoms, and exact resolution steps for the
 
 ---
 
+> [!TIP]
+> **Interactive Diagnostics**: Prefer guided troubleshooting? Launch the [Interactive Troubleshooting Wizard](/troubleshoot/wizard) for real-time decision trees and copyable PowerShell diagnostic commands.
+
 ## 1. Error `0x80370102` (Virtual Machine Failed to Start)
+
+> [Diagnose 0x80370102 in Interactive Wizard](/troubleshoot/wizard?code=0x80370102)
+
 
 ### Cause
 This error occurs when the Windows Subsystem for Android Hyper-V virtual machine envelope cannot initialize because **Hardware Virtualization** is disabled in the system BIOS/UEFI, or the **Virtual Machine Platform** Windows optional component is inactive.
@@ -37,6 +43,9 @@ dism.exe /online /enable-feature /featurename:HypervisorPlatform /all /norestart
 
 ## 2. Error `0x80070005` (Access is Denied / E_ACCESSDENIED)
 
+> [Diagnose 0x80070005 in Interactive Wizard](/troubleshoot/wizard?code=0x80070005)
+
+
 ### Cause
 This error occurs when the Windows AppX deployment service (`AppXSvc`) lacks read or execute access to the folder containing your extracted WSA files, or when PowerShell script execution policy blocks local script execution.
 
@@ -48,7 +57,7 @@ This error occurs when the Windows AppX deployment service (`AppXSvc`) lacks rea
 ### Resolution Steps
 
 #### Step 1: Move WSA Folder to an Unrestricted Directory
-Do not install WSA from protected user paths like `C:\Users\<User>\AppData\Local\Temp` or directly off an external USB drive.
+Do not install WSA from protected user paths like `C:\Users\[Username]\AppData\Local\Temp` or directly off an external USB drive.
 1. Move the extracted WSA folder to `C:\WSA` or `D:\WSA`.
 
 #### Step 2: Grant Read & Execute Permissions to Application Packages
@@ -73,6 +82,9 @@ cd "C:\WSA"
 ---
 
 ## 3. Error `0x80073CF9` (AppX Deployment Failed / Package Cache Error)
+
+> [Diagnose 0x80073CF9 in Interactive Wizard](/troubleshoot/wizard?code=0x80073CF9)
+
 
 ### Cause
 Error `0x80073CF9` indicates that the Windows Store package manager failed to register the application because the Windows `AppReadiness` staging directory is missing, corrupt, or locked by a background Windows Update transaction.

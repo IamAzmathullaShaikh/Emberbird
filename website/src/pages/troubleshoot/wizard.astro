@@ -1,0 +1,46 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import TroubleshootingWizard from '../../components/TroubleshootingWizard.astro';
+---
+
+<Layout
+  title="Interactive Diagnostic Wizard | WSABuilds"
+  description="Step-by-step interactive decision trees to diagnose and resolve WSA error codes, virtualization, and Play Integrity issues."
+>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" data-pagefind-body data-pagefind-filter="type:troubleshoot">
+    <!-- Hero Header -->
+    <div class="text-center max-w-3xl mx-auto mb-10">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-4">
+        Diagnostic Engine
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+        Interactive WSA Troubleshooting Wizard
+      </h1>
+      <p class="mt-4 text-base sm:text-lg text-slate-400 leading-relaxed">
+        Isolate installation errors, BIOS virtualization blocks, AppX deployment failures, ADB connection refusals,
+        and banking root detection using guided decision trees and copyable diagnostic commands.
+      </p>
+
+      <div class="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-400">
+        <a
+          href="/docs/troubleshooting/error-codes"
+          class="inline-flex items-center gap-1.5 hover:text-white transition-colors underline"
+        >
+          <span>Error Codes Reference Documentation</span>
+          <span>-></span>
+        </a>
+        <span>•</span>
+        <a
+          href="/compatibility"
+          class="inline-flex items-center gap-1.5 hover:text-white transition-colors underline"
+        >
+          <span>App Compatibility Directory</span>
+          <span>-></span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Wizard Component -->
+    <TroubleshootingWizard />
+  </div>
+</Layout>

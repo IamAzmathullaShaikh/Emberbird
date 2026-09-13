@@ -1,7 +1,7 @@
 # WSABuilds — Windows Subsystem for Android™ Automation Platform
 
 <p align="center">
-  <img src="https://img.shields.io/badge/WSA-2407.40000.4.0-blue.svg?style=for-the-badge&logo=android" alt="WSA Version"/>
+  <img src="https://img.shields.io/badge/WSA-2311.40000.5.0-blue.svg?style=for-the-badge&logo=android" alt="WSA Version"/>
   <img src="https://img.shields.io/badge/Android-13.0%20(API%2033)-green.svg?style=for-the-badge&logo=android" alt="Android 13"/>
   <img src="https://img.shields.io/badge/GApps-OpenGApps%20Pico-orange.svg?style=for-the-badge&logo=googleplay" alt="OpenGApps Pico"/>
   <img src="https://img.shields.io/badge/Root-Magisk%20Stable%20(v30.6+)-red.svg?style=for-the-badge" alt="Magisk Stable"/>
@@ -28,7 +28,19 @@
 
 ---
 
-## Downloads
+## Downloads & Client Installation
+
+### WSABuilds Manager (Desktop Application)
+
+Install the desktop management client with Winget:
+
+```cmd
+winget install WSABuilds.WSABuildsManager
+```
+
+The desktop manager provides one-click cold VHDX backups, safe rollback restores, environment health checks, and guided package updates.
+
+### Subsystem Packages
 
 <table>
 <thead>
@@ -112,13 +124,22 @@ WSABuilds/
 ├── .github/
 │   └── workflows/                # Active GitHub Actions CI/CD workflows
 │       ├── build.yml             # Code quality, ShellCheck, compileall, unit tests
+│       ├── compatibility-validation.yml # Compatibility record validation
+│       ├── docs-validation.yml   # Markdown link integrity and secret scanner
+│       ├── manager-build.yml     # WSABuilds Manager desktop build & test
 │       ├── release.yml           # 3-stage build, validation, and release publisher
-│       ├── validation.yml        # Subsystem and package integrity validation
+│       ├── security.yml          # Secret, token, and developer path audit
 │       ├── update.yml            # Automated update discovery (Retail WSA, Magisk, GApps)
-│       ├── docs.yml              # Markdown link integrity checker
-│       └── security.yml          # Secret, token, and developer path audit
+│       ├── upstream-sync.yml     # Upstream tracking and sync
+│       ├── validation.yml        # Subsystem and package integrity validation
+│       ├── website-deploy.yml    # Documentation portal and website deployment
+│       └── winget-release.yml    # Winget manifest validation & release packaging
+├── apps/
+│   └── manager/                  # WSABuilds Manager desktop application (Tauri v2 + React)
+├── compatibility/                # Community app compatibility database & schema
 ├── config/
 │   └── baseline-identity.json    # Canonical AppX manifest identity baseline
+├── deployment/                   # Release specifications & version metadata layer
 ├── docs/                         # Reliability engineering specifications
 │   ├── ARCHITECTURE.md           # CI/CD and release architecture
 │   ├── UPGRADE_VALIDATION.md     # In-place upgrade compatibility standards
@@ -133,21 +154,31 @@ WSABuilds/
 │   ├── scripts/                  # Core Linux build scripts (build.sh, extractors)
 │   ├── Update Check/             # Modular update discovery (FE3, Magisk, GApps)
 │   └── xml/                      # Microsoft FE3 SOAP request templates
+├── manifests/                    # Winget package distribution manifests
 ├── scripts/                      # Release validation & security tooling
 │   ├── check_doc_links.py        # Markdown local link validator
 │   ├── generate_release_metadata.py # SHA-256 and JSON metadata generator
 │   ├── security_scan.py          # Credential and token scanner
+│   ├── validate_analytics.py     # Zero-PII analytics validator
+│   ├── validate_compatibility.py # Compatibility schema validator
+│   ├── validate_distribution.py  # Distribution and Winget manifest validator
 │   ├── validate_gapps.py         # Google Play component validator (Mode B offline)
 │   ├── validate_magisk.py        # Magisk trampoline validator (Mode B offline)
 │   ├── validate_package_identity.py # AppX identity baseline comparator
 │   └── validate_package_integrity.py # Package file structure validator
+├── services/
+│   └── analytics/                # Privacy-first telemetry aggregation engine
 ├── templates/
 │   └── release-notes-retail.md   # Release notes template
-├── tests/                        # Offline unit test suite (24 passing tests)
+├── tests/                        # Automated unit test suite (79+ passing tests across workspace)
+│   ├── test_analytics.py         # Analytics schema & Zero-PII enforcement tests
+│   ├── test_compatibility_schema.py # Compatibility schema validation tests
 │   ├── test_cpio_builder.py      # SVR4 CPIO and XZ compression tests
+│   ├── test_distribution.py      # Version sync and Winget manifest tests
 │   ├── test_identity_and_integrity.py # Identity drift and integrity tests
 │   ├── test_props_spoof.py       # Pixel 5 build property spoofing tests
 │   └── test_runtime_defects.py   # Runtime defects remediation tests (RT-01 to RT-04)
+├── website/                      # Official web portal, docs, diagnostic wizard, analytics
 ├── WSABuilds Utilities/          # End-user maintenance utilities
 │   ├── Uninstall Script/         # Automated WSA uninstaller with restore points
 │   └── Update Script/            # Automated WSA updater utility
@@ -259,10 +290,11 @@ Production release engineering follows a strictly validated 3-stage pipeline:
 ## 10. Contributing
 
 Contributions are welcome! Please follow these rules:
-1. **Preserve Quality Gates:** All pull requests must pass `build.yml` (ShellCheck, `compileall`, and 24 unit tests).
+1. **Preserve Quality Gates:** All pull requests must pass `build.yml` (ShellCheck, `compileall`, and 79+ automated unit tests across Python, website, and desktop manager engines).
 2. **Document Link Integrity:** Run `python scripts/check_doc_links.py` before submitting to ensure no broken Markdown links.
 3. **Security:** Run `python scripts/security_scan.py` to ensure no personal access tokens, credentials, or machine paths are introduced.
-4. **Scope:** Keep changes aligned with the locked production target (Retail WSA, Magisk Stable, OpenGApps Pico). Do not introduce unmaintained root or GApps variants.
+4. **Distribution & Analytics Validation:** Run `python scripts/validate_distribution.py` and `python scripts/validate_analytics.py`.
+5. **Scope:** Keep changes aligned with the locked production target (Retail WSA, Magisk Stable, OpenGApps Pico). Do not introduce unmaintained root or GApps variants.
 
 ---
 

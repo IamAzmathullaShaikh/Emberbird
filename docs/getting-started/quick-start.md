@@ -45,12 +45,12 @@ WSA requires the Windows **Virtual Machine Platform** feature:
 
 ## 4. Step 3: Download the Recommended Release
 
-1. Go to the [WSABuilds Releases Page](https://github.com/IamAzmathullaShaikh/WSABuilds/releases) or the [Release Portal](https://wsabuilds.azmathulla.dev/downloads).
+1. Download the recommended release from the WSABuilds Web Portal (`/downloads`) or the official GitHub Releases page: `https://github.com/IamAzmathullaShaikh/WSABuilds/releases`.
 2. Download the recommended standard package for your computer:
    - **For Intel/AMD Processors**:  
-     `WSA_2311.40000.5.0_x64_Magisk-v30.6_GApps-Pico.7z` (or `.zip`)
+     `WSA_[version]_x64_[root]_[gapps].7z` (or `.zip` - check repository releases for current build)
    - **For Snapdragon Processors**:  
-     `WSA_2311.40000.5.0_arm64_Magisk-v30.6_GApps-Pico.7z`
+     `WSA_[version]_arm64_[root]_[gapps].7z` (or `.zip` - check repository releases for current build)
 3. Once downloaded, extract the entire archive into a permanent folder on your drive (e.g. `C:\WSA` or `D:\Android\WSA`).
    > **Important**: Do **not** delete or move this folder after installation, as Windows runs the subsystem directly from this location.
 

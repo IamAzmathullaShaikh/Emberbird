@@ -1,0 +1,289 @@
+---
+import Layout from '../layouts/Layout.astro';
+import IntegrityModal from '../components/IntegrityModal.astro';
+import { defaultReleaseService } from '../lib/release-service';
+import versionData from '../../../deployment/version.json';
+
+const releasesUrl = import.meta.env.PUBLIC_RELEASES_URL;
+if (!releasesUrl) {
+  throw new Error('Configuration error: PUBLIC_RELEASES_URL environment variable is required.');
+}
+
+const release = await defaultReleaseService.getLatestRelease();
+const assets = release?.assets || [];
+const managerMeta = versionData.manager;
+const wingetInstallCmd = `winget install ${managerMeta.winget_package_id}`;
+---
+
+<Layout title="Download Windows Subsystem for Android - WSABuilds">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="max-w-3xl mb-10">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-4">
+        Verified Release Builds
+      </div>
+      <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+        Available Releases & Packages
+      </h1>
+      <p class="mt-4 text-slate-400 leading-relaxed">
+        Download verified pre-configured Windows Subsystem for Android packages. Filter by processor architecture, root management, and Google Services integration.
+      </p>
+    </div>
+
+    <!-- WSABuilds Manager & Winget Distribution Card -->
+    <div class="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-indigo-500/30 rounded-2xl p-6 sm:p-8 mb-10 shadow-xl shadow-indigo-950/20">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div class="space-y-2 max-w-xl">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
+              Official Desktop Manager
+            </span>
+            <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
+              Channel: {managerMeta.channel}
+            </span>
+            <span class="text-xs text-slate-400 font-mono">v{managerMeta.version}</span>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight">
+            WSABuilds Manager Desktop Client
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            Native lifecycle manager for Windows Subsystem for Android with verified cold VHDX snapshots, container restoration with rollback safety, and automated upgrade coordination.
+          </p>
+          <div class="flex flex-wrap items-center gap-3 pt-1 text-xs text-slate-400">
+            <span>Package: <strong class="text-slate-200 font-mono">{managerMeta.winget_package_id}</strong></span>
+            <span>•</span>
+            <span>OS: <strong class="text-slate-200">Windows 10/11 ({managerMeta.target_architectures.join(', ')})</strong></span>
+            <span>•</span>
+            <span>License: <strong class="text-slate-200">{managerMeta.license}</strong></span>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-3 min-w-[280px]">
+          <div>
+            <span class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+              Install via Windows Package Manager
+            </span>
+            <div class="flex items-center gap-2 bg-slate-950 border border-slate-700/80 rounded-lg p-2 font-mono text-xs text-indigo-300">
+              <span class="text-slate-500 select-none">&gt;</span>
+              <code id="winget-cmd" class="flex-1 truncate">{wingetInstallCmd}</code>
+              <button
+                type="button"
+                id="copy-winget-btn"
+                class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs transition-colors border border-slate-700 whitespace-nowrap"
+                title="Copy install command"
+              >
+                Copy
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 pt-1">
+            <a
+              href={`${releasesUrl}/tag/v${managerMeta.version}`}
+              class="flex-1 text-center px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/20 transition-all"
+            >
+              Direct Installer (.exe)
+            </a>
+            <a
+              href={`${releasesUrl}/tag/v${managerMeta.version}`}
+              class="flex-1 text-center px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold transition-all"
+            >
+              Portable (.zip)
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {release ? (
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 mb-10">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6 mb-6">
+          <div>
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Current Build Version</div>
+            <div class="text-2xl font-bold text-white mt-1 flex items-center gap-3">
+              <span>{release.tag}</span>
+              <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-normal">
+                {release.assets.length} packages
+              </span>
+            </div>
+          </div>
+          <div class="text-right sm:text-right">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Published Date</div>
+            <div class="text-sm font-medium text-slate-300 mt-1">{release.formattedDate}</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+              Architecture
+            </label>
+            <select id="filter-arch" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="all" selected>All Architectures</option>
+              <option value="x64">x64 (Intel / AMD)</option>
+              <option value="arm64">arm64 (Snapdragon)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+              Root Flavor
+            </label>
+            <select id="filter-root" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="all" selected>All Root Solutions</option>
+              <option value="Magisk">Magisk Stable</option>
+              <option value="KernelSU">KernelSU</option>
+              <option value="NoRoot">No Root (Vanilla)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+              Google Apps
+            </label>
+            <select id="filter-gapps" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="all" selected>All GApps Variants</option>
+              <option value="GApps-Pico">GApps Pico (Play Store)</option>
+              <option value="MindTheGapps">MindTheGapps</option>
+              <option value="NoGApps">No GApps (AOSP)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-300">
+            <thead class="text-xs uppercase bg-slate-950 text-slate-400 border-b border-slate-800">
+              <tr>
+                <th class="px-4 py-3">Package Asset</th>
+                <th class="px-4 py-3">Arch</th>
+                <th class="px-4 py-3">Root</th>
+                <th class="px-4 py-3">GApps</th>
+                <th class="px-4 py-3">Size</th>
+                <th class="px-4 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="package-table-body" class="divide-y divide-slate-800/60">
+              {assets.map((asset) => (
+                <tr
+                  class="hover:bg-slate-800/40 transition-colors package-row"
+                  data-arch={asset.architecture}
+                  data-root={asset.rootFlavor}
+                  data-gapps={asset.gappsFlavor}
+                >
+                  <td class="px-4 py-3.5 font-mono text-xs text-white max-w-xs truncate">
+                    {asset.fileName}
+                  </td>
+                  <td class="px-4 py-3.5">
+                    <span class="px-2 py-0.5 rounded text-xs font-medium bg-slate-800 text-slate-300">
+                      {asset.architecture}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3.5">
+                    <span class="px-2 py-0.5 rounded text-xs font-medium bg-indigo-500/20 text-indigo-300">
+                      {asset.rootFlavor}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3.5">
+                    <span class="px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/20 text-emerald-300">
+                      {asset.gappsFlavor}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3.5 text-xs text-slate-400">
+                    {asset.formattedSize}
+                  </td>
+                  <td class="px-4 py-3.5 text-right space-x-2">
+                    <button
+                      type="button"
+                      onclick={`window.openIntegrityModal('${asset.fileName}', '${asset.sha256}')`}
+                      class="px-2.5 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                    >
+                      Checksum
+                    </button>
+                    <a
+                      href={asset.downloadUrl}
+                      class="inline-block px-3 py-1 text-xs font-semibold rounded bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+                    >
+                      Download
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    ) : (
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-10 text-center">
+        <h3 class="text-lg font-bold text-white mb-2">Live Releases Feed</h3>
+        <p class="text-sm text-slate-400 max-w-xl mx-auto mb-6">
+          Release metadata will populate during production builds. Access current packages directly on the GitHub Releases portal.
+        </p>
+        <a
+          href={releasesUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="px-6 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors"
+        >
+          Open GitHub Releases Portal
+        </a>
+      </div>
+    )}
+
+    <div class="mt-8 text-center text-xs text-slate-500">
+      Checksums are computed during CI build stages and verified before deployment.
+    </div>
+  </div>
+
+  <IntegrityModal />
+
+  <script>
+    const filterArch = document.getElementById('filter-arch') as HTMLSelectElement;
+    const filterRoot = document.getElementById('filter-root') as HTMLSelectElement;
+    const filterGApps = document.getElementById('filter-gapps') as HTMLSelectElement;
+    const rows = document.querySelectorAll<HTMLTableRowElement>('.package-row');
+
+    function applyFilters() {
+      const arch = filterArch?.value || 'all';
+      const root = filterRoot?.value || 'all';
+      const gapps = filterGApps?.value || 'all';
+
+      rows.forEach((row) => {
+        const rowArch = row.dataset.arch;
+        const rowRoot = row.dataset.root;
+        const rowGApps = row.dataset.gapps;
+
+        const matchArch = arch === 'all' || rowArch === arch;
+        const matchRoot = root === 'all' || rowRoot === root;
+        const matchGApps = gapps === 'all' || rowGApps === gapps;
+
+        if (matchArch && matchRoot && matchGApps) {
+          row.classList.remove('hidden');
+        } else {
+          row.classList.add('hidden');
+        }
+      });
+    }
+
+    filterArch?.addEventListener('change', applyFilters);
+    filterRoot?.addEventListener('change', applyFilters);
+    filterGApps?.addEventListener('change', applyFilters);
+
+    const copyBtn = document.getElementById('copy-winget-btn');
+    const wingetCmd = document.getElementById('winget-cmd');
+    copyBtn?.addEventListener('click', async () => {
+      if (wingetCmd?.textContent) {
+        try {
+          await navigator.clipboard.writeText(wingetCmd.textContent);
+          const originalText = copyBtn.textContent;
+          copyBtn.textContent = 'Copied!';
+          copyBtn.classList.add('text-emerald-400');
+          setTimeout(() => {
+            copyBtn.textContent = originalText;
+            copyBtn.classList.remove('text-emerald-400');
+          }, 2000);
+        } catch {
+          // Clipboard fallback
+        }
+      }
+    });
+  </script>
+</Layout>

@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+"""
+test_compatibility_schema.py — Unit Tests for Compatibility Schema and Validator
+"""
+
+import unittest
+import json
+from pathlib import Path
+
+# Add scripts directory to sys.path
+import sys
+ROOT_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT_DIR / "scripts"))
+
+import validate_compatibility as vc
+
+
+class TestCompatibilitySchema(unittest.TestCase):
+    def setUp(self):
+        self.root_dir = ROOT_DIR
+        self.schema_path = self.root_dir / "compatibility" / "schema.json"
+        self.valid_sample = {
+            "app_name": "Test Application",
+            "package_id": "com.test.app",
+            "category": "Banking & UPI",
+            "compatibility_status": "Working",
+            "play_integrity_required": False,
+            "tested_wsa_version": "2311.40000.5.0",
+            "tested_root_flavor": "Magisk Stable",
+            "verification_status": "unverified",
+            "workaround_steps": ["Step 1", "Step 2"],
+            "known_issues": "None"
+        }
+
+    def test_schema_file_exists_and_is_valid_json(self):
+        self.assertTrue(self.schema_path.exists(), "schema.json must exist")
+        with open(self.schema_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        self.assertEqual(data.get("title"), "WSA Application Compatibility Record")
+        self.assertIn("required", data)
+
+    def test_existing_records_pass_validation(self):
+        data_dir = self.root_dir / "compatibility" / "data"
+        json_files = list(data_dir.glob("*.json"))
+        self.assertGreater(len(json_files), 0, "Expected at least 1 seed record")
+        for jf in json_files:
+            errors = vc.validate_file(jf)
+            self.assertEqual(errors, [], f"Record {jf.name} should pass validation")
+
+    def test_missing_required_fields_rejected(self):
+        for field in vc.REQUIRED_FIELDS:
+            invalid_record = dict(self.valid_sample)
+            del invalid_record[field]
+            errors = vc.validate_record_data(invalid_record, "test_file.json")
+            self.assertTrue(any(field in err for err in errors), f"Missing '{field}' must produce error")
+
+    def test_invalid_package_id_rejected(self):
+        invalid_ids = ["not_reverse_dns", "123.numeric.first", "trailing.dot.", ".leading.dot", "has space.pkg"]
+        for pid in invalid_ids:
+            record = dict(self.valid_sample, package_id=pid)
+            errors = vc.validate_record_data(record, "test_file.json")
+            self.assertTrue(any("package_id" in err for err in errors), f"Invalid package_id '{pid}' must fail")
+
+    def test_invalid_category_rejected(self):
+        record = dict(self.valid_sample, category="NonExistentCategory")
+        errors = vc.validate_record_data(record, "test_file.json")
+        self.assertTrue(any("category" in err for err in errors))
+
+    def test_invalid_status_rejected(self):
+        record = dict(self.valid_sample, compatibility_status="PartiallyWorking")
+        errors = vc.validate_record_data(record, "test_file.json")
+        self.assertTrue(any("compatibility_status" in err for err in errors))
+
+    def test_unrecognized_fields_rejected(self):
+        record = dict(self.valid_sample, malicious_injection="rm -rf /")
+        errors = vc.validate_record_data(record, "test_file.json")
+        self.assertTrue(any("Unrecognized field" in err for err in errors))
+
+    def test_play_integrity_boolean_enforced(self):
+        record = dict(self.valid_sample, play_integrity_required="true")
+        errors = vc.validate_record_data(record, "test_file.json")
+        self.assertTrue(any("play_integrity_required" in err for err in errors))
+
+    def test_malformed_json_syntax(self):
+        import tempfile
+        with tempfile.NamedTemporaryFile("w", delete=False, suffix=".json") as tf:
+            tf.write("{ this is not valid json }")
+            temp_path = tf.name
+
+        try:
+            errors = vc.validate_file(temp_path)
+            self.assertTrue(any("Invalid JSON syntax" in err for err in errors))
+        finally:
+            Path(temp_path).unlink(missing_ok=True)
+
+
+if __name__ == "__main__":
+    unittest.main()

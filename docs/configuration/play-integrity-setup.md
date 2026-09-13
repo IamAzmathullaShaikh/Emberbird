@@ -4,9 +4,12 @@ This guide details how to configure Magisk, Zygisk, and the PlayIntegrityFix mod
 
 ---
 
+> [!TIP]
+> **Having issues with banking apps?** Run through the [Interactive Play Integrity & Root Cloaking Wizard](/troubleshoot/wizard?category=integrity) or explore verified app configurations in the [App Compatibility Directory](/compatibility).
+
 ## 1. Overview
 
-Many banking and financial applications (such as PhonePe, Paytm, Google Pay, SBI YONO, and BHIM) require your device to pass Google Play Integrity attestation (MEETS_DEVICE_INTEGRITY) and detect whether the environment is modified or rooted.
+Many banking and financial applications (such as PhonePe, Paytm, Google Pay, SBI YONO, and BHIM) require your device to pass Google Play Integrity attestation (`MEETS_DEVICE_INTEGRITY`) and detect whether the environment is modified or rooted.
 
 By following this guide, you can cloak root access and pass device attestation on WSA.
 
@@ -21,19 +24,19 @@ By following this guide, you can cloak root access and pass device attestation o
    - Toggle **Enforce DenyList** to **Enabled**.
 4. Click **Configure DenyList**:
    - Tap the three-dot menu in the top right and check **Show system apps**.
-   - Search for **Google Play Services** (com.google.android.gms) and expand it.
-   - Check the boxes for com.google.android.gms and com.google.android.gms.unstable.
-   - Search for your banking apps (e.g. PhonePe, SBI YONO, Paytm) and check all their processes.
+   - Search for **Google Play Services** (`com.google.android.gms`) and expand it.
+   - Check the boxes for `com.google.android.gms` and `com.google.android.gms.unstable`.
+   - Search for your banking apps (e.g. `PhonePe`, `SBI YONO`, `Paytm`) and check all their processes.
 
 ---
 
 ## 3. Step 2: Install PlayIntegrityFix Module
 
-1. Download the latest **PlayIntegrityFix** module zip release from the [PlayIntegrityFix Releases](https://github.com/chiteroman/PlayIntegrityFIX/releases).
+1. Download the latest **PlayIntegrityFix** module zip release from PlayIntegrityFix Releases: https://github.com/chiteroman/PlayIntegrityFIX/releases
 2. Open the **Magisk** app on WSA.
 3. Tap the **Modules** tab at the bottom right.
 4. Tap **Install from storage**.
-5. Select the downloaded PlayIntegrityFIX.zip.
+5. Select the downloaded `PlayIntegrityFIX.zip`.
 6. Once installation completes, do not reboot immediately.
 
 ---
@@ -41,7 +44,7 @@ By following this guide, you can cloak root access and pass device attestation o
 ## 4. Step 3: Hide the Magisk App
 
 1. In Magisk Settings, tap **Hide the Magisk app**.
-2. When prompted, enter a generic name (e.g. Settings Manager or Tools).
+2. When prompted, enter a generic name (e.g. `Settings Manager` or `Tools`).
 3. Magisk will repackage itself under a randomized package name.
 
 ---

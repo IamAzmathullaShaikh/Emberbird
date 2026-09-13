@@ -32,8 +32,8 @@ def check_links_in_file(file_path: Path, repo_root: Path) -> list[dict]:
         raw_links.append(match.group(1))
 
     for target in raw_links:
-        # Strip anchor
-        target_clean = target.split("#")[0].strip()
+        # Strip anchor and query string
+        target_clean = target.split("#")[0].split("?")[0].strip()
         if not target_clean:
             continue
 
@@ -46,9 +46,23 @@ def check_links_in_file(file_path: Path, repo_root: Path) -> list[dict]:
 
         # Check relative to file's directory first, then repo root
         rel_to_file = file_path.parent / decoded_path
-        rel_to_root = repo_root / decoded_path
+        clean_root_rel = decoded_path.lstrip("/\\")
+        rel_to_root = repo_root / clean_root_rel
 
-        if not (rel_to_file.exists() or rel_to_root.exists()):
+        # Support website portal routes (e.g. /troubleshoot/wizard, /compatibility)
+        portal_page = repo_root / "website" / "src" / "pages" / f"{clean_root_rel}.astro"
+        portal_index = repo_root / "website" / "src" / "pages" / clean_root_rel / "index.astro"
+        portal_doc = repo_root / "docs" / f"{clean_root_rel}.md"
+
+        exists = (
+            rel_to_file.exists() or
+            rel_to_root.exists() or
+            portal_page.exists() or
+            portal_index.exists() or
+            portal_doc.exists()
+        )
+
+        if not exists:
             errors.append({
                 "source_file": str(file_path.relative_to(repo_root)),
                 "target_link": target,

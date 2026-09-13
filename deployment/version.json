@@ -1,0 +1,20 @@
+{
+  "$schema": "./schema.json",
+  "manager": {
+    "version": "0.2.0",
+    "channel": "stable",
+    "release_date": "2026-09-14",
+    "winget_package_id": "WSABuilds.WSABuildsManager",
+    "min_windows_build": "10.0.19045.0",
+    "target_architectures": [
+      "x64",
+      "arm64"
+    ],
+    "publisher": "WSABuilds",
+    "license": "Apache-2.0"
+  },
+  "subsystem_baseline": {
+    "wsa_version": "2311.40000.5.0",
+    "android_version": "13"
+  }
+}

@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
+
+PackageIdentifier: WSABuilds.WSABuildsManager
+PackageVersion: 0.2.0
+MinimumOSVersion: 10.0.19045.0
+InstallerType: nullsoft
+InstallModes:
+  - interactive
+  - silent
+  - silentWithProgress
+Installers:
+  - Architecture: x64
+    InstallerType: nullsoft
+    InstallerUrl: https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.0/WSABuildsManager-Setup-0.2.0-x64.exe
+    InstallerSha256: "0000000000000000000000000000000000000000000000000000000000000000"
+    Scope: user
+  - Architecture: arm64
+    InstallerType: nullsoft
+    InstallerUrl: https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.0/WSABuildsManager-Setup-0.2.0-arm64.exe
+    InstallerSha256: "0000000000000000000000000000000000000000000000000000000000000000"
+    Scope: user
+ManifestType: installer
+ManifestVersion: 1.6.0

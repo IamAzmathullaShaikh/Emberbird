@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0.0",
+  "last_updated": "2026-09-13T20:59:10",
+  "transparency_principles": {
+    "zero_pii": true,
+    "no_ip_logging": true,
+    "no_cookies": true,
+    "public_aggregates_only": true
+  },
+  "release_metrics": {
+    "total_releases": 48,
+    "total_downloads_aggregate": 2840000,
+    "latest_version": "2311.40000.5.0",
+    "active_packages_count": 24
+  },
+  "compatibility_metrics": {
+    "total_apps_tested": 4,
+    "compatible_count": 2,
+    "working_with_issues_count": 2,
+    "unsupported_count": 0,
+    "play_integrity_required_count": 3,
+    "categories_count": 2
+  },
+  "root_flavor_distribution": {
+    "magisk": 62,
+    "kernelsu": 26,
+    "none": 12
+  },
+  "architecture_distribution": {
+    "x64": 82,
+    "arm64": 18
+  },
+  "version_adoption": [
+    {
+      "version": "2311.40000.5.0",
+      "label": "Current Stable (Android 13)",
+      "adoption_percentage": 78.4,
+      "release_date": "2024-03-01"
+    },
+    {
+      "version": "2311.40000.4.0",
+      "label": "Previous Stable",
+      "adoption_percentage": 14.8,
+      "release_date": "2024-01-15"
+    },
+    {
+      "version": "2310.40000.2.0",
+      "label": "Legacy Build",
+      "adoption_percentage": 6.8,
+      "release_date": "2023-11-20"
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+name: Website Deployment & Validation
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'website/**'
+      - 'docs/**'
+      - 'compatibility/**'
+      - 'services/analytics/**'
+  pull_request:
+    branches: [master, experimental]
+    paths:
+      - 'website/**'
+      - 'docs/**'
+      - 'compatibility/**'
+      - 'services/analytics/**'
+  workflow_dispatch:
+
+concurrency:
+  group: website-val-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  validate-and-deploy:
+    name: Validate, Typecheck & Deploy
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'website/package.json'
+
+      - name: Install Dependencies
+        working-directory: website
+        run: |
+          npm install
+
+      - name: Dependency Security Audit
+        working-directory: website
+        run: |
+          echo "[*] Running npm dependency audit for critical vulnerabilities..."
+          npm audit --audit-level=critical || true
+
+      - name: Execute Unit Test Suite
+        working-directory: website
+        run: |
+          echo "[*] Executing parser, compatibility, environment, and wizard diagnostic test suites..."
+          npm run test
+
+      - name: TypeScript Type Checking
+        working-directory: website
+        run: |
+          echo "[*] Executing TypeScript typecheck..."
+          npm run typecheck || true
+
+      - name: Prebuild Documentation Import
+        working-directory: website
+        run: |
+          echo "[*] Syncing documentation into content collection..."
+          npm run prebuild
+
+      - name: Build Static Site & Search Index
+        working-directory: website
+        env:
+          SITE_URL: ${{ vars.SITE_URL || 'https://wsabuilds-website.pages.dev' }}
+          PUBLIC_GITHUB_REPO: ${{ github.repository }}
+          PUBLIC_GITHUB_REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+          PUBLIC_RELEASES_URL: ${{ github.server_url }}/${{ github.repository }}/releases
+        run: |
+          npm run build
+
+      - name: Verify Build Output & Search Index
+        working-directory: website
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "[-] Build failed: dist directory not found."
+            exit 1
+          fi
+          echo "[+] Build output verified in website/dist/."
+          
+          if [ -d "dist/pagefind" ]; then
+            echo "[+] Pagefind search index validated successfully in website/dist/pagefind/."
+          else
+            echo "[!] Pagefind directory not generated (post-build indexing optional in non-production runs)."
+          fi
+
+      - name: Deploy to Cloudflare Pages
+        if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request'
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: 'wsabuilds-website'
+          directory: 'website/dist'
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}

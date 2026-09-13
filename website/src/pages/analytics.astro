@@ -1,0 +1,203 @@
+---
+import Layout from '../layouts/Layout.astro';
+import metricsData from '../content/analytics/metrics.json';
+
+const releaseMetrics = metricsData.release_metrics;
+const compatMetrics = metricsData.compatibility_metrics;
+const rootDist = metricsData.root_flavor_distribution;
+const archDist = metricsData.architecture_distribution;
+const versionAdoption = metricsData.version_adoption;
+
+const formatNumber = (num: number) => {
+  if (num >= 1000000) {
+    return `${(num / 1000000).toFixed(1)}M+`;
+  }
+  if (num >= 1000) {
+    return `${(num / 1000).toFixed(1)}K+`;
+  }
+  return num.toString();
+};
+---
+
+<Layout title="Public Transparency & Analytics - WSABuilds" description="Public aggregate telemetry and transparency metrics for Windows Subsystem for Android builds with zero PII collection.">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    {/* Page Header */}
+    <div class="max-w-3xl mb-12">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-4">
+        Zero PII • 100% Public Aggregations
+      </div>
+      <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+        Public Transparency Platform
+      </h1>
+      <p class="mt-4 text-slate-400 leading-relaxed text-sm sm:text-base">
+        WSABuilds operates under a strict privacy-first charter. We collect zero personally identifiable information (PII), no IP addresses, and no browser fingerprints. All metrics shown are computed from public GitHub release downloads and community compatibility submissions.
+      </p>
+    </div>
+
+    {/* Primary Metric KPI Cards */}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm">
+        <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Downloads</div>
+        <div class="mt-2 text-3xl font-extrabold text-white tracking-tight">
+          {formatNumber(releaseMetrics.total_downloads_aggregate)}
+        </div>
+        <p class="mt-1 text-xs text-slate-500">Across {releaseMetrics.total_releases} production releases</p>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm">
+        <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Validated Apps</div>
+        <div class="mt-2 text-3xl font-extrabold text-white tracking-tight">
+          {compatMetrics.total_apps_tested}
+        </div>
+        <p class="mt-1 text-xs text-slate-500">{compatMetrics.categories_count} application categories tested</p>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm">
+        <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Compatibility Rate</div>
+        <div class="mt-2 text-3xl font-extrabold text-emerald-400 tracking-tight">
+          {compatMetrics.total_apps_tested > 0 ? Math.round((compatMetrics.compatible_count / compatMetrics.total_apps_tested) * 100) : 0}%
+        </div>
+        <p class="mt-1 text-xs text-slate-500">{compatMetrics.compatible_count} fully compatible records</p>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm">
+        <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Active Build Baseline</div>
+        <div class="mt-2 text-3xl font-extrabold text-indigo-400 tracking-tight font-mono text-2xl">
+          {releaseMetrics.latest_version}
+        </div>
+        <p class="mt-1 text-xs text-slate-500">{releaseMetrics.active_packages_count} active packaging variants</p>
+      </div>
+    </div>
+
+    {/* Two-Column Analytics Grids */}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+      {/* Root Flavor Distribution */}
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8">
+        <h2 class="text-lg font-bold text-white mb-2">Root Solution Distribution</h2>
+        <p class="text-xs text-slate-400 mb-6">
+          Relative distribution of root management frameworks selected across release downloads.
+        </p>
+
+        <div class="space-y-4">
+          <div>
+            <div class="flex justify-between text-xs font-medium text-slate-300 mb-1.5">
+              <span>Magisk (Stable Root)</span>
+              <span class="font-mono text-indigo-400">{rootDist.magisk}%</span>
+            </div>
+            <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+              <div class="h-full bg-indigo-500 rounded-full" style={`width: ${rootDist.magisk}%`} />
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between text-xs font-medium text-slate-300 mb-1.5">
+              <span>KernelSU (Kernel-Level Root)</span>
+              <span class="font-mono text-purple-400">{rootDist.kernelsu}%</span>
+            </div>
+            <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+              <div class="h-full bg-purple-500 rounded-full" style={`width: ${rootDist.kernelsu}%`} />
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between text-xs font-medium text-slate-300 mb-1.5">
+              <span>No Root (Clean Vanilla)</span>
+              <span class="font-mono text-slate-400">{rootDist.none}%</span>
+            </div>
+            <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+              <div class="h-full bg-slate-600 rounded-full" style={`width: ${rootDist.none}%`} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Architecture Distribution */}
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8">
+        <h2 class="text-lg font-bold text-white mb-2">Processor Architecture Mix</h2>
+        <p class="text-xs text-slate-400 mb-6">
+          Download ratios across Intel/AMD 64-bit and Qualcomm Snapdragon ARM64 devices.
+        </p>
+
+        <div class="space-y-4">
+          <div>
+            <div class="flex justify-between text-xs font-medium text-slate-300 mb-1.5">
+              <span>x64 (Intel &amp; AMD Desktop/Laptop)</span>
+              <span class="font-mono text-emerald-400">{archDist.x64}%</span>
+            </div>
+            <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+              <div class="h-full bg-emerald-500 rounded-full" style={`width: ${archDist.x64}%`} />
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between text-xs font-medium text-slate-300 mb-1.5">
+              <span>arm64 (Snapdragon X Elite &amp; Surface Pro)</span>
+              <span class="font-mono text-cyan-400">{archDist.arm64}%</span>
+            </div>
+            <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+              <div class="h-full bg-cyan-500 rounded-full" style={`width: ${archDist.arm64}%`} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Version Adoption Table */}
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 mb-12">
+      <h2 class="text-lg font-bold text-white mb-2">Subsystem Version Adoption</h2>
+      <p class="text-xs text-slate-400 mb-6">
+        Distribution of active release versions adopted across the community.
+      </p>
+
+      <div class="overflow-x-auto">
+        <table className="w-full text-left text-xs text-slate-300">
+          <thead class="bg-slate-950 text-slate-400 uppercase tracking-wider font-mono text-[10px] border-b border-slate-800">
+            <tr>
+              <th class="py-3 px-4">Version</th>
+              <th class="py-3 px-4">Channel Label</th>
+              <th class="py-3 px-4">Release Date</th>
+              <th class="py-3 px-4">Share</th>
+              <th class="py-3 px-4 text-right">Adoption Bar</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 font-mono">
+            {versionAdoption.map((v) => (
+              <tr key={v.version} class="hover:bg-slate-800/30 transition-colors">
+                <td class="py-3.5 px-4 font-bold text-white">{v.version}</td>
+                <td class="py-3.5 px-4 font-sans text-slate-300">{v.label}</td>
+                <td class="py-3.5 px-4 text-slate-400">{v.release_date}</td>
+                <td class="py-3.5 px-4 text-indigo-400 font-bold">{v.adoption_percentage}%</td>
+                <td class="py-3.5 px-4 text-right w-44">
+                  <div class="w-full h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+                    <div class="h-full bg-indigo-500 rounded-full" style={`width: ${v.adoption_percentage}%`} />
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {/* Privacy-First Charter Notice */}
+    <div class="bg-gradient-to-r from-slate-900 via-indigo-950/30 to-slate-900 border border-indigo-500/30 rounded-2xl p-6 sm:p-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        <div class="space-y-2">
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block" />
+            Zero-Telemetry Public Commitment
+          </h3>
+          <p class="text-xs text-slate-300 max-w-2xl leading-relaxed">
+            Our codebase contains no tracking beacons, Google Analytics, cookies, or remote device fingerprinters. All analytics are generated offline through public GitHub API release counters and community-submitted compatibility records.
+          </p>
+        </div>
+        <a
+          href="/docs"
+          class="px-4 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold whitespace-nowrap shadow-md shadow-indigo-600/20 transition-all text-center"
+        >
+          View Privacy Specification
+        </a>
+      </div>
+    </div>
+  </div>
+</Layout>

@@ -1,0 +1,71 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const docCategories = [
+  {
+    title: 'Getting Started',
+    description: 'Prerequisites, virtualization setup, and quick installation guides.',
+    links: [
+      { label: 'Quick Start Guide', href: '/docs/getting-started/quick-start' },
+      { label: 'System Requirements', href: '/docs/getting-started/prerequisites' }
+    ]
+  },
+  {
+    title: 'Configuration',
+    description: 'Configuring Magisk, Zygisk, and Google Play Integrity for banking applications.',
+    links: [
+      { label: 'Play Integrity Setup', href: '/docs/configuration/play-integrity-setup' },
+      { label: 'ADB Networking Setup', href: '/docs/configuration/adb-setup' }
+    ]
+  },
+  {
+    title: 'Troubleshooting',
+    description: 'Diagnosing common setup errors and known resolution pathways.',
+    links: [
+      { label: 'Error Codes Guide (0x80370102, 0x80070005, 0x80073CF9)', href: '/docs/troubleshooting/error-codes' }
+    ]
+  },
+  {
+    title: 'Community & Governance',
+    description: 'Discussions guidelines, branching strategy, and contributing process.',
+    links: [
+      { label: 'Discussions Governance', href: '/docs/community/discussions-governance' },
+      { label: 'Contributor Guidelines', href: '/docs/community/contributing' }
+    ]
+  }
+];
+---
+
+<Layout title="Documentation - WSABuilds">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="max-w-2xl mb-12">
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+        Documentation Hub
+      </h1>
+      <p class="mt-3 text-slate-400">
+        Everything you need to install, configure, update, and troubleshoot Windows Subsystem for Android.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {docCategories.map((category) => (
+        <div class="p-6 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
+          <div>
+            <h2 class="text-lg font-bold text-white mb-2">{category.title}</h2>
+            <p class="text-xs text-slate-400 mb-6 leading-relaxed">{category.description}</p>
+          </div>
+          <ul class="space-y-2 border-t border-slate-800/80 pt-4">
+            {category.links.map((link) => (
+              <li>
+                <a href={link.href} class="text-sm text-indigo-400 hover:text-indigo-300 transition-colors flex items-center justify-between">
+                  <span>{link.label}</span>
+                  <span class="text-slate-600">-></span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </div>
+</Layout>

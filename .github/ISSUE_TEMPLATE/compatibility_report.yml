@@ -1,12 +1,12 @@
 name: App Compatibility Report
 description: Submit verified compatibility results or configuration workarounds for an Android application on WSA.
-title: "[Compat]: <App Name> - <Working / Workaround Required / Broken>"
+title: "[Compat]: [App Name] - [Working / Workaround Required / Broken]"
 labels: ["compatibility", "needs-triage"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thank you for helping build the community compatibility database! Your report will be verified and added to `compatibility/data/<AppName>.json`.
+        Thank you for helping build the community compatibility database! Your report will be verified and added to `compatibility/data/[AppName].json`.
 
   - type: input
     id: app_name
@@ -58,7 +58,7 @@ body:
     attributes:
       label: Tested WSA Release Version
       description: The WSA build version you conducted testing on.
-      placeholder: "e.g. 2311.40000.5.0"
+      placeholder: "e.g. Enter tested WSA build version (from WSA Settings -> About)"
     validations:
       required: true
 
@@ -68,7 +68,7 @@ body:
       label: Tested Root Flavor
       description: Which build flavor was used?
       options:
-        - "Magisk Stable (v30.6+)"
+        - "Magisk Stable"
         - "KernelSU"
         - "No Root (Vanilla WSA)"
     validations:
@@ -93,7 +93,7 @@ body:
       description: Step-by-step instructions to get the application working.
       placeholder: |
         1. Enable Zygisk in Magisk settings.
-        2. Install PlayIntegrityFix module (v17.0+).
+        2. Install latest PlayIntegrityFix module.
         3. Add application to Magisk DenyList.
         4. Disable USB Debugging in WSA Advanced Settings.
     validations:

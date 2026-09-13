@@ -1,6 +1,6 @@
 name: Feature Request
 description: Propose an idea, automation improvement, or platform enhancement for WSABuilds.
-title: "[FEATURE]: <Short summary of proposal>"
+title: "[FEATURE]: [Short summary of proposal]"
 labels: ["enhancement", "needs-triage"]
 body:
   - type: markdown

@@ -1,0 +1,90 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { getOrderedDocCategories, getAdjacentArticles } from '../../lib/docs-pipeline';
+
+export async function getStaticPaths() {
+  const docs = await getCollection('docs');
+  return docs.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry }
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+
+const categories = await getOrderedDocCategories();
+const { prev, next } = await getAdjacentArticles(entry.slug);
+---
+
+<Layout title={`${entry.data.title} - WSABuilds Documentation`}>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-10">
+      <!-- Sidebar Navigation -->
+      <aside class="lg:col-span-1 border-b lg:border-b-0 lg:border-r border-slate-800 pb-8 lg:pb-0 lg:pr-6">
+        <div class="sticky top-24 space-y-6">
+          <a href="/docs" class="text-xs font-semibold text-indigo-400 hover:text-indigo-300 uppercase tracking-wider block mb-4">
+            <- Documentation Index
+          </a>
+          {categories.map((cat) => (
+            <div>
+              <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2.5">
+                {cat.title}
+              </h3>
+              <ul class="space-y-1.5">
+                {cat.articles.map((item) => (
+                  <li>
+                    <a
+                      href={`/docs/${item.slug}`}
+                      class={`text-sm block py-1 px-2.5 rounded-lg transition-colors ${
+                        item.slug === entry.slug
+                          ? 'bg-indigo-600/20 text-indigo-300 font-medium'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                      }`}
+                    >
+                      {item.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </aside>
+
+      <!-- Main Article Content -->
+      <main class="lg:col-span-3">
+        <article class="prose prose-invert prose-indigo max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-indigo-400">
+          <h1>{entry.data.title}</h1>
+          <p class="lead text-slate-400 text-base">{entry.data.description}</p>
+          <hr class="border-slate-800 my-8" />
+          <Content />
+        </article>
+
+        <!-- Adjacent Article Navigation -->
+        <div class="mt-16 pt-8 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {prev ? (
+            <a
+              href={`/docs/${prev.slug}`}
+              class="p-4 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition-colors block"
+            >
+              <div class="text-xs text-slate-500 uppercase font-semibold"><- Previous</div>
+              <div class="text-sm font-semibold text-white mt-1">{prev.title}</div>
+            </a>
+          ) : <div />}
+
+          {next ? (
+            <a
+              href={`/docs/${next.slug}`}
+              class="p-4 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition-colors block text-right sm:text-right"
+            >
+              <div class="text-xs text-slate-500 uppercase font-semibold">Next -></div>
+              <div class="text-sm font-semibold text-white mt-1">{next.title}</div>
+            </a>
+          ) : <div />}
+        </div>
+      </main>
+    </div>
+  </div>
+</Layout>
