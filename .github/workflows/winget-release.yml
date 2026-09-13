@@ -1,0 +1,153 @@
+name: Winget Distribution & Packaging CI
+
+on:
+  push:
+    tags:
+      - 'v*'
+    paths:
+      - 'manifests/**'
+      - 'deployment/**'
+      - 'scripts/validate_distribution.py'
+      - '.github/workflows/winget-release.yml'
+  workflow_dispatch:
+    inputs:
+      target_version:
+        description: 'Version tag to package and validate (e.g. 0.2.0)'
+        required: false
+        default: '0.2.0'
+      dry_run:
+        description: 'Dry run execution (do not publish external artifacts)'
+        required: true
+        type: boolean
+        default: true
+
+concurrency:
+  group: winget-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate-metadata:
+    name: Validate Distribution & Winget Manifests
+    runs-on: windows-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyyaml
+
+      - name: Execute Distribution Validator
+        run: |
+          echo "[*] Running distribution metadata & Winget manifest validation suite..."
+          python scripts/validate_distribution.py
+
+  package-manager:
+    name: Package Desktop Release & Checksums
+    needs: validate-metadata
+    runs-on: windows-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Rust Stable Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: 'apps/manager/src-tauri'
+
+      - name: Install Frontend Dependencies
+        working-directory: apps/manager
+        run: |
+          npm install
+
+      - name: Frontend Build
+        working-directory: apps/manager
+        run: |
+          npm run build
+
+      - name: Cargo Build Desktop Binary
+        working-directory: apps/manager/src-tauri
+        run: |
+          cargo build --release
+
+      - name: Bundle Artifacts & Checksums
+        shell: pwsh
+        run: |
+          $ver = (Get-Content deployment/version.json | ConvertFrom-Json).manager.version
+          New-Item -ItemType Directory -Force -Path "dist_artifacts" | Out-Null
+          
+          # Copy release binary to distribution staging
+          $bin = "apps/manager/src-tauri/target/release/wsabuilds-manager.exe"
+          if (Test-Path $bin) {
+            Copy-Item $bin "dist_artifacts/wsabuilds-manager.exe"
+            
+            # Create portable archive
+            Compress-Archive -Path "dist_artifacts/wsabuilds-manager.exe", "LICENSE" -DestinationPath "dist_artifacts/WSABuildsManager-Portable-$ver-x64.zip"
+            
+            # Generate SHA256 checksums
+            $hash = (Get-FileHash "dist_artifacts/WSABuildsManager-Portable-$ver-x64.zip" -Algorithm SHA256).Hash.ToLower()
+            "$hash *WSABuildsManager-Portable-$ver-x64.zip" | Out-File -Encoding utf8 "dist_artifacts/WSABuildsManager-$ver-checksums.txt"
+          } else {
+            Write-Host "[!] Note: Running in dry-run/preview mode without release binary."
+          }
+
+      - name: Upload Packaging Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: manager-release-artifacts
+          path: dist_artifacts/*
+          retention-days: 7
+          if-no-files-found: ignore
+
+  prepare-winget:
+    name: Prepare Winget Release Manifests
+    needs: [validate-metadata]
+    runs-on: windows-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Archive Winget Manifest Bundle
+        shell: pwsh
+        run: |
+          $ver = (Get-Content deployment/version.json | ConvertFrom-Json).manager.version
+          New-Item -ItemType Directory -Force -Path "winget_bundle" | Out-Null
+          Copy-Item -Recurse "manifests/w/WSABuilds/WSABuildsManager/$ver" "winget_bundle/"
+          Write-Host "[+] Prepared Winget manifests bundle for v$ver (Dry-run: external submission withheld)."
+
+      - name: Upload Winget Manifest Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: winget-manifests
+          path: winget_bundle/**
+          retention-days: 14
