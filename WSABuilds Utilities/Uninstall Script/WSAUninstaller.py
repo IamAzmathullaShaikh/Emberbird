@@ -27,8 +27,6 @@ import subprocess
 import winreg
 import ctypes
 import logging
-import tkinter as tk
-from tkinter import messagebox
 
 # Check if the script is running as an administrator
 def is_admin():
@@ -118,6 +116,8 @@ def delete_registry_folders():
                 try:
                     winreg.DeleteKeyEx(key, subkey_name)
                     logging.info(f"Deleted key: {subkey_name}")
+                    # Do NOT increment i — deletion shifts subsequent keys down
+                    continue
                 except WindowsError as e:
                     logging.error(f"Failed to delete key {subkey_name}: {e}")
             i += 1
