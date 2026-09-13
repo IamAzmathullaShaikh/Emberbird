@@ -117,7 +117,13 @@ def main() -> int:
     if args.live:
         report["live"] = validate_magisk_live()
     elif not args.package_dir:
-        report["live"] = validate_magisk_live()
+        # CI offline mode: no package available and ADB not requested — emit
+        # a safe SKIPPED report instead of calling adb (which does not exist on
+        # standard GitHub Actions Ubuntu runners).
+        report["offline"] = {
+            "status": "SKIPPED",
+            "reason": "No package directory provided. Use --package-dir for offline or --live for ADB validation.",
+        }
 
     args.output_report.write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(f"[+] Magisk validation report written to {args.output_report}")
