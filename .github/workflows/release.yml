@@ -14,6 +14,25 @@ on:
         description: 'Target Variant Name'
         required: false
         default: 'Magisk_GApps_Retail_x64'
+  workflow_call:
+    inputs:
+      wsa_ver:
+        description: 'WSA Version (optional, e.g. 2407.40000.4.0)'
+        type: string
+        required: false
+      wsa_message:
+        description: 'Release note message or title'
+        type: string
+        required: false
+      variant:
+        description: 'Target Variant Name'
+        type: string
+        required: false
+        default: 'Magisk_GApps_Retail_x64'
+      tag_name:
+        description: 'Target Release Tag Name'
+        type: string
+        required: false
 
 concurrency:
   group: release-${{ github.ref }}
@@ -42,12 +61,24 @@ jobs:
         run: |
           python3 scripts/validate_package_identity.py --baseline config/baseline-identity.json
 
-      - name: Run Unit Tests
+      - name: Compile Python sources ⚙️
+        run: |
+          python3 -m compileall -q \
+            scripts \
+            config \
+            tests \
+            MagiskOnWSA/scripts \
+            "MagiskOnWSA/Update Check" \
+            MagiskOnWSAOld/scripts \
+            "WSABuilds Utilities/Update Script" \
+            "WSABuilds Utilities/Uninstall Script"
+
+      - name: Run Unit Tests 🧪
         run: |
           python3 -m unittest discover -s tests -v
 
   build-release-package:
-    name: Build WSA Package (Magisk Stable + OpenGApps Pico)
+    name: Build WSA Package (Magisk Stable + Pico GApps)
     needs: verify-quality-gates
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -87,9 +118,12 @@ jobs:
       - name: Compress Release Distribution (.7z) 🗜️
         run: |
           PKG_DIR=$(find MagiskOnWSA/output -maxdepth 1 -type d -name "WSA_*" | head -n 1)
-          if [ -n "$PKG_DIR" ] && [ ! -f "${PKG_DIR}.7z" ]; then
-            echo "[*] Compressing $PKG_DIR into 7z archive..."
-            7z a -mx=7 "${PKG_DIR}.7z" "$PKG_DIR"
+          if [ -n "$PKG_DIR" ]; then
+            PKG_NAME=$(basename "$PKG_DIR")
+            if [ ! -f "MagiskOnWSA/output/${PKG_NAME}.7z" ]; then
+              echo "[*] Compressing $PKG_NAME into 7z archive..."
+              (cd MagiskOnWSA/output && 7z a -mx=7 "${PKG_NAME}.7z" "${PKG_NAME}")
+            fi
           fi
 
       - name: Archive Built Packages 📦
@@ -120,11 +154,33 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Install Extraction Tools 🗜️
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y p7zip-full
+
       - name: Download Built Package Artifacts 📥
         uses: actions/download-artifact@v4
         with:
           name: wsa-built-distribution
           path: MagiskOnWSA/output
+
+      - name: Download Release Notes 📝
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: release-notes
+          path: .
+
+      - name: Extract Distribution Archive for Verification 🗜️
+        run: |
+          ARCHIVE=$(find MagiskOnWSA/output -maxdepth 1 -name "*.7z" | head -n 1)
+          if [ -n "$ARCHIVE" ]; then
+            echo "[*] Unpacking $ARCHIVE for deep partition integrity validation..."
+            7z x "$ARCHIVE" -oMagiskOnWSA/output/ -y
+          else
+            echo "[-] Warning: No .7z archive found to extract!"
+          fi
 
       - name: Validate Package Structural Integrity
         run: |
@@ -160,10 +216,33 @@ jobs:
             --version "${{ inputs.wsa_ver || '2407.40000.4.0' }}" \
             --variant "${{ inputs.variant || 'Magisk_GApps_Retail_x64' }}"
 
+      - name: Determine Target Release Tag & Title
+        id: release-info
+        run: |
+          if [ -n "${{ inputs.tag_name }}" ]; then
+            TAG="${{ inputs.tag_name }}"
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          else
+            TAG="Windows_11_${{ inputs.wsa_ver || '2407.40000.4.0' }}"
+          fi
+
+          if [ -n "${{ inputs.wsa_message }}" ]; then
+            TITLE="${{ inputs.wsa_message }}"
+          else
+            TITLE="Windows Subsystem For Android ${{ inputs.wsa_ver || '2407.40000.4.0' }} for Windows 11 x64"
+          fi
+
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "title=${TITLE}" >> "$GITHUB_OUTPUT"
+
       - name: Publish GitHub Release 🚀
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         with:
+          tag_name: ${{ steps.release-info.outputs.tag }}
+          name: ${{ steps.release-info.outputs.title }}
+          body_path: ${{ hashFiles('Windows11x64.md') != '' && 'Windows11x64.md' || '' }}
           files: |
             MagiskOnWSA/output/*.7z
             MagiskOnWSA/output/checksums.sha256

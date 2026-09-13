@@ -30,8 +30,8 @@ readonly MIN_MAGISK_VERSION_CODE=26000         # Magisk 26.0 minimum requirement
 # ---------------------------------------------------------------------------
 # GApps
 # ---------------------------------------------------------------------------
-readonly TARGET_GAPPS_VARIANT="pico"           # OpenGApps Pico
-readonly TARGET_GAPPS_SOURCE="opengapps"       # opengapps | mindthegapps
+readonly TARGET_GAPPS_VARIANT="pico"           # Minimal GApps (Play Store + GMS)
+readonly TARGET_GAPPS_SOURCE="wsa-addon"       # wsa-addon (LSPosed/WSA-Addon)
 
 # Android API level shipped by the current WSA generation.
 # WSA >= 2211 ships API 33 (Android 13); older builds ship API 32.
@@ -42,11 +42,10 @@ readonly ANDROID_API_MAP_30="11.0"
 readonly ANDROID_API_MAP_32="12.1"
 readonly ANDROID_API_MAP_33="13.0"
 
-# OpenGApps Pico for Android 13 x86_64 is published in the opengapps/x86_64
-# GitHub releases repo. The asset name follows the pattern:
-#   open_gapps-x86_64-13.0-pico-YYYYMMDD.zip
-readonly OPENGAPPS_GITHUB_OWNER="opengapps"
-readonly OPENGAPPS_GITHUB_REPO="x86_64"
+# GApps ext4 images and initrd mount scripts for Android 13 x86_64 are published
+# in the LSPosed/WSA-Addon releases repo and consumed by generateGappsLink.py.
+readonly GAPPS_ADDON_OWNER="LSPosed"
+readonly GAPPS_ADDON_REPO="WSA-Addon"
 
 # ---------------------------------------------------------------------------
 # Device model (used by fixGappsProp.py for GApps compatibility)

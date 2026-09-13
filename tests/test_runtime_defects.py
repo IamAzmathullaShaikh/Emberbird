@@ -140,6 +140,17 @@ class TestRuntimeDefectsRemediation(unittest.TestCase):
         asset_name = matching[0] if matching else "NOT_FOUND"
         self.assertEqual(asset_name, "open_gapps-x86_64-11.0-pico-20220215.zip")
 
+    def test_wsa_addon_gapps_discovery(self):
+        """Verify WSA-Addon release asset discovery matches Android 13 x86_64 img and rc files."""
+        import re
+
+        assets = ["cust.img", "gapps-13.0-arm64.img", "gapps-13.0-x86_64.img", "gapps-13.0.rc"]
+        img = next((a for a in assets if re.search(r"gapps.*13\.0.*x86_64.*\.img$", a, re.I)), "NOT_FOUND")
+        rc = next((a for a in assets if re.search(r"gapps.*13\.0.*\.rc$", a, re.I)), "NOT_FOUND")
+
+        self.assertEqual(img, "gapps-13.0-x86_64.img")
+        self.assertEqual(rc, "gapps-13.0.rc")
+
     # -------------------------------------------------------------------------
     # Defect RT-04: Invalid version cache handling (404 Not Found rejection)
     # -------------------------------------------------------------------------

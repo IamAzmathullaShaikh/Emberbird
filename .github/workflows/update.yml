@@ -74,52 +74,12 @@ jobs:
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
 
-      # Check OpenGApps Pico version — resilient discovery with fallback
-      - name: Check OpenGApps Pico version ☑️
+      # Check GApps version using repository-local script for LSPosed/WSA-Addon
+      - name: Check GApps (WSA-Addon) version ☑️
         run: |
-          echo "Checking latest OpenGApps Pico (x86_64) …"
-          python3 -c "
-          import json, os, re, sys, urllib.request
-
-          env_file = os.getenv('GITHUB_ENV')
-          api_url = 'https://api.github.com/repos/opengapps/x86_64/releases/latest'
-          headers = {'User-Agent': 'WSABuilds-UpdateCheck'}
-          token = os.getenv('GITHUB_TOKEN')
-          if token:
-              headers['Authorization'] = f'Bearer {token}'
-
-          tag = 'NOT_FOUND'
-          asset_name = 'NOT_FOUND'
-
-          try:
-              req = urllib.request.Request(api_url, headers=headers)
-              with urllib.request.urlopen(req, timeout=30) as resp:
-                  data = json.loads(resp.read().decode('utf-8'))
-              tag = data.get('tag_name') or 'NOT_FOUND'
-              raw_assets = [a.get('name', '') for a in data.get('assets', [])]
-              print(f'Release tag found: {tag}')
-              print(f'Total release assets: {len(raw_assets)}')
-              if raw_assets:
-                  print('Available assets: ' + ', '.join(raw_assets[:10]))
-                  matching = [a for a in raw_assets if re.search(r'pico.*x86_64|x86_64.*pico', a, re.I)]
-                  if matching:
-                      asset_name = matching[0]
-                      print(f'Matched OpenGApps asset: {asset_name}')
-                  else:
-                      print('No assets matching pico x86_64 pattern.')
-              else:
-                  print(f'Notice: Release {tag} contains no attached assets.')
-          except Exception as exc:
-              print(f'Error querying OpenGApps release: {exc}')
-
-          if env_file:
-              with open(env_file, 'a', encoding='utf-8') as f:
-                  f.write(f'OPENGAPPS_PICO_TAG={tag}\n')
-                  f.write(f'OPENGAPPS_PICO_ASSET={asset_name}\n')
-          print(f'OPENGAPPS_PICO_TAG={tag}')
-          print(f'OPENGAPPS_PICO_ASSET={asset_name}')
-          "
+          python3 "MagiskOnWSA/Update Check/GAppsAddonUpdateCheck.py"
         env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Check WSA retail version using repository-local script
@@ -136,8 +96,9 @@ jobs:
           echo "Component Versions & Update Status"
           echo "=========================================="
           echo "Magisk Version  : $MAGISK_STABLE_MSG"
-          echo "OpenGApps Tag   : $OPENGAPPS_PICO_TAG"
-          echo "OpenGApps Asset : $OPENGAPPS_PICO_ASSET"
+          echo "GApps Version   : $GAPPS_MSG"
+          echo "GApps Tag       : $GAPPS_TAG"
+          echo "GApps Asset     : $GAPPS_ASSET"
           echo "WSA Version     : $LATEST_RETAIL_VER"
           echo "Update Status   : $WSA_UPDATE_STATUS"
           echo "Build Triggered : $RETAIL_UPDATE"
@@ -145,8 +106,11 @@ jobs:
 
     outputs:
       MAGISK_STABLE_MSG:    ${{ env.MAGISK_STABLE_MSG }}
-      OPENGAPPS_PICO_TAG:   ${{ env.OPENGAPPS_PICO_TAG }}
-      OPENGAPPS_PICO_ASSET: ${{ env.OPENGAPPS_PICO_ASSET }}
+      GAPPS_TAG:            ${{ env.GAPPS_TAG }}
+      GAPPS_ASSET:          ${{ env.GAPPS_ASSET }}
+      GAPPS_RC:             ${{ env.GAPPS_RC }}
+      GAPPS_MSG:            ${{ env.GAPPS_MSG }}
+      GAPPS_VARIANT:        ${{ env.GAPPS_VARIANT }}
       RETAIL_UPDATE:        ${{ env.RETAIL_UPDATE }}
       LATEST_RETAIL_VER:    ${{ env.LATEST_RETAIL_VER }}
       WSA_UPDATE_STATUS:    ${{ env.WSA_UPDATE_STATUS }}
@@ -203,15 +167,15 @@ jobs:
           git push
 
   # ---------------------------------------------------------------------------
-  # check-and-create-tag — create the GitHub release tag & empty release shell
+  # prepare-release — check tag existence and format release notes
   # ---------------------------------------------------------------------------
-  check-and-create-tag:
-    name: Create release tag and shell
+  prepare-release:
+    name: Prepare release notes & verify tag
     runs-on: ubuntu-latest
     needs: [check, update-downloadlinks]
     timeout-minutes: 15
     permissions:
-      contents: write
+      contents: read
     if: inputs.wsa_ver != '' || needs.check.outputs.RETAIL_UPDATE == 'yes'
 
     steps:
@@ -255,8 +219,8 @@ jobs:
         env:
           GITHUB_WORKSPACE:     ${{ github.workspace }}
           MAGISK_STABLE_MSG:    ${{ needs.check.outputs.MAGISK_STABLE_MSG }}
-          OPENGAPPS_PICO_TAG:   ${{ needs.check.outputs.OPENGAPPS_PICO_TAG }}
-          OPENGAPPS_PICO_ASSET: ${{ needs.check.outputs.OPENGAPPS_PICO_ASSET }}
+          GAPPS_TAG:            ${{ needs.check.outputs.GAPPS_TAG }}
+          GAPPS_VARIANT:        ${{ needs.check.outputs.GAPPS_VARIANT }}
           WSA_VER:              ${{ env.WSA_VER }}
         run: |
           import os, re
@@ -277,15 +241,15 @@ jobs:
               "<<WSA ANDROID VERSION>>": "Android 13",
               "<<WSA_VER>>":             os.environ.get("WSA_VER", ""),
               "<<MAGISK STABLE VER>>":   os.environ.get("MAGISK_STABLE_MSG", ""),
-              "<<GAPPS VARIANT>>":       "OpenGApps Pico",
-              "<<GAPPS TAG>>":           os.environ.get("OPENGAPPS_PICO_TAG", ""),
+              "<<GAPPS VARIANT>>":       os.environ.get("GAPPS_VARIANT", "Pico (WSA-Addon)"),
+              "<<GAPPS TAG>>":           os.environ.get("GAPPS_TAG", "v2"),
           }
           for placeholder, value in substitutions.items():
               text = text.replace(placeholder, value)
 
-          text = re.sub(r"<<DATEOFRELEASE>>",   date,                              text)
-          text = re.sub(r"<<TIMEOFRELEASE>>",   time,                              text)
-          text = re.sub(r"<<REASONFORRELEASE>>","Scheduled update",                text)
+          text = re.sub(r"<<DATEOFRELEASE>>",    date,                              text)
+          text = re.sub(r"<<TIMEOFRELEASE>>",    time,                              text)
+          text = re.sub(r"<<REASONFORRELEASE>>", "Scheduled update",                text)
           text = re.sub(r"<<WSAANDROIDVERSION>>","Android 13",                     text)
           text = re.sub(r"<<MAGISKSTABLEVERSION>>",
                         os.environ.get("MAGISK_STABLE_MSG", "").replace("\\", ""), text)
@@ -294,26 +258,26 @@ jobs:
               f.write(text)
           print("Release notes updated.")
 
-      - name: Create GitHub release tag & empty release shell ✍🏼
-        uses: softprops/action-gh-release@v2
+      - name: Upload Release Notes 📤
+        uses: actions/upload-artifact@v4
         with:
-          tag_name:  ${{ env.WIN11X64_TAG }}
-          name:      "Windows Subsystem For Android ${{ inputs.wsa_message }} for Windows 11 x64"
-          body_path: ${{ github.workspace }}/Windows11x64.md
-          token:     ${{ secrets.GITHUB_TOKEN }}
+          name: release-notes
+          path: Windows11x64.md
 
   # ---------------------------------------------------------------------------
-  # build-retail-x64 — dispatch the single focused build
+  # build-and-publish-release — dispatch production release pipeline
   # ---------------------------------------------------------------------------
-  build-retail-x64:
-    name: Build — WSA x64 Magisk Stable + Pico GApps (Retail)
+  build-and-publish-release:
+    name: Build & Publish — WSA x64 Magisk Stable + Pico GApps
     permissions:
       contents: write
-    needs: [check, check-and-create-tag, update-downloadlinks]
+    needs: [check, update-downloadlinks, prepare-release]
     if: inputs.wsa_ver != '' || needs.check.outputs.RETAIL_UPDATE == 'yes'
 
-    uses: ./.github/workflows/build.yml
+    uses: ./.github/workflows/release.yml
     with:
       wsa_ver:     ${{ inputs.wsa_ver || needs.check.outputs.LATEST_RETAIL_VER }}
-      wsa_message: ${{ inputs.wsa_message }}
+      wsa_message: ${{ inputs.wsa_message || format('Windows Subsystem For Android {0} for Windows 11 x64', inputs.wsa_ver || needs.check.outputs.LATEST_RETAIL_VER) }}
+      variant:     'Magisk_GApps_Retail_x64'
+      tag_name:    'Windows_11_${{ inputs.wsa_ver || needs.check.outputs.LATEST_RETAIL_VER }}'
     secrets: inherit
