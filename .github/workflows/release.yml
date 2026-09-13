@@ -222,19 +222,29 @@ jobs:
 
       - name: Determine Target Release Tag & Title
         id: release-info
+        env:
+          INPUT_TAG_NAME: ${{ inputs.tag_name }}
+          INPUT_WSA_VER: ${{ inputs.wsa_ver }}
+          INPUT_WSA_MESSAGE: ${{ inputs.wsa_message }}
         run: |
-          if [ -n "${{ inputs.tag_name }}" ]; then
-            TAG="${{ inputs.tag_name }}"
-          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          TAG=""
+          if [ -n "$INPUT_TAG_NAME" ]; then
+            TAG="$INPUT_TAG_NAME"
+          elif [[ "$GITHUB_REF" == refs/tags/* ]]; then
             TAG="${GITHUB_REF#refs/tags/}"
+          elif [ -n "$INPUT_WSA_VER" ]; then
+            TAG="Windows_11_${INPUT_WSA_VER}"
           else
-            TAG="Windows_11_${{ inputs.wsa_ver || '2407.40000.4.0' }}"
+            TAG="Windows_11_2407.40000.4.0"
           fi
 
-          if [ -n "${{ inputs.wsa_message }}" ]; then
-            TITLE="${{ inputs.wsa_message }}"
+          TITLE=""
+          if [ -n "$INPUT_WSA_MESSAGE" ]; then
+            TITLE="$INPUT_WSA_MESSAGE"
+          elif [ -n "$INPUT_WSA_VER" ]; then
+            TITLE="Windows Subsystem For Android ${INPUT_WSA_VER} for Windows 11 x64"
           else
-            TITLE="Windows Subsystem For Android ${{ inputs.wsa_ver || '2407.40000.4.0' }} for Windows 11 x64"
+            TITLE="Windows Subsystem For Android 2407.40000.4.0 for Windows 11 x64"
           fi
 
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
