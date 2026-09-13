@@ -1,0 +1,80 @@
+---
+// IntegrityModal.astro - Download Hash Verification & Integrity Guidance
+---
+
+<div id="integrity-modal" class="fixed inset-0 z-50 hidden bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl">
+    <div class="p-6 border-b border-slate-800 flex items-center justify-between">
+      <h3 class="text-lg font-bold text-white flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+        Package Verification & Integrity
+      </h3>
+      <button id="close-integrity-modal" class="text-slate-400 hover:text-white text-sm font-semibold">
+        Close
+      </button>
+    </div>
+
+    <div class="p-6 space-y-5 text-sm text-slate-300">
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
+          Package File
+        </label>
+        <div id="modal-filename" class="font-mono text-xs text-indigo-300 bg-slate-950 p-2.5 rounded-lg border border-slate-800 break-all">
+          -
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
+          SHA-256 Digest
+        </label>
+        <div id="modal-sha256" class="font-mono text-xs text-slate-300 bg-slate-950 p-2.5 rounded-lg border border-slate-800 break-all">
+          Verify via official release digest file
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
+          Verify in Windows PowerShell
+        </label>
+        <pre id="modal-ps-cmd" class="bg-slate-950 p-3 rounded-lg text-xs font-mono text-emerald-400 border border-slate-800 overflow-x-auto">Get-FileHash -Algorithm SHA256 -Path ".\package.7z"</pre>
+      </div>
+
+      <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300/90 leading-relaxed">
+        <strong>Security Notice:</strong> Always confirm the computed SHA-256 hash matches the release digest prior to running installation scripts. Never execute unverified packages.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const modal = document.getElementById('integrity-modal');
+  const closeBtn = document.getElementById('close-integrity-modal');
+  const filenameEl = document.getElementById('modal-filename');
+  const shaEl = document.getElementById('modal-sha256');
+  const psCmdEl = document.getElementById('modal-ps-cmd');
+
+  closeBtn?.addEventListener('click', () => {
+    modal?.classList.add('hidden');
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal?.classList.contains('hidden')) {
+      modal?.classList.add('hidden');
+    }
+  });
+
+  // Global trigger function for table rows
+  (window as any).openIntegrityModal = (filename: string, sha?: string) => {
+    if (filenameEl) filenameEl.textContent = filename;
+    if (shaEl) {
+      shaEl.textContent = sha && sha !== 'undefined'
+        ? sha
+        : 'SHA-256 digest is published in the release assets bundle';
+    }
+    if (psCmdEl) {
+      psCmdEl.textContent = `Get-FileHash -Algorithm SHA256 -Path ".\${filename}"`;
+    }
+    modal?.classList.remove('hidden');
+  };
+</script>
