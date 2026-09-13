@@ -11,4 +11,3 @@
 *.so binary
 *.apk binary
 linker64 binary
-*.so binary
