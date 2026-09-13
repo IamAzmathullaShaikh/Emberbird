@@ -25,6 +25,11 @@ Does this change alter existing behavior or require user migration?
 Before submitting, please confirm:
 - [ ] Code compiles cleanly without errors or warnings.
 - [ ] Offline unit test suite passes: `python -m unittest discover -s tests -v`
+- [ ] Website unit tests pass: `npm test --prefix website`
+- [ ] Manager unit tests pass: `npm test --prefix apps/manager`
+- [ ] Distribution & Winget manifests validate: `python scripts/validate_distribution.py`
+- [ ] Privacy-first analytics validate: `python scripts/validate_analytics.py`
+- [ ] Compatibility database validates: `python scripts/validate_compatibility.py`
 - [ ] Markdown link integrity verified: `python scripts/check_doc_links.py`
 - [ ] Security and secret audit verified: `python scripts/security_scan.py`
 - [ ] Zero hardcoded personal access tokens, credentials, or machine-specific paths.

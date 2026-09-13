@@ -1,54 +1,50 @@
-# WSABuilds &nbsp; &nbsp; <img src="https://img.shields.io/github/downloads/MustardChef/WSABuilds/total?label=Total%20Downloads&style=for-the-badge"/> &nbsp; 
+# WSABuilds &nbsp; &nbsp; <img src="https://img.shields.io/github/downloads/IamAzmathullaShaikh/WSABuilds/total?label=Total%20Downloads&style=for-the-badge"/> &nbsp; 
 
 <picture><img style="float: left;" src="https://img.icons8.com/fluency/96/cloud-backup-restore.png" width="60" height="60"/></picture><h1> &nbsp; Backup and Restore Userdata</h1>
 
-## Backing Up Your Userdata
-      
-In order to make a backup of your WSA data you must copy the ``Userdata.vhdx`` (which includes, but is not limited Android Apps and their data, settings etc.), located at ``%LOCALAPPDATA%\Packages\MicrosoftCorporationII.WindowsSubsystemForAndroid_8wekyb3d8bbwe\LocalCache\userdata.vhdx``, to a safe location     
-      
-## Restoring Your Backup
+This guide provides instructions for backing up and restoring your WSA user data (`userdata.vhdx`), which stores installed Android applications, settings, game saves, and accounts.
 
-Before attempting to restore your backup, you must remove WSA if installed. Then before you run the ``Run.bat`` script (to reinstall WSA after removing it), you need to remove these lines from ``Install.ps1``, located in the your extracted WSA folder:
-      
-      
-> [!TIP]
-> The Lines (as shown below) that you need to remove in ``Install.ps1`` may vary depending on the type of WSA Build that you are trying to install.    
-      
+---
 
-#### Android Settings:
-```pwsh
-Start-Process "wsa://com.android.settings"
-```
-#### Official Magisk:
-```pwsh
-Start-Process "wsa://com.topjohnwu.magisk"
-```
-#### Magisk Delta:
-```pwsh
-Start-Process "wsa://io.github.huskydg.magisk"
-```
-#### Magisk Alpha:
-```pwsh
-Start-Process "wsa://io.github.vvb2060.magisk"
-```
-#### Google Play Store:
-```pwsh
-Start-Process "wsa://com.android.vending"
-```
-#### Amazon Appstore:
-```pwsh
-Start-Process "wsa://com.amazon.venezia"
-``` 
+## Method 1: WSABuilds Manager (Recommended)
 
-After removing the lines above, run the script. 
+WSABuilds Manager provides automated, atomic cold VHDX backups with checksum verification and rollback safety.
 
-When the Powershell window states "Press any key to quit", at that time multiple dialouge boxes will open:
+### Creating a Backup
+1. Launch **WSABuilds Manager**.
+2. Navigate to the **Backups** tab.
+3. Ensure WSA is not running (WSABuilds Manager automatically performs a shutdown check).
+4. Click **Create Backup**.
+5. The engine verifies file lock release, streams `userdata.vhdx` to the backup directory, records SHA-256 integrity checksums, and saves retention metadata.
 
-![image](https://github.com/MustardChef/WSABuilds/assets/68516357/53ba5738-a504-4c31-a414-40258180ee09)
+### Restoring a Backup
+1. Open the **Backups** tab in **WSABuilds Manager**.
+2. Select a verified backup candidate from the candidate list.
+3. Click **Restore**.
+4. The restore coordinator validates the backup archive checksum, creates a safety rollback snapshot (`.pre_restore.bak`), writes the candidate, and confirms filesystem integrity.
 
-> [!IMPORTANT]
-> ****Ignore these and do not click on anything or close these popups****
+---
 
-Go to ``%localappdata%\Packages`` and (if these folders/directory do not exist, create them) in ``MicrosoftCorporationII.WindowsSubsystemForAndroid_8wekyb3d8bbwe\LocalCache\`` paste the userdata.vhdx
+## Method 2: Manual Backup and Restore
 
-Now close the popups and run WSA and your userdata should hopefully be restored
+If you prefer performing manual file operations via Windows Explorer or PowerShell:
+
+### Backing Up Manually
+1. Stop WSA completely:
+   - Open **Windows Subsystem for Android™ Settings**.
+   - Click **Turn off Windows Subsystem for Android™**.
+2. Wait 10 seconds to ensure the VHDX file handle is released.
+3. Copy `userdata.vhdx` from:
+   ```text
+   %LOCALAPPDATA%\Packages\MicrosoftCorporationII.WindowsSubsystemForAndroid_8wekyb3d8bbwe\LocalCache\userdata.vhdx
+   ```
+   to a secure backup folder.
+
+### Restoring Manually
+1. Fully terminate WSA using `WsaClient.exe /shutdown` or WSA Settings.
+2. Verify that no processes (`WsaService.exe`, `vmmemWSL`) are holding locks on `userdata.vhdx`.
+3. Copy your saved `userdata.vhdx` into:
+   ```text
+   %LOCALAPPDATA%\Packages\MicrosoftCorporationII.WindowsSubsystemForAndroid_8wekyb3d8bbwe\LocalCache\userdata.vhdx
+   ```
+4. Launch WSA. Your apps and data will be restored.
