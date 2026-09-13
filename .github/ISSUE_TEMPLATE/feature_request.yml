@@ -1,11 +1,74 @@
-name: Feature request 
-description: Suggest an idea for this project or Prebuilt WSA Build that you want to be added to Releases
-title: "[REQUEST]"
-labels: enhancement
+name: Feature Request
+description: Propose an idea, automation improvement, or platform enhancement for WSABuilds.
+title: "[FEATURE]: <Short summary of proposal>"
+labels: ["enhancement", "needs-triage"]
 body:
-    - type: textarea
-      id: description
-      attributes:
-        label: Describe your request
-      validations:
-        required: true
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for proposing a feature!
+        
+        **Guiding Rule**: Every proposal must pass the mission test:
+        *"Will this help users install, update, manage, or troubleshoot WSA more easily?"*
+
+  - type: textarea
+    id: problem_statement
+    attributes:
+      label: Problem Statement
+      description: What user problem, friction point, or maintenance challenge does this feature solve?
+      placeholder: "Users currently struggle with..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed Solution
+      description: A clear, detailed explanation of how this feature should work.
+      placeholder: "Implement an automated workflow / client feature that..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: user_segment
+    attributes:
+      label: Primary User Segment Impacted
+      description: Which user group benefits most from this change?
+      options:
+        - "Everyday Desktop Users (Non-technical consumers)"
+        - "Fintech & Banking App Users (India / Regional UPI users)"
+        - "Power Users & Developers (Root, ADB, modding)"
+        - "Project Maintainers & DevOps (Automation, reliability, CI/CD)"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: differentiator_alignment
+    attributes:
+      label: Platform Differentiator Alignment
+      description: "Check all core goals this proposal supports:"
+      options:
+        - label: "Automates repetitive maintenance or upstream synchronization"
+        - label: "Simplifies installation, update, or backup experience"
+        - label: "Improves application compatibility or Play Integrity success"
+        - label: "Enhances documentation or troubleshooting clarity"
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives_considered
+    attributes:
+      label: Alternatives Considered
+      description: What other approaches or workarounds were considered and why were they rejected?
+      placeholder: "Considered using a batch script, but rejected because..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: Add mockups, references, technical links, or screenshots here.
+      placeholder: "Links to documentation, related issues, or specifications..."
+    validations:
+      required: false

@@ -1,55 +1,108 @@
 name: Bug Report
-description: Create a report to receive assistance with any issues that you face during the installation of WSA and/or during the use of WSA.
-title: "[BUG]"
-labels: bug
-
+description: File a reproducible bug report to help us fix issues with WSABuilds.
+title: "[BUG]: <Short summary of issue>"
+labels: ["bug", "needs-triage"]
 body:
-  - type: textarea
-    id: description
+  - type: markdown
     attributes:
-      label: Describe the bug 
-      description: A clear and concise description of what the bug is. Include screenshots if possible. 
-    validations:
-      required: true
-  - type: textarea
-    id: reproduce
-    attributes:
-      label: Steps to reproduce the issue 
-      description: Include steps to reproduce the behaviour.
-    validations:
-      required: true
-  - type: textarea
-    id: expected
-    attributes:
-      label: Expected behaviour 
-      description: A clear and concise description of what you expected to happen. 
-    validations:
-      required: true
-  - type: textarea
-    id: source
-    attributes:
-      label: Downloaded Build Of WSA 
-      description: Which build of WSA did you download? Provide the name of the .zip/.7z file, and the link to the download page if possible. 
-    validations:
-      required: true
+      value: |
+        Thank you for taking the time to report an issue!
+        
+        Before submitting:
+        1. Check the [Troubleshooting Guide](https://github.com/IamAzmathullaShaikh/WSABuilds/blob/master/TROUBLESHOOTING.md) and [Error Codes Guide](https://github.com/IamAzmathullaShaikh/WSABuilds/blob/master/docs/troubleshooting/error-codes.md).
+        2. Search [Existing Issues](https://github.com/IamAzmathullaShaikh/WSABuilds/issues) to prevent duplicate reports.
+        3. Confirm Hardware Virtualization is enabled in your BIOS/UEFI.
+
   - type: input
-    id: winbuild
-    attributes: 
-      label: Windows build number 
-      description: You can find the build number by typing winver in the Windows search box. 
-    validations:
-      required: true
-  - type: textarea
-    id: pcspecs
-    attributes: 
-      label: PC Specification 
-      description: You can find your PC Specification by searching for msinfo32 in Windows Search and click the top result to open the System Information app. 
-    validations:
-      required: true
-  - type: textarea
-    id: other
+    id: win_ver
     attributes:
-      label: Additional context 
-      description: Add any other context about the problem here. 
+      label: Windows OS Version & Build
+      description: Run `winver` in Windows Search or terminal and paste the full version string.
+      placeholder: "e.g. Windows 11 Pro 23H2 (OS Build 22631.3296)"
+    validations:
+      required: true
+
+  - type: input
+    id: wsa_flavor
+    attributes:
+      label: WSA Release Package & Flavor
+      description: The exact release zip or build string you downloaded.
+      placeholder: "e.g. WSA_2311.40000.5.0_x64_Magisk-v30.6_GApps-Pico"
+    validations:
+      required: true
+
+  - type: input
+    id: hardware
+    attributes:
+      label: Hardware Specifications (CPU & GPU)
+      description: Your processor architecture and graphics cards.
+      placeholder: "e.g. Intel Core i7-12700H, NVIDIA RTX 3060 Laptop GPU / Intel Iris Xe"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install_method
+    attributes:
+      label: Installation Method
+      description: How did you install or update WSA?
+      options:
+        - "WSABuilds Manager Desktop Application"
+        - "Scripted Install.ps1 (Run with PowerShell)"
+        - "Manual AppxManifest registration (Add-AppxPackage)"
+        - "Other / Custom script"
+    validations:
+      required: true
+
+  - type: textarea
+    id: bug_desc
+    attributes:
+      label: Bug Description
+      description: A clear, concise explanation of what unexpected behavior occurred.
+      placeholder: "Describe what went wrong..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro_steps
+    attributes:
+      label: Steps to Reproduce
+      description: Step-by-step instructions to reproduce the problem.
+      placeholder: |
+        1. Extract release package to C:\WSA
+        2. Right click Install.ps1 -> Run with PowerShell
+        3. Observe error dialog during package registration
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen instead.
+      placeholder: "WSA should launch and display Google Play Store sign-in screen."
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs_errors
+    attributes:
+      label: Logs, Error Codes, or Terminal Output
+      description: Paste any PowerShell errors, logcat output, or error codes (e.g. 0x80370102, 0x80073CF9).
+      placeholder: "Paste logs or error text here..."
     validations:
       required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Environment Checklist
+      description: "Please verify each prerequisite before filing:"
+      options:
+        - label: "Hardware virtualization (Intel VT-x / AMD SVM) is enabled in BIOS/UEFI."
+          required: true
+        - label: "Virtual Machine Platform Windows feature is enabled."
+          required: true
+        - label: "I have reviewed docs/troubleshooting/error-codes.md for known resolutions."
+          required: true
+        - label: "I tested a clean system reboot before reporting."
+          required: false

@@ -1,77 +1,109 @@
 name: App Compatibility Report
-description: Report an Android application compatibility result or workaround on WSA.
-title: "[Compat]: <App Name> - <Working / Workaround / Broken>"
+description: Submit verified compatibility results or configuration workarounds for an Android application on WSA.
+title: "[Compat]: <App Name> - <Working / Workaround Required / Broken>"
 labels: ["compatibility", "needs-triage"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thank you for submitting an application compatibility report! Your report helps build the community compatibility matrix on [wsabuilds.azmathulla.dev](https://wsabuilds.azmathulla.dev/compatibility).
+        Thank you for helping build the community compatibility database! Your report will be verified and added to `compatibility/data/<AppName>.json`.
+
   - type: input
     id: app_name
     attributes:
       label: Application Name
-      description: The official name of the application.
-      placeholder: e.g. PhonePe / SBI YONO / WhatsApp
+      description: Official name of the Android app.
+      placeholder: "e.g. PhonePe / SBI YONO / Paytm / Netflix"
     validations:
       required: true
+
   - type: input
     id: package_id
     attributes:
-      label: Package Name / Application ID
-      description: The Android package ID (from Google Play Store URL).
-      placeholder: e.g. com.phonepe.app
+      label: Android Package Identifier (Application ID)
+      description: Found in the Google Play Store URL (e.g. https://play.google.com/store/apps/details?id=com.example.app).
+      placeholder: "e.g. com.phonepe.app"
     validations:
       required: true
+
   - type: dropdown
     id: status
     attributes:
       label: Compatibility Status
-      description: What is the current operational status of the app?
+      description: Operational status of the app under WSA.
       options:
-        - "Working (Runs out of the box with zero issues)"
-        - "Workaround Required (Runs after specific Magisk / Zygisk / DenyList steps)"
-        - "Broken (Crashes on launch / Root detected / Won't open)"
+        - "Working (Runs out of the box with zero modifications)"
+        - "Workaround Required (Runs after specific Magisk / Zygisk / DenyList configuration)"
+        - "Broken (Crashes on launch / Root detected / Hardware attestation blocked)"
     validations:
       required: true
+
   - type: dropdown
-    id: root_solution
+    id: category
     attributes:
-      label: Root Integration Used
-      description: Which WSA release flavor are you running?
+      label: Application Category
+      description: Primary classification of the app.
       options:
-        - "Magisk Stable"
-        - "KernelSU"
-        - "No Root"
+        - "Banking & UPI"
+        - "Social & Communication"
+        - "Productivity & Office"
+        - "Streaming & Media"
+        - "Gaming"
+        - "Utilities & Tools"
     validations:
       required: true
+
+  - type: input
+    id: tested_version
+    attributes:
+      label: Tested WSA Release Version
+      description: The WSA build version you conducted testing on.
+      placeholder: "e.g. 2311.40000.5.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: root_flavor
+    attributes:
+      label: Tested Root Flavor
+      description: Which build flavor was used?
+      options:
+        - "Magisk Stable (v30.6+)"
+        - "KernelSU"
+        - "No Root (Vanilla WSA)"
+    validations:
+      required: true
+
   - type: dropdown
     id: play_integrity
     attributes:
       label: Play Integrity Status
-      description: Does this app require Play Integrity attestation?
+      description: Does this application require Play Integrity attestation?
       options:
-        - "Yes - Passes MEETS_DEVICE_INTEGRITY (with PIF)"
-        - "Yes - Fails Play Integrity"
+        - "Yes - Passes MEETS_DEVICE_INTEGRITY (with PIF module)"
+        - "Yes - Fails Play Integrity (Hardware backed attestation required)"
         - "No / Not Applicable"
     validations:
       required: true
+
   - type: textarea
     id: workaround_steps
     attributes:
-      label: Configuration / Workaround Steps
-      description: If a workaround is required, describe the exact toggles, modules, or settings needed.
+      label: Workaround Instructions (If applicable)
+      description: Step-by-step instructions to get the application working.
       placeholder: |
         1. Enable Zygisk in Magisk settings.
-        2. Install PlayIntegrityFix module.
-        3. Add app to Magisk DenyList.
+        2. Install PlayIntegrityFix module (v17.0+).
+        3. Add application to Magisk DenyList.
+        4. Disable USB Debugging in WSA Advanced Settings.
     validations:
       required: false
-  - type: input
-    id: wsa_version
+
+  - type: textarea
+    id: known_issues
     attributes:
-      label: WSA Release Version
-      description: The WSA build version you tested on.
-      placeholder: e.g. 2311.40000.5.0
+      label: Known Limitations / Symptoms
+      description: Any observed limitations (e.g. biometric login unavailable, notifications delayed).
+      placeholder: "Biometric login falls back to PIN. Video DRM restricted to SD."
     validations:
-      required: true
+      required: false
