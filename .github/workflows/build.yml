@@ -65,7 +65,8 @@ jobs:
             MagiskOnWSA/scripts \
             "MagiskOnWSA/Update Check" \
             "WSABuilds Utilities/Update Script" \
-            "WSABuilds Utilities/Uninstall Script"
+            "WSABuilds Utilities/Uninstall Script" \
+            services
 
       - name: Install Test Dependencies 📦
         run: |

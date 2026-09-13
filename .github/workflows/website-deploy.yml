@@ -7,12 +7,14 @@ on:
       - 'website/**'
       - 'docs/**'
       - 'compatibility/**'
+      - 'services/analytics/**'
   pull_request:
     branches: [master, experimental]
     paths:
       - 'website/**'
       - 'docs/**'
       - 'compatibility/**'
+      - 'services/analytics/**'
   workflow_dispatch:
 
 concurrency:
