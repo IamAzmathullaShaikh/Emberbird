@@ -35,7 +35,7 @@ cd MagiskOnWSA
 | `--arch <arch>` | Target CPU architecture (`x64` or `arm64`) | `x64` |
 | `--release-type <type>` | WSA channel (`retail`, `RP`, `WIS`, `WIF`) | `retail` |
 | `--magisk-ver <ver>` | Magisk release channel (`stable`, `beta`, `canary`) | `stable` |
-| `--gapps-brand <brand>` | GApps variant (`MindTheGapps`, `OpenGApps`, `none`) | `OpenGApps` |
+| `--gapps-brand <brand>` | GApps variant (`OpenGApps` Pico locked; `MindTheGapps` is obsolete and unsupported) | `OpenGApps` |
 | `--compress-format <fmt>` | Output archive format (`7z`, `zip`, `none`) | `7z` |
 | `--offline` | Skip downloading if archives already exist in `download/` | Disabled |
 
