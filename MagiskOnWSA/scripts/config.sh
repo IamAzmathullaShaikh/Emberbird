@@ -16,22 +16,22 @@
 # ---------------------------------------------------------------------------
 # Architecture & WSA release channel
 # ---------------------------------------------------------------------------
-readonly TARGET_ARCH="x64"
-readonly TARGET_ARCH_NATIVE="x86_64"          # used by GApps / OpenGApps naming
-readonly TARGET_RELEASE_TYPE="retail"
+TARGET_ARCH="${TARGET_ARCH:-x64}"
+TARGET_ARCH_NATIVE="${TARGET_ARCH_NATIVE:-x86_64}"          # used by GApps / OpenGApps naming
+TARGET_RELEASE_TYPE="${TARGET_RELEASE_TYPE:-retail}"
 
 # ---------------------------------------------------------------------------
 # Root solution
 # ---------------------------------------------------------------------------
-readonly TARGET_ROOT_SOL="magisk"
-readonly TARGET_MAGISK_VER="stable"
-readonly MIN_MAGISK_VERSION_CODE=26000         # Magisk 26.0 minimum requirement
+TARGET_ROOT_SOL="${TARGET_ROOT_SOL:-magisk}"
+TARGET_MAGISK_VER="${TARGET_MAGISK_VER:-stable}"
+MIN_MAGISK_VERSION_CODE=26000         # Magisk 26.0 minimum requirement
 
 # ---------------------------------------------------------------------------
 # GApps
 # ---------------------------------------------------------------------------
-readonly TARGET_GAPPS_VARIANT="pico"           # Minimal GApps (Play Store + GMS)
-readonly TARGET_GAPPS_SOURCE="wsa-addon"       # wsa-addon (LSPosed/WSA-Addon)
+TARGET_GAPPS_VARIANT="${TARGET_GAPPS_VARIANT:-pico}"           # Minimal GApps (Play Store + GMS)
+TARGET_GAPPS_SOURCE="${TARGET_GAPPS_SOURCE:-wsa-addon}"       # wsa-addon (LSPosed/WSA-Addon)
 
 # Android API level shipped by the current WSA generation.
 # WSA >= 2211 ships API 33 (Android 13); older builds ship API 32.

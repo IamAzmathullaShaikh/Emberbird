@@ -81,12 +81,24 @@ jobs:
           python3 -m unittest discover -s tests -v
 
   build-release-package:
-    name: Build WSA Package (Magisk Stable + Pico GApps)
+    name: Build WSA Package (${{ matrix.edition_name }})
     needs: verify-quality-gates
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
       contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - root_sol: magisk
+            gapps: pico
+            edition_name: Standard Edition (x64 Magisk + Pico)
+            artifact_key: standard
+          - root_sol: none
+            gapps: pico
+            edition_name: Banking Edition (x64 Vanilla + Pico)
+            artifact_key: vanilla
     steps:
       - name: Checkout 🔄
         uses: actions/checkout@v4
@@ -116,7 +128,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd MagiskOnWSA/scripts
-          bash build.sh --compress-format 7z
+          bash build.sh --root-sol ${{ matrix.root_sol }} --gapps ${{ matrix.gapps }} --compress-format 7z
 
       - name: Compress Release Distribution (.7z) 🗜️
         run: |
@@ -132,7 +144,7 @@ jobs:
       - name: Archive Built Packages 📦
         uses: actions/upload-artifact@v4
         with:
-          name: wsa-built-distribution
+          name: wsa-built-distribution-${{ matrix.artifact_key }}
           path: |
             MagiskOnWSA/output/*.7z
             MagiskOnWSA/output/WSA_*/AppxManifest.xml
@@ -165,8 +177,9 @@ jobs:
       - name: Download Built Package Artifacts 📥
         uses: actions/download-artifact@v4
         with:
-          name: wsa-built-distribution
+          pattern: wsa-built-distribution-*
           path: MagiskOnWSA/output
+          merge-multiple: true
 
       - name: Download Release Notes 📝
         uses: actions/download-artifact@v4
@@ -175,49 +188,59 @@ jobs:
           name: release-notes
           path: .
 
-      - name: Extract Distribution Archive for Verification 🗜️
+      - name: Extract Distribution Archives for Verification 🗜️
         run: |
-          ARCHIVE=$(find MagiskOnWSA/output -maxdepth 1 -name "*.7z" | head -n 1)
-          if [ -n "$ARCHIVE" ]; then
-            echo "[*] Unpacking $ARCHIVE for deep partition integrity validation..."
-            7z x "$ARCHIVE" -oMagiskOnWSA/output/ -y
-          else
-            echo "[-] Warning: No .7z archive found to extract!"
-          fi
+          for ARCHIVE in MagiskOnWSA/output/*.7z; do
+            if [ -f "$ARCHIVE" ]; then
+              echo "[*] Unpacking $ARCHIVE for deep partition integrity validation..."
+              7z x "$ARCHIVE" -oMagiskOnWSA/output/ -y
+            fi
+          done
 
       - name: Validate Package Structural Integrity
         run: |
-          PKG_DIR=$(find MagiskOnWSA/output -maxdepth 1 -type d -name "WSA_*" | head -n 1)
-          if [ -z "$PKG_DIR" ]; then
-            echo "[-] Error: Built package directory not found in artifacts!" >&2
-            exit 2
-          fi
-          echo "[*] Found package directory: $PKG_DIR"
-          python3 scripts/validate_package_integrity.py --package-dir "$PKG_DIR" --require-package
+          for PKG_DIR in MagiskOnWSA/output/WSA_*/; do
+            if [ -d "$PKG_DIR" ]; then
+              echo "[*] Validating structural integrity for: $PKG_DIR"
+              python3 scripts/validate_package_integrity.py --package-dir "$PKG_DIR" --require-package
+            fi
+          done
 
       - name: Validate Package Identity
         run: |
-          PKG_DIR=$(find MagiskOnWSA/output -maxdepth 1 -type d -name "WSA_*" | head -n 1)
-          python3 scripts/validate_package_identity.py --package-dir "$PKG_DIR" --require-manifest
+          for PKG_DIR in MagiskOnWSA/output/WSA_*/; do
+            if [ -d "$PKG_DIR" ]; then
+              echo "[*] Validating package identity for: $PKG_DIR"
+              python3 scripts/validate_package_identity.py --package-dir "$PKG_DIR" --require-manifest
+            fi
+          done
 
-      - name: Validate Magisk Trampoline
+      - name: Validate Magisk & Trampoline Integration
         run: |
-          PKG_DIR=$(find MagiskOnWSA/output -maxdepth 1 -type d -name "WSA_*" | head -n 1)
-          python3 scripts/validate_magisk.py --package-dir "$PKG_DIR"
+          for PKG_DIR in MagiskOnWSA/output/WSA_*/; do
+            if [ -d "$PKG_DIR" ]; then
+              echo "[*] Validating ramdisk integration for: $PKG_DIR"
+              python3 scripts/validate_magisk.py --package-dir "$PKG_DIR"
+            fi
+          done
 
       - name: Validate GApps Integration
         run: |
-          PKG_DIR=$(find MagiskOnWSA/output -maxdepth 1 -type d -name "WSA_*" | head -n 1)
-          python3 scripts/validate_gapps.py --package-dir "$PKG_DIR"
+          for PKG_DIR in MagiskOnWSA/output/WSA_*/; do
+            if [ -d "$PKG_DIR" ]; then
+              echo "[*] Validating GApps integration for: $PKG_DIR"
+              python3 scripts/validate_gapps.py --package-dir "$PKG_DIR"
+            fi
+          done
 
       - name: Generate Checksums and Release Metadata 📊
         run: |
-          PKG_DIR=$(find MagiskOnWSA/output -maxdepth 1 -type d -name "WSA_*" | head -n 1)
+          PRIMARY_PKG=$(find MagiskOnWSA/output -maxdepth 1 -type d -name "WSA_*" | head -n 1)
           python3 scripts/generate_release_metadata.py \
-            --package-dir "$PKG_DIR" \
+            --package-dir "$PRIMARY_PKG" \
             --output-dir MagiskOnWSA/output \
             --version "${{ inputs.wsa_ver || '2407.40000.4.0' }}" \
-            --variant "${{ inputs.variant || 'Magisk_GApps_Retail_x64' }}"
+            --variant "${{ inputs.variant || 'Tier1_MultiConfig_Retail_x64' }}"
 
       - name: Determine Target Release Tag & Title
         id: release-info

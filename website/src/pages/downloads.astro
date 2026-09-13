@@ -94,6 +94,45 @@ const wingetInstallCmd = `winget install ${managerMeta.winget_package_id}`;
       </div>
     </div>
 
+    <!-- Tier 1 Multi-Configuration Editions Showcase -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+      <div class="bg-slate-900 border border-indigo-500/30 rounded-xl p-6 relative overflow-hidden">
+        <div class="flex items-center justify-between mb-3">
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+            Tier 1 • Primary Edition
+          </span>
+          <span class="text-xs text-slate-400 font-mono">x64</span>
+        </div>
+        <h3 class="text-lg font-bold text-white mb-2">Standard Edition (Magisk + Pico)</h3>
+        <p class="text-xs text-slate-300 leading-relaxed mb-4">
+          Pre-rooted with official Magisk Stable (v30.6+) and OpenGApps Pico. Recommended for developers, modders, and power users who require root privilege management (UID 0 shell access).
+        </p>
+        <ul class="text-xs text-slate-400 space-y-1.5 list-disc list-inside">
+          <li>Full Magisk root daemon with automated ADB authorization</li>
+          <li>Google Play Store and Google Play Services (Pico)</li>
+          <li>Pixel 5 device fingerprint spoofing for Play Protect</li>
+        </ul>
+      </div>
+
+      <div class="bg-slate-900 border border-emerald-500/30 rounded-xl p-6 relative overflow-hidden">
+        <div class="flex items-center justify-between mb-3">
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            Tier 1 • Enterprise & Banking
+          </span>
+          <span class="text-xs text-slate-400 font-mono">x64</span>
+        </div>
+        <h3 class="text-lg font-bold text-white mb-2">Banking Edition (Vanilla + Pico)</h3>
+        <p class="text-xs text-slate-300 leading-relaxed mb-4">
+          Unrooted early-boot ramdisk with OpenGApps Pico. Built for users running financial, banking, government, and enterprise apps that strictly enforce root detection and Play Integrity.
+        </p>
+        <ul class="text-xs text-slate-400 space-y-1.5 list-disc list-inside">
+          <li>100% clean ramdisk: zero Magisk binaries, su daemons, or scripts</li>
+          <li>Full Google Play Store and Google Play Services (Pico)</li>
+          <li>Ideal for banking apps, OTT streaming, and corporate MDM</li>
+        </ul>
+      </div>
+    </div>
+
     {release ? (
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 mb-10">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6 mb-6">
@@ -126,13 +165,12 @@ const wingetInstallCmd = `winget install ${managerMeta.winget_package_id}`;
 
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-              Root Flavor
+              Root Flavor / Edition
             </label>
             <select id="filter-root" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-              <option value="all" selected>All Root Solutions</option>
-              <option value="Magisk">Magisk Stable</option>
-              <option value="KernelSU">KernelSU</option>
-              <option value="NoRoot">No Root (Vanilla)</option>
+              <option value="all" selected>All Editions</option>
+              <option value="Magisk">Standard Edition (Magisk Root)</option>
+              <option value="NoRoot">Banking Edition (Vanilla / No Root)</option>
             </select>
           </div>
 
@@ -142,9 +180,7 @@ const wingetInstallCmd = `winget install ${managerMeta.winget_package_id}`;
             </label>
             <select id="filter-gapps" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
               <option value="all" selected>All GApps Variants</option>
-              <option value="GApps-Pico">GApps Pico (Play Store)</option>
-              <option value="MindTheGapps">MindTheGapps</option>
-              <option value="NoGApps">No GApps (AOSP)</option>
+              <option value="GApps-Pico">OpenGApps Pico (Play Store)</option>
             </select>
           </div>
         </div>
