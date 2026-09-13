@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "app_name": "Example App",
+  "package_id": "com.example.app",
+  "category": "Productivity",
+  "compatibility_status": "Working",
+  "play_integrity_required": false,
+  "tested_wsa_version": "2311.40000.5.0",
+  "tested_root_flavor": "Magisk Stable",
+  "last_tested_date": "2026-09-14",
+  "workaround_steps": [
+    "1. No workaround required. Runs out of the box."
+  ],
+  "known_issues": "None",
+  "verified_by_maintainer": true
+}

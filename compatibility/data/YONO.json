@@ -1,0 +1,18 @@
+{
+  "app_name": "YONO SBI",
+  "package_id": "com.sbi.lotusintouch",
+  "category": "Banking & UPI",
+  "compatibility_status": "Workaround Required",
+  "play_integrity_required": true,
+  "tested_wsa_version": "2311.40000.5.0",
+  "tested_root_flavor": "Magisk Stable",
+  "last_tested_date": "2026-09-14",
+  "workaround_steps": [
+    "Disable Developer Options & USB Debugging in WSA Advanced Settings.",
+    "Install Shamiko module in Magisk.",
+    "Add YONO SBI to DenyList (with Shamiko in blacklist mode).",
+    "Ensure PlayIntegrityFix module passes MEETS_DEVICE_INTEGRITY."
+  ],
+  "known_issues": "App immediately terminates if test-keys or ADB port is open.",
+  "verified_by_maintainer": true
+}
