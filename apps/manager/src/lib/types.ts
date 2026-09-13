@@ -37,3 +37,82 @@ export interface ManagerEnvConfig {
   repo_url: string;
   releases_url: string;
 }
+
+export interface BackupMetadata {
+  id: string;
+  timestamp: string;
+  wsa_version: string;
+  source_path: string;
+  backup_path: string;
+  file_size_bytes: number;
+  sha256: string;
+  description: string | null;
+  status: string;
+}
+
+export interface BackupResult {
+  success: boolean;
+  metadata: BackupMetadata | null;
+  error: string | null;
+}
+
+export interface RestoreCandidate {
+  id: string;
+  timestamp: string;
+  wsa_version: string;
+  backup_path: string;
+  file_size_bytes: number;
+  sha256: string;
+  description: string | null;
+  is_valid: boolean;
+  validation_error: string | null;
+}
+
+export interface RestorePreflight {
+  can_restore: boolean;
+  candidate_id: string;
+  backup_path: string;
+  target_path: string;
+  backup_size_bytes: number;
+  sha256: string;
+  warnings: string[];
+  errors: string[];
+}
+
+export interface RestoreResult {
+  success: boolean;
+  candidate_id: string;
+  restored_path: string;
+  restored_sha256: string;
+  message: string;
+}
+
+export interface UpgradePreflight {
+  windows_version_ok: boolean;
+  windows_build: number;
+  dev_mode_ok: boolean;
+  virtualization_ok: boolean;
+  disk_space_ok: boolean;
+  free_disk_bytes: number;
+  required_disk_bytes: number;
+  wsa_running: boolean;
+  has_existing_vhdx: boolean;
+  warnings: string[];
+  errors: string[];
+  can_upgrade: boolean;
+}
+
+export interface UpgradeOptions {
+  package_path: string;
+  create_backup: boolean;
+  backup_note?: string;
+}
+
+export interface UpgradeResult {
+  success: boolean;
+  backup_metadata: BackupMetadata | null;
+  installed_manifest: string | null;
+  message: string;
+}
+
+export type NavigationTab = 'dashboard' | 'updates' | 'backups' | 'restore';
