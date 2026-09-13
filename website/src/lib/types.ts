@@ -17,12 +17,40 @@ export interface GitHubRelease {
   assets: ReleaseAsset[];
 }
 
-export interface ParsedPackage {
+export type Architecture = 'x64' | 'arm64' | 'unknown';
+export type RootFlavor = 'Magisk' | 'KernelSU' | 'NoRoot' | 'unknown';
+export type GAppsFlavor = 'GApps-Pico' | 'MindTheGapps' | 'NoGApps' | 'unknown';
+
+export interface NormalizedAsset {
   assetId: number;
   fileName: string;
-  fileSize: number;
+  fileSizeBytes: number;
+  formattedSize: string;
   downloadUrl: string;
-  arch: 'x64' | 'arm64' | 'unknown';
-  root: 'Magisk' | 'KernelSU' | 'NoRoot' | 'unknown';
-  gapps: 'GApps-Pico' | 'MindTheGapps' | 'NoGApps' | 'unknown';
+  architecture: Architecture;
+  rootFlavor: RootFlavor;
+  gappsFlavor: GAppsFlavor;
+  sha256?: string;
+}
+
+export interface UnifiedRelease {
+  id: number;
+  tag: string;
+  name: string;
+  publishedAt: string;
+  formattedDate: string;
+  notes: string;
+  releaseUrl: string;
+  assets: NormalizedAsset[];
+}
+
+export interface ReleaseFilterOptions {
+  architecture?: Architecture;
+  rootFlavor?: RootFlavor;
+  gappsFlavor?: GAppsFlavor;
+}
+
+export interface ReleaseProvider {
+  name: string;
+  getLatestRelease(): Promise<UnifiedRelease | null>;
 }
