@@ -4,8 +4,12 @@ const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 let cachedRelease: { data: GitHubRelease; timestamp: number } | null = null;
 
 export async function fetchLatestRelease(
-  repoOwnerRepo: string = import.meta.env.PUBLIC_GITHUB_REPO || 'WSABuilds'
+  repoOwnerRepo: string = import.meta.env.PUBLIC_GITHUB_REPO
 ): Promise<GitHubRelease | null> {
+  if (!repoOwnerRepo) {
+    throw new Error('Configuration error: PUBLIC_GITHUB_REPO environment variable is required.');
+  }
+
   const now = Date.now();
   if (cachedRelease && now - cachedRelease.timestamp < CACHE_TTL_MS) {
     return cachedRelease.data;

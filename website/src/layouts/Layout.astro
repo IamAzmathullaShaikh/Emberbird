@@ -6,7 +6,10 @@ interface Props {
   description?: string;
 }
 
-const githubUrl = import.meta.env.PUBLIC_GITHUB_REPO_URL || '#';
+const githubUrl = import.meta.env.PUBLIC_GITHUB_REPO_URL;
+if (!githubUrl) {
+  throw new Error('Configuration error: PUBLIC_GITHUB_REPO_URL environment variable is required.');
+}
 
 const {
   title = 'WSABuilds - Windows Subsystem for Android Distribution',

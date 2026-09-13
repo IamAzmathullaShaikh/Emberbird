@@ -45,6 +45,11 @@ jobs:
 
       - name: Build Static Site
         working-directory: website
+        env:
+          SITE_URL: ${{ vars.SITE_URL || 'https://wsabuilds-website.pages.dev' }}
+          PUBLIC_GITHUB_REPO: ${{ github.repository }}
+          PUBLIC_GITHUB_REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+          PUBLIC_RELEASES_URL: ${{ github.server_url }}/${{ github.repository }}/releases
         run: |
           npm run build
 

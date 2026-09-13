@@ -1,6 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
-const releasesUrl = import.meta.env.PUBLIC_RELEASES_URL || '#releases';
+const releasesUrl = import.meta.env.PUBLIC_RELEASES_URL;
+if (!releasesUrl) {
+  throw new Error('Configuration error: PUBLIC_RELEASES_URL environment variable is required.');
+}
 ---
 
 <Layout title="Download Windows Subsystem for Android - WSABuilds">
