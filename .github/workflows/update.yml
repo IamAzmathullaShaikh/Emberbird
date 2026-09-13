@@ -255,7 +255,6 @@ jobs:
   # ---------------------------------------------------------------------------
   build-retail-x64:
     name: Build — WSA x64 Magisk Stable + Pico GApps (Retail)
-    runs-on: ubuntu-latest       # orchestration only; actual build is in build.yml
     permissions: write-all
     needs: [check, check-and-create-tag, update-downloadlinks]
     if: inputs.wsa_ver != '' || needs.check.outputs.RETAIL_UPDATE == 'yes'
