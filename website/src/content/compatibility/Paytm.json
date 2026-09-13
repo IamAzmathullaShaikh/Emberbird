@@ -1,0 +1,16 @@
+{
+  "app_name": "Paytm",
+  "package_id": "net.one97.paytm",
+  "category": "Banking & UPI",
+  "compatibility_status": "Working",
+  "play_integrity_required": true,
+  "tested_wsa_version": "REQUIRES REPOSITORY VERIFICATION",
+  "tested_root_flavor": "Magisk Stable",
+  "last_tested_date": "REQUIRES REPOSITORY VERIFICATION",
+  "workaround_steps": [
+    "Add Paytm to Magisk DenyList.",
+    "Ensure SELinux is set to Enforcing."
+  ],
+  "known_issues": "None when DenyList is enabled.",
+  "verification_status": "unverified"
+}

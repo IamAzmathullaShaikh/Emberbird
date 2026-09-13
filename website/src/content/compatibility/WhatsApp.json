@@ -1,0 +1,15 @@
+{
+  "app_name": "WhatsApp Messenger",
+  "package_id": "com.whatsapp",
+  "category": "Communication",
+  "compatibility_status": "Working",
+  "play_integrity_required": false,
+  "tested_wsa_version": "REQUIRES REPOSITORY VERIFICATION",
+  "tested_root_flavor": "Magisk Stable / No Root",
+  "last_tested_date": "REQUIRES REPOSITORY VERIFICATION",
+  "workaround_steps": [
+    "Runs out of the box on both Magisk and No-Root builds."
+  ],
+  "known_issues": "Camera QR scanning requires granting camera permission in WSA Settings.",
+  "verification_status": "unverified"
+}
