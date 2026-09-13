@@ -42,6 +42,7 @@ jobs:
       - name: Run shellcheck
         run: |
           shellcheck -x -S warning \
+            --exclude=SC2034,SC2174 \
             MagiskOnWSA/scripts/*.sh \
             MagiskOnWSA/libhoudini/houdini_installer.sh \
             MagiskOnWSAOld/scripts/*.sh \

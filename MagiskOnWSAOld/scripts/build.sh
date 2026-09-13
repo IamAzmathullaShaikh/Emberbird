@@ -118,7 +118,8 @@ mk_overlayfs() {
             own="0:0"
             ;;
     esac
-    sudo mkdir -p -m 755 "$workdir" "$upperdir" "$merged" || return 1
+    sudo mkdir -p "$workdir" "$upperdir" "$merged" || return 1
+    sudo chmod 755 "$workdir" "$upperdir" "$merged" || return 1
     sudo chown -R "$own" "$upperdir" "$workdir" "$merged" || return 1
     sudo setfattr -n security.selinux -v "$context" "$upperdir" || return 1
     sudo setfattr -n security.selinux -v "$context" "$workdir" || return 1
@@ -417,7 +418,8 @@ echo -e "Convert vhdx to RAW image done\n"
 SYSTEMIMAGES_FILE_SYSTEM_TYPE=$(check_image_type "$WORK_DIR/wsa/$ARCH/system.img")
 if [[ "$SYSTEMIMAGES_FILE_SYSTEM_TYPE" = "erofs" ]]; then
     echo "Mount images"
-    sudo mkdir -p -m 755 "$ROOT_MNT_RO" || abort
+    sudo mkdir -p "$ROOT_MNT_RO" || abort
+    sudo chmod 755 "$ROOT_MNT_RO" || abort
     sudo chown "0:0" "$ROOT_MNT_RO" || abort
     sudo setfattr -n security.selinux -v "u:object_r:rootfs:s0" "$ROOT_MNT_RO" || abort
     sudo "../bin/EROFS/fuse.erofs" "$WORK_DIR/wsa/$ARCH/system.img" "$ROOT_MNT_RO" || abort 1

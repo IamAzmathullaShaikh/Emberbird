@@ -6,19 +6,21 @@ if [ ! -d /data/adb ]; then
     mkdir -m 700 /data/adb
     chcon u:object_r:adb_data_file:s0 /data/adb
 fi
-if [ ! -d $MAGISKBIN ]; then
-    # shellcheck disable=SC2174
-    mkdir -p -m 755 $MAGISKBIN
-    chcon u:object_r:system_file:s0 $MAGISKBIN
+if [ ! -d "$MAGISKBIN" ]; then
+    mkdir -p "$MAGISKBIN"
+    chmod 755 "$MAGISKBIN"
+    chcon u:object_r:system_file:s0 "$MAGISKBIN"
 fi
 if [ -f "$MAGISKTMP/adbkey.pub" ]; then
-    mkdir -p -m 700 /data/misc/adb
+    mkdir -p /data/misc/adb
+    chmod 700 /data/misc/adb
     cat "$MAGISKTMP/adbkey.pub" >> /data/misc/adb/adb_keys
     chmod 640 /data/misc/adb/adb_keys
     chown system:shell /data/misc/adb/adb_keys 2>/dev/null || true
 fi
 # Configure Magisk superuser policy to grant ADB shell (uid 2000) root access
-mkdir -p -m 755 /data/adb/service.d
+mkdir -p /data/adb/service.d
+chmod 755 /data/adb/service.d
 cat << 'EOFSCRIPT' > /data/adb/service.d/00-adb-root.sh
 #!/system/bin/sh
 magisk --sqlite "INSERT OR REPLACE INTO settings (key, value) VALUES ('root_access', 3);" 2>/dev/null || true

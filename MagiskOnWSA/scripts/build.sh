@@ -86,7 +86,7 @@ OPENGAPPS_ZIP_NAME=""
 OFFLINE=""
 SKIP_DOWN_WSA=""
 CUSTOM_MAGISK=""
-COMPRESS_FORMAT="${DEFAULT_COMPRESS_FORMAT:-7z}"
+COMPRESS_FORMAT="7z"
 DEBUG=""
 
 # =============================================================================

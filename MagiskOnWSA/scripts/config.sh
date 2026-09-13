@@ -11,6 +11,7 @@
 # Copyright (C) 2024 WSABuilds Contributors
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # =============================================================================
+# shellcheck disable=SC2034
 
 # ---------------------------------------------------------------------------
 # Architecture & WSA release channel
@@ -52,11 +53,6 @@ readonly OPENGAPPS_GITHUB_REPO="x86_64"
 # ---------------------------------------------------------------------------
 readonly TARGET_DEVICE_MODEL="redfin"         # Pixel 5
 readonly TARGET_DEVICE_NAME="redfin"
-
-# ---------------------------------------------------------------------------
-# Compression / output
-# ---------------------------------------------------------------------------
-readonly DEFAULT_COMPRESS_FORMAT="7z"         # default final artifact format
 
 # ---------------------------------------------------------------------------
 # Derived file / directory names (computed, not overridable)
