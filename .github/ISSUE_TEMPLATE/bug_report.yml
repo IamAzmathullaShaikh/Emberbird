@@ -9,9 +9,10 @@ body:
         Thank you for taking the time to report an issue!
         
         Before submitting:
-        1. Check the Troubleshooting Guide: https://github.com/IamAzmathullaShaikh/WSABuilds/blob/master/TROUBLESHOOTING.md and Error Codes Guide: https://github.com/IamAzmathullaShaikh/WSABuilds/blob/master/docs/troubleshooting/error-codes.md
-        2. Search Existing Issues: https://github.com/IamAzmathullaShaikh/WSABuilds/issues to prevent duplicate reports.
-        3. Confirm Hardware Virtualization is enabled in your BIOS/UEFI.
+        1. Run the Interactive Diagnostic Wizard: https://iamazmathullashaikh.github.io/WSABuilds/troubleshoot/wizard for instant remediation of virtualization, graphics, and install errors.
+        2. Check the Troubleshooting Guide: https://github.com/IamAzmathullaShaikh/WSABuilds/blob/master/TROUBLESHOOTING.md and Error Codes Guide: https://github.com/IamAzmathullaShaikh/WSABuilds/blob/master/docs/troubleshooting/error-codes.md
+        3. Search Existing Issues: https://github.com/IamAzmathullaShaikh/WSABuilds/issues to prevent duplicate reports.
+        4. Confirm Hardware Virtualization is enabled in your BIOS/UEFI.
 
   - type: input
     id: win_ver
