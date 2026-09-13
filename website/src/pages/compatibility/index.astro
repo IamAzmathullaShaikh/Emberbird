@@ -1,0 +1,360 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { calculateStats, getCategories, getStatusBadgeClass } from '../../lib/compatibility';
+import { getEnvironmentConfig } from '../../lib/env';
+
+const env = getEnvironmentConfig();
+const rawEntries = await getCollection('compatibility');
+const records = rawEntries.map((e) => ({
+  id: e.id,
+  ...e.data
+}));
+
+const stats = calculateStats(records);
+const categories = getCategories(records);
+const submitIssueUrl = `${env.PUBLIC_GITHUB_REPO_URL}/issues/new?template=compatibility_report.yml`;
+---
+
+<Layout
+  title="App Compatibility Directory | WSABuilds"
+  description="Verified compatibility status, workarounds, and Play Integrity requirements for Android apps on WSA."
+>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Hero Header -->
+    <div class="text-center max-w-3xl mx-auto">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-4">
+        Community Verified
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+        Android App Compatibility Directory
+      </h1>
+      <p class="mt-4 text-base sm:text-lg text-slate-400 leading-relaxed">
+        Real-world compatibility testing results for banking, media, and productivity apps running on
+        Windows Subsystem for Android. Check root detection, Play Integrity status, and verified workarounds.
+      </p>
+
+      <div class="mt-6 flex flex-wrap items-center justify-center gap-4">
+        <a
+          href={submitIssueUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition-colors shadow-lg shadow-indigo-500/20"
+        >
+          <span>Submit Test Report</span>
+          <span>-></span>
+        </a>
+        <a
+          href="/docs/configuration/play-integrity-setup"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-sm transition-colors border border-slate-700"
+        >
+          <span>Play Integrity Setup</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Statistics Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-12">
+      <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-center">
+        <div class="text-2xl sm:text-3xl font-bold text-white">{stats.total}</div>
+        <div class="text-xs text-slate-400 font-medium mt-1">Tested Apps</div>
+      </div>
+      <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-center">
+        <div class="text-2xl sm:text-3xl font-bold text-emerald-400">{stats.working}</div>
+        <div class="text-xs text-slate-400 font-medium mt-1">Working Out-of-the-Box</div>
+      </div>
+      <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-center">
+        <div class="text-2xl sm:text-3xl font-bold text-amber-400">{stats.workaround}</div>
+        <div class="text-xs text-slate-400 font-medium mt-1">Workaround Available</div>
+      </div>
+      <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-center">
+        <div class="text-2xl sm:text-3xl font-bold text-rose-400">{stats.broken}</div>
+        <div class="text-xs text-slate-400 font-medium mt-1">Unsupported / Broken</div>
+      </div>
+    </div>
+
+    <!-- Interactive Filters & Search -->
+    <div class="mt-10 p-6 rounded-2xl bg-slate-900/40 border border-slate-800 backdrop-blur">
+      <div class="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
+        <!-- Search Input -->
+        <div class="relative flex-grow max-w-lg">
+          <input
+            type="text"
+            id="app-search-input"
+            placeholder="Search app name, package ID (e.g. com.phonepe.app), or category..."
+            class="w-full pl-4 pr-4 py-2.5 rounded-lg bg-slate-950 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+          />
+        </div>
+
+        <!-- Filter Toggles -->
+        <div class="flex flex-wrap items-center gap-2">
+          <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/80 border border-slate-700 text-xs text-slate-300 cursor-pointer select-none">
+            <input type="checkbox" id="play-integrity-filter" class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-0" />
+            <span>Play Integrity Only</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div class="mt-4 pt-4 border-t border-slate-800/80 flex flex-wrap items-center gap-2">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mr-2">Category:</span>
+        <button
+          type="button"
+          class="category-btn px-3 py-1 rounded-lg text-xs font-medium bg-indigo-600 text-white transition-colors"
+          data-category="All"
+        >
+          All
+        </button>
+        {categories.map((cat) => (
+          <button
+            type="button"
+            class="category-btn px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+            data-category={cat}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      <!-- Status Filter Pills -->
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider mr-2">Status:</span>
+        <button
+          type="button"
+          class="status-btn px-3 py-1 rounded-lg text-xs font-medium bg-indigo-600 text-white transition-colors"
+          data-status="All"
+        >
+          All Statuses
+        </button>
+        <button
+          type="button"
+          class="status-btn px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+          data-status="Working"
+        >
+          Working
+        </button>
+        <button
+          type="button"
+          class="status-btn px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+          data-status="Workaround Required"
+        >
+          Workaround Required
+        </button>
+        <button
+          type="button"
+          class="status-btn px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+          data-status="Broken"
+        >
+          Broken
+        </button>
+      </div>
+    </div>
+
+    <!-- Results Header -->
+    <div class="mt-8 flex items-center justify-between text-xs text-slate-400 px-2">
+      <span id="results-count">Showing {records.length} application(s)</span>
+      <span>Single source of truth: repository compatibility/data/</span>
+    </div>
+
+    <!-- Application Records Grid -->
+    <div id="compat-grid" class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6" data-pagefind-body>
+      {records.map((record) => {
+        const badge = getStatusBadgeClass(record.compatibility_status);
+        return (
+          <div
+            class="app-card rounded-xl bg-slate-900/60 border border-slate-800 p-6 flex flex-col justify-between hover:border-slate-700 transition-colors"
+            data-app-name={record.app_name.toLowerCase()}
+            data-package-id={record.package_id.toLowerCase()}
+            data-category={record.category}
+            data-status={record.compatibility_status}
+            data-play-integrity={record.play_integrity_required ? 'true' : 'false'}
+          >
+            <div>
+              <!-- Top Row: Name and Status Badge -->
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <h3 class="text-lg font-bold text-white tracking-tight">{record.app_name}</h3>
+                  <code class="text-xs text-slate-400 font-mono select-all mt-0.5 block">
+                    {record.package_id}
+                  </code>
+                </div>
+                <span class={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${badge.bg} ${badge.text} ${badge.border} whitespace-nowrap`}>
+                  {record.compatibility_status}
+                </span>
+              </div>
+
+              <!-- Metadata Tags -->
+              <div class="mt-4 flex flex-wrap gap-2 text-xs">
+                <span class="px-2.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700/60">
+                  {record.category}
+                </span>
+                <span class="px-2.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/60 font-mono">
+                  Root: {record.tested_root_flavor}
+                </span>
+                {record.play_integrity_required ? (
+                  <span class="px-2.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                    Play Integrity Required
+                  </span>
+                ) : (
+                  <span class="px-2.5 py-0.5 rounded bg-slate-800/80 text-slate-400 border border-slate-700/60">
+                    No Integrity Attestation
+                  </span>
+                )}
+              </div>
+
+              <!-- Known Issues -->
+              {record.known_issues && record.known_issues !== 'None' && (
+                <div class="mt-4 p-3 rounded-lg bg-slate-950/60 border border-slate-800/80 text-xs">
+                  <span class="text-slate-400 font-medium">Known Note: </span>
+                  <span class="text-slate-300">{record.known_issues}</span>
+                </div>
+              )}
+
+              <!-- Workaround Steps Collapsible -->
+              {record.workaround_steps && record.workaround_steps.length > 0 && (
+                <details class="mt-4 group text-xs">
+                  <summary class="cursor-pointer font-medium text-indigo-400 hover:text-indigo-300 select-none flex items-center gap-1.5">
+                    <span>View Workaround Steps ({record.workaround_steps.length})</span>
+                  </summary>
+                  <ol class="mt-2 pl-4 list-decimal space-y-1 text-slate-300 bg-slate-950/40 p-3 rounded-lg border border-slate-800/60">
+                    {record.workaround_steps.map((step) => (
+                      <li>{step}</li>
+                    ))}
+                  </ol>
+                </details>
+              )}
+            </div>
+
+            <!-- Footer Meta -->
+            <div class="mt-6 pt-4 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-500">
+              <span>WSA Build: {record.tested_wsa_version}</span>
+              <span class="capitalize">Verification: {record.verification_status || 'unverified'}</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+
+    <!-- Empty Results Fallback -->
+    <div id="no-results-msg" class="hidden mt-12 py-12 text-center rounded-xl bg-slate-900/30 border border-slate-800">
+      <p class="text-slate-300 font-medium">No matching applications found</p>
+      <p class="text-slate-500 text-xs mt-1">Try clearing filters or check another category.</p>
+      <div class="mt-4">
+        <a
+          href={submitIssueUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 underline"
+        >
+          <span>Submit a report for this application</span>
+          <span>-></span>
+        </a>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  let activeCategory = 'All';
+  let activeStatus = 'All';
+  let playIntegrityOnly = false;
+  let searchQuery = '';
+
+  const searchInput = document.getElementById('app-search-input') as HTMLInputElement | null;
+  const playIntegrityCheckbox = document.getElementById('play-integrity-filter') as HTMLInputElement | null;
+  const categoryButtons = document.querySelectorAll('.category-btn');
+  const statusButtons = document.querySelectorAll('.status-btn');
+  const appCards = document.querySelectorAll('.app-card');
+  const resultsCount = document.getElementById('results-count');
+  const noResultsMsg = document.getElementById('no-results-msg');
+
+  function applyFilters() {
+    let visibleCount = 0;
+
+    appCards.forEach((cardEl) => {
+      const card = cardEl as HTMLElement;
+      const appName = card.dataset.appName || '';
+      const packageId = card.dataset.packageId || '';
+      const category = card.dataset.category || '';
+      const status = card.dataset.status || '';
+      const playIntegrity = card.dataset.playIntegrity === 'true';
+
+      let matchesSearch = true;
+      if (searchQuery.length > 0) {
+        matchesSearch = appName.includes(searchQuery) || packageId.includes(searchQuery) || category.toLowerCase().includes(searchQuery);
+      }
+
+      let matchesCategory = true;
+      if (activeCategory !== 'All') {
+        matchesCategory = category === activeCategory;
+      }
+
+      let matchesStatus = true;
+      if (activeStatus !== 'All') {
+        matchesStatus = status === activeStatus;
+      }
+
+      let matchesPlayIntegrity = true;
+      if (playIntegrityOnly) {
+        matchesPlayIntegrity = playIntegrity === true;
+      }
+
+      if (matchesSearch && matchesCategory && matchesStatus && matchesPlayIntegrity) {
+        card.classList.remove('hidden');
+        visibleCount++;
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+
+    if (resultsCount) {
+      resultsCount.textContent = `Showing ${visibleCount} of ${appCards.length} application(s)`;
+    }
+
+    if (noResultsMsg) {
+      if (visibleCount === 0) {
+        noResultsMsg.classList.remove('hidden');
+      } else {
+        noResultsMsg.classList.add('hidden');
+      }
+    }
+  }
+
+  searchInput?.addEventListener('input', (e) => {
+    searchQuery = (e.target as HTMLInputElement).value.toLowerCase().trim();
+    applyFilters();
+  });
+
+  playIntegrityCheckbox?.addEventListener('change', (e) => {
+    playIntegrityOnly = (e.target as HTMLInputElement).checked;
+    applyFilters();
+  });
+
+  categoryButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      categoryButtons.forEach((b) => {
+        b.classList.remove('bg-indigo-600', 'text-white');
+        b.classList.add('bg-slate-800', 'text-slate-300');
+      });
+      btn.classList.remove('bg-slate-800', 'text-slate-300');
+      btn.classList.add('bg-indigo-600', 'text-white');
+
+      activeCategory = (btn as HTMLElement).dataset.category || 'All';
+      applyFilters();
+    });
+  });
+
+  statusButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      statusButtons.forEach((b) => {
+        b.classList.remove('bg-indigo-600', 'text-white');
+        b.classList.add('bg-slate-800', 'text-slate-300');
+      });
+      btn.classList.remove('bg-slate-800', 'text-slate-300');
+      btn.classList.add('bg-indigo-600', 'text-white');
+
+      activeStatus = (btn as HTMLElement).dataset.status || 'All';
+      applyFilters();
+    });
+  });
+</script>
