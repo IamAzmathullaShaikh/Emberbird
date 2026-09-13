@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://wsabuilds.azmathulla.dev/schemas/compatibility.schema.json",
+  "title": "WSA Application Compatibility Record",
+  "description": "Schema definition for verified and community-submitted application compatibility reports on Windows Subsystem for Android.",
+  "type": "object",
+  "required": [
+    "app_name",
+    "package_id",
+    "category",
+    "compatibility_status",
+    "play_integrity_required",
+    "tested_wsa_version",
+    "tested_root_flavor",
+    "verification_status"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "app_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "package_id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z][a-zA-Z0-9_]*(\\.[a-zA-Z][a-zA-Z0-9_]*)+$"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Banking & UPI",
+        "Social & Communication",
+        "Communication",
+        "Productivity & Office",
+        "Productivity",
+        "Streaming & Media",
+        "Gaming",
+        "Utilities & Tools"
+      ]
+    },
+    "compatibility_status": {
+      "type": "string",
+      "enum": [
+        "Working",
+        "Workaround Required",
+        "Broken"
+      ]
+    },
+    "play_integrity_required": {
+      "type": "boolean"
+    },
+    "tested_wsa_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tested_root_flavor": {
+      "type": "string",
+      "minLength": 1
+    },
+    "last_tested_date": {
+      "type": "string"
+    },
+    "workaround_steps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "known_issues": {
+      "type": "string"
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "verified",
+        "unverified",
+        "community_submitted"
+      ]
+    }
+  },
+  "additionalProperties": false
+}
