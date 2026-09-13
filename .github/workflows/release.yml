@@ -1,77 +1,78 @@
-name: Production Release Engineering Pipeline
+name: Production Release Pipeline
 
 on:
-  workflow_dispatch:
-    inputs:
-      wsa_ver:
-        description: 'WSA Version string (e.g. 2407.40000.4.0)'
-        required: true
-        default: '2407.40000.4.0'
-      variant:
-        description: 'Variant name identifier'
-        required: true
-        default: 'Magisk_GApps_Retail_x64'
   push:
     tags:
       - 'Windows_*'
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      wsa_ver:
+        description: 'WSA Version (e.g. 2407.40000.4.0)'
+        required: true
+        default: '2407.40000.4.0'
+      variant:
+        description: 'Target Variant Name'
+        required: true
+        default: 'Magisk_GApps_Retail_x64'
 
 permissions:
   contents: write
   packages: write
 
 jobs:
-  validate-baseline:
-    name: Package Identity & Structure Validation
+  verify-quality-gates:
+    name: Verify Quality & Identity Gates
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout 🔄
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Setup Python 🐍
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: Validate Package Identity Baseline
+      - name: Validate Identity Baseline
         run: |
-          python scripts/validate_package_identity.py --baseline config/baseline-identity.json
+          python3 scripts/validate_package_identity.py --baseline config/baseline-identity.json
 
-      - name: Run Offline Unit Tests
+      - name: Run Unit Tests
         run: |
-          python -m unittest discover -s tests -v
+          python3 -m unittest discover -s tests -v
 
-  build-and-release:
-    name: Build, Verify & Publish Release
-    needs: validate-baseline
+  build-and-publish:
+    name: Build, Package & Publish Release
+    needs: verify-quality-gates
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout 🔄
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Setup Python 🐍
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: Verify Environment
-        run: |
-          git log -n 1 --oneline
-          python --version
-
-      - name: Check Package Integrity
+      - name: Validate Package Structural Integrity
         run: |
           python scripts/validate_package_integrity.py
 
-      - name: Validate Magisk Implementation
+      - name: Validate Magisk Trampoline
         run: |
           python scripts/validate_magisk.py
 
-      - name: Validate GApps Implementation
+      - name: Validate GApps Integration
         run: |
           python scripts/validate_gapps.py
 
-      - name: Generate Checksums and Release Metadata
+      - name: Generate Checksums and Release Metadata 📊
         run: |
-          python scripts/generate_release_metadata.py --version "${{ inputs.wsa_ver || '2407.40000.4.0' }}" --variant "${{ inputs.variant || 'Magisk_GApps_Retail_x64' }}"
+          python scripts/generate_release_metadata.py \
+            --version "${{ inputs.wsa_ver || '2407.40000.4.0' }}" \
+            --variant "${{ inputs.variant || 'Magisk_GApps_Retail_x64' }}"
 
-      - name: Upload Release Assets
+      - name: Publish GitHub Release 🚀
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:

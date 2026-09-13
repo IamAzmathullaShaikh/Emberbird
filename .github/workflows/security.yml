@@ -1,0 +1,39 @@
+name: Security Audit & Secret Prevention
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  schedule:
+    - cron: '0 0 * * 1' # Weekly Monday
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  secret-scan:
+    name: Secret & Machine Path Detection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🔄
+        uses: actions/checkout@v4
+
+      - name: Scan for Leaked Personal Access Tokens 🛡️
+        run: |
+          echo "Scanning for GitHub tokens (ghp_, gho_, github_pat_)..."
+          if git grep -i "ghp_\|gho_\|github_pat_" -- "*.py" "*.sh" "*.yml" "*.ps1" "*.yaml" "*.json"; then
+            echo "ERROR: Potential secret/token detected in source tree!" >&2
+            exit 1
+          fi
+          echo "No tokens detected. Clean."
+
+      - name: Scan for Hardcoded Developer Machine Paths 🚫
+        run: |
+          echo "Scanning for hardcoded user paths (BangerSoul, C:\Users\...)..."
+          if git grep -n "BangerSoul" -- "*.py" "*.sh" "*.ps1" "*.yml" "*.yaml" "*.json"; then
+            echo "ERROR: Machine-specific developer path detected!" >&2
+            exit 1
+          fi
+          echo "No machine-specific paths detected. Clean."

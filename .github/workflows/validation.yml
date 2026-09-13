@@ -1,0 +1,93 @@
+name: WSA Validation Suite
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_live_adb:
+        description: 'Execute live ADB diagnostics on connected runner'
+        type: boolean
+        default: false
+  schedule:
+    - cron: '0 4 * * 0' # Weekly Sunday run
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-subsystem-validation:
+    name: Offline Subsystem Integrity & Manifest Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🔄
+        uses: actions/checkout@v4
+
+      - name: Setup Python 🐍
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Package Identity Validation
+        run: |
+          python3 scripts/validate_package_identity.py --baseline config/baseline-identity.json
+
+      - name: Structural Package Integrity Validation
+        run: |
+          python3 scripts/validate_package_integrity.py
+
+      - name: Magisk Trampoline Inspection
+        run: |
+          python3 scripts/validate_magisk.py
+
+      - name: GApps Overlay Inspection
+        run: |
+          python3 scripts/validate_gapps.py
+
+      - name: Archive Offline Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: offline-validation-reports
+          path: |
+            package-identity-report.json
+            package-integrity-report.json
+            magisk-validation-report.json
+            gapps-validation-report.json
+          if-no-files-found: ignore
+
+  live-runner-validation:
+    name: Live Windows Lab ADB & Upgrade Validation
+    needs: offline-subsystem-validation
+    if: inputs.run_live_adb == true
+    runs-on: [self-hosted, windows]
+    steps:
+      - name: Checkout 🔄
+        uses: actions/checkout@v4
+
+      - name: Setup Python 🐍
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Execute Upgrade Compatibility Harness
+        run: |
+          powershell.exe -ExecutionPolicy Bypass -File scripts/validate_upgrade.ps1
+
+      - name: Live Magisk Root Diagnostics
+        run: |
+          python scripts/validate_magisk.py --live
+
+      - name: Live GApps Package Registration Diagnostics
+        run: |
+          python scripts/validate_gapps.py --live
+
+      - name: Archive Live Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-validation-reports
+          path: |
+            upgrade-validation-report.json
+            magisk-validation-report.json
+            gapps-validation-report.json
+          if-no-files-found: ignore
