@@ -56,7 +56,7 @@ jobs:
       - name: Execute Unit Test Suite
         working-directory: website
         run: |
-          echo "[*] Executing parser and environment validation test suites..."
+          echo "[*] Executing parser, compatibility, environment, and wizard diagnostic test suites..."
           npm run test
 
       - name: TypeScript Type Checking
