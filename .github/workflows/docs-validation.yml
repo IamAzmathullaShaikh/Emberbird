@@ -1,0 +1,49 @@
+name: Documentation Validation
+
+on:
+  pull_request:
+    branches: [master, experimental, feature/*]
+    paths:
+      - 'docs/**'
+      - 'Documentation/**'
+      - '*.md'
+      - '.github/**/*.md'
+  workflow_dispatch:
+
+concurrency:
+  group: docs-val-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate-docs:
+    name: Validate Markdown Links & Security
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check Markdown Local Links
+        run: |
+          echo "[*] Auditing local markdown links across repository..."
+          python scripts/check_doc_links.py
+
+      - name: Security & Secret Scan
+        run: |
+          echo "[*] Auditing repository documentation for credentials and machine paths..."
+          python scripts/security_scan.py
+
+      - name: Validation Complete
+        run: |
+          echo "[+] Documentation validation passed successfully with 0 broken links and clean security audit."
