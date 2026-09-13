@@ -115,7 +115,7 @@ def _fix_prop(
 
     print(f"fixGappsProp: patching {prop_path} …", flush=True)
 
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8") as f:
         p = Prop(f)
 
     # ── Annotation banner ────────────────────────────────────────────────────
@@ -163,7 +163,7 @@ def _fix_prop(
     p[f"ro.{section}.build.fingerprint"]    = fprint
     p["ro.bootimage.build.fingerprint"]     = fprint
 
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         f.write(str(p))
 
     print(f"fixGappsProp: done — {path.name}", flush=True)

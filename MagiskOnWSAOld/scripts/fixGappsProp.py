@@ -68,7 +68,7 @@ def fix_prop(sec, prop):
         return
 
     print(f"fixing {prop}", flush=True)
-    with open(prop, 'r') as f:
+    with open(prop, 'r', encoding="utf-8") as f:
         p = Prop(f)
 
     p += "# extra props added by MagiskOnWSA"
@@ -87,7 +87,7 @@ def fix_prop(sec, prop):
     p[f"ro.{sec}.build.fingerprint"] = fingerprint(sec, p)
     p[f"ro.bootimage.build.fingerprint"] = fingerprint(sec, p)
 
-    with open(prop, 'w') as f:
+    with open(prop, 'w', encoding="utf-8") as f:
         f.write(str(p))
 
 
