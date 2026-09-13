@@ -54,9 +54,7 @@ jobs:
         run: |
           shellcheck -x -S warning --exclude=SC2034,SC2174 \
             MagiskOnWSA/scripts/*.sh \
-            MagiskOnWSA/libhoudini/houdini_installer.sh \
-            MagiskOnWSAOld/scripts/*.sh \
-            MagiskOnWSAOld/libhoudini/houdini_installer.sh
+            MagiskOnWSA/libhoudini/houdini_installer.sh
 
       - name: Compile Python sources ⚙️
         run: |
@@ -66,7 +64,6 @@ jobs:
             tests \
             MagiskOnWSA/scripts \
             "MagiskOnWSA/Update Check" \
-            MagiskOnWSAOld/scripts \
             "WSABuilds Utilities/Update Script" \
             "WSABuilds Utilities/Uninstall Script"
 

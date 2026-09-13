@@ -69,7 +69,6 @@ jobs:
             tests \
             MagiskOnWSA/scripts \
             "MagiskOnWSA/Update Check" \
-            MagiskOnWSAOld/scripts \
             "WSABuilds Utilities/Update Script" \
             "WSABuilds Utilities/Uninstall Script"
 
