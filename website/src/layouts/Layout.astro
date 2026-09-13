@@ -6,6 +6,8 @@ interface Props {
   description?: string;
 }
 
+const githubUrl = import.meta.env.PUBLIC_GITHUB_REPO_URL || '#';
+
 const {
   title = 'WSABuilds - Windows Subsystem for Android Distribution',
   description = 'The easiest, most reliable, and community-supported way to run WSA on Windows 10 and 11.'
@@ -31,7 +33,7 @@ const {
           <a href="/downloads" class="hover:text-white transition-colors">Downloads</a>
           <a href="/docs" class="hover:text-white transition-colors">Documentation</a>
           <a
-            href="https://github.com/IamAzmathullaShaikh/WSABuilds"
+            href={githubUrl}
             target="_blank"
             rel="noopener noreferrer"
             class="text-slate-400 hover:text-white transition-colors"

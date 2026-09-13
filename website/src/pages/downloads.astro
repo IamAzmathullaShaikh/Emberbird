@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+const releasesUrl = import.meta.env.PUBLIC_RELEASES_URL || '#releases';
 ---
 
 <Layout title="Download Windows Subsystem for Android - WSABuilds">
@@ -59,7 +60,7 @@ import Layout from '../layouts/Layout.astro';
 
         <a
           id="download-cta"
-          href="https://github.com/IamAzmathullaShaikh/WSABuilds/releases"
+          href={releasesUrl}
           target="_blank"
           rel="noopener noreferrer"
           class="w-full sm:w-auto px-6 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-center transition-colors"
