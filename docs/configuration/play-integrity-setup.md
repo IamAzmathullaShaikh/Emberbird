@@ -4,6 +4,9 @@ This guide details how to configure Magisk, Zygisk, and the PlayIntegrityFix mod
 
 ---
 
+> [!TIP]
+> **Having issues with banking apps?** Run through the [Interactive Play Integrity & Root Cloaking Wizard](/troubleshoot/wizard?category=integrity) or explore verified app configurations in the [App Compatibility Directory](/compatibility).
+
 ## 1. Overview
 
 Many banking and financial applications (such as PhonePe, Paytm, Google Pay, SBI YONO, and BHIM) require your device to pass Google Play Integrity attestation (`MEETS_DEVICE_INTEGRITY`) and detect whether the environment is modified or rooted.
