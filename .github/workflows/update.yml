@@ -64,6 +64,11 @@ jobs:
       - name: Checkout ♻️
         uses: actions/checkout@v4
 
+      - name: Setup Python 🐍
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
       - name: Install Python dependencies 🐍
         run: pip3 install --quiet beautifulsoup4 lxml requests packaging certifi
 
@@ -162,7 +167,7 @@ jobs:
           git diff --quiet && { echo "No changes to README.md"; exit 0; }
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name  "github-actions[bot]"
-          git commit -am "Update download link for WSA ${{ env.LATEST_VER }}"
+          git commit -am "Update download link for WSA $LATEST_VER"
           git pull --rebase origin master
           git push
 
@@ -196,7 +201,7 @@ jobs:
       - name: Check if Windows 11 x64 tag exists
         id: check-tag
         run: |
-          if git rev-parse -q --verify "refs/tags/${{ env.WIN11X64_TAG }}" >/dev/null; then
+          if git rev-parse -q --verify "refs/tags/$WIN11X64_TAG" >/dev/null; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
@@ -205,7 +210,7 @@ jobs:
       - name: Stop if tag already exists
         if: steps.check-tag.outputs.exists == 'true'
         run: |
-          echo "Tag ${{ env.WIN11X64_TAG }} already exists — nothing to do."
+          echo "Tag $WIN11X64_TAG already exists — nothing to do."
           exit 1
 
       # Use local in-repo release notes template (no external gist dependency)
