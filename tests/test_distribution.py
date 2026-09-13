@@ -1,4 +1,5 @@
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -71,6 +72,22 @@ class TestDistributionAndWinget(unittest.TestCase):
         self.assertFalse(is_valid_installer_name(f"WSABuildsManager-Setup-{v}-mips.exe"))
         self.assertFalse(is_valid_portable_name("Setup.zip"))
         self.assertFalse(is_valid_checksum_name(f"WSABuildsManager-{v}-sha256.txt"))
+
+    def test_wsa_release_artifact_naming_regex(self):
+        """Verify naming grammar for both Standard Edition (Magisk) and Banking Edition (Vanilla)."""
+        wsa_pattern = re.compile(
+            r"^WSA_(?P<version>[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)_(?P<arch>x64|arm64)_Release-(with-magisk-[a-f0-9]+-stable|vanilla)-GApps-13\.0-(pico|none)\.7z$"
+        )
+
+        standard_sample = "WSA_2311.40000.5.0_x64_Release-with-magisk-26404-stable-GApps-13.0-pico.7z"
+        vanilla_sample = "WSA_2311.40000.5.0_x64_Release-vanilla-GApps-13.0-pico.7z"
+
+        self.assertTrue(wsa_pattern.match(standard_sample), f"Standard sample should match: {standard_sample}")
+        self.assertTrue(wsa_pattern.match(vanilla_sample), f"Vanilla sample should match: {vanilla_sample}")
+
+        # Invalid variants
+        self.assertFalse(wsa_pattern.match("WSA_2311.40000.5.0_x64_Release.7z"))
+        self.assertFalse(wsa_pattern.match("WSA_2311.40000.5.0_x64_Release-with-magisk-canary.7z"))
 
 
 if __name__ == "__main__":

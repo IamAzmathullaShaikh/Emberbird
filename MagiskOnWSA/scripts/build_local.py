@@ -10,6 +10,7 @@ Usage:
 
 from __future__ import annotations
 
+import argparse
 import io
 import lzma
 import os
@@ -128,9 +129,10 @@ def compress_xz(data: bytes) -> bytes:
     return lzma.compress(data, format=lzma.FORMAT_XZ, check=lzma.CHECK_CRC32)
 
 
-def patch_initrd(initrd_path: Path, magisk_zip_path: Path, gapps_img_path: Path,
+def patch_initrd(initrd_path: Path, magisk_zip_path: Path | None, gapps_img_path: Path,
                  gapps_rc_path: Path, cust_img_path: Path, lspinit_path: Path,
-                 post_fs_path: Path, init_lsp_rc_path: Path) -> None:
+                 post_fs_path: Path | None = None, init_lsp_rc_path: Path | None = None,
+                 root_sol: str = "magisk") -> None:
     bak_path = initrd_path.with_suffix(".img.bak")
     source_initrd = bak_path if bak_path.exists() else initrd_path
 
@@ -147,41 +149,59 @@ def patch_initrd(initrd_path: Path, magisk_zip_path: Path, gapps_img_path: Path,
     if not stock_init:
         raise RuntimeError("Stock init binary not found in stock initrd.img")
 
-    with zipfile.ZipFile(magisk_zip_path, "r") as mz:
-        stub_data = mz.read("stub.apk") if "stub.apk" in mz.namelist() else magisk_zip_path.read_bytes()
-        magisk_data = mz.read("lib/x86_64/libmagisk.so")
-        init_ld_data = mz.read("lib/x86_64/libinit-ld.so")
-        magiskinit_data = mz.read("lib/x86_64/libmagiskinit.so")
-
     lspinit_data = lspinit_path.read_bytes()
     gapps_img_data = gapps_img_path.read_bytes()
     gapps_rc_data = gapps_rc_path.read_bytes()
     cust_img_data = cust_img_path.read_bytes()
-    post_fs_data = post_fs_path.read_bytes()
-    init_lsp_rc_data = init_lsp_rc_path.read_bytes()
 
-    print("    Compressing Magisk payload binaries with XZ (CRC32) ...")
-    mag_xz = compress_xz(magisk_data)
-    init_ld_xz = compress_xz(init_ld_data)
-    stub_xz = compress_xz(stub_data)
+    if root_sol == "none":
+        print("    Configuring unrooted ramdisk (Vanilla / No Root) ...")
+        new_entries: list[CpioEntry] = [
+            CpioEntry(name=".backup", data=b"", mode=0o40000, nlink=2),
+            CpioEntry(name="init", data=b"lspinit", mode=0o120000),
+            CpioEntry(name="lspinit", data=lspinit_data, mode=0o100750),
+            CpioEntry(name="wsainit", data=stock_init.data, mode=0o100777),
+            CpioEntry(name="overlay.d", data=b"", mode=0o40750, nlink=2),
+            CpioEntry(name="overlay.d/gapps.rc", data=gapps_rc_data, mode=0o100000),
+            CpioEntry(name="overlay.d/sbin", data=b"", mode=0o40750, nlink=2),
+            CpioEntry(name="overlay.d/sbin/lsp_cust.img", data=cust_img_data, mode=0o100000),
+            CpioEntry(name="overlay.d/sbin/lsp_gapps.img", data=gapps_img_data, mode=0o100000),
+        ]
+    else:
+        if not magisk_zip_path or not post_fs_path or not init_lsp_rc_path:
+            raise ValueError("Magisk payload paths required when root_sol is 'magisk'")
 
-    new_entries: list[CpioEntry] = [
-        CpioEntry(name=".backup", data=b"", mode=0o40000, nlink=2),
-        CpioEntry(name="init", data=b"lspinit", mode=0o120000),
-        CpioEntry(name="lspinit", data=lspinit_data, mode=0o100750),
-        CpioEntry(name="magiskinit", data=magiskinit_data, mode=0o100750),
-        CpioEntry(name="wsainit", data=stock_init.data, mode=0o100777),
-        CpioEntry(name="overlay.d", data=b"", mode=0o40750, nlink=2),
-        CpioEntry(name="overlay.d/gapps.rc", data=gapps_rc_data, mode=0o100000),
-        CpioEntry(name="overlay.d/init.lsp.magisk.rc", data=init_lsp_rc_data, mode=0o100000),
-        CpioEntry(name="overlay.d/sbin", data=b"", mode=0o40750, nlink=2),
-        CpioEntry(name="overlay.d/sbin/init-ld.xz", data=init_ld_xz, mode=0o100644),
-        CpioEntry(name="overlay.d/sbin/lsp_cust.img", data=cust_img_data, mode=0o100000),
-        CpioEntry(name="overlay.d/sbin/lsp_gapps.img", data=gapps_img_data, mode=0o100000),
-        CpioEntry(name="overlay.d/sbin/magisk.xz", data=mag_xz, mode=0o100644),
-        CpioEntry(name="overlay.d/sbin/post-fs-data.sh", data=post_fs_data, mode=0o100000),
-        CpioEntry(name="overlay.d/sbin/stub.xz", data=stub_xz, mode=0o100644),
-    ]
+        with zipfile.ZipFile(magisk_zip_path, "r") as mz:
+            stub_data = mz.read("stub.apk") if "stub.apk" in mz.namelist() else magisk_zip_path.read_bytes()
+            magisk_data = mz.read("lib/x86_64/libmagisk.so")
+            init_ld_data = mz.read("lib/x86_64/libinit-ld.so")
+            magiskinit_data = mz.read("lib/x86_64/libmagiskinit.so")
+
+        post_fs_data = post_fs_path.read_bytes()
+        init_lsp_rc_data = init_lsp_rc_path.read_bytes()
+
+        print("    Compressing Magisk payload binaries with XZ (CRC32) ...")
+        mag_xz = compress_xz(magisk_data)
+        init_ld_xz = compress_xz(init_ld_data)
+        stub_xz = compress_xz(stub_data)
+
+        new_entries = [
+            CpioEntry(name=".backup", data=b"", mode=0o40000, nlink=2),
+            CpioEntry(name="init", data=b"lspinit", mode=0o120000),
+            CpioEntry(name="lspinit", data=lspinit_data, mode=0o100750),
+            CpioEntry(name="magiskinit", data=magiskinit_data, mode=0o100750),
+            CpioEntry(name="wsainit", data=stock_init.data, mode=0o100777),
+            CpioEntry(name="overlay.d", data=b"", mode=0o40750, nlink=2),
+            CpioEntry(name="overlay.d/gapps.rc", data=gapps_rc_data, mode=0o100000),
+            CpioEntry(name="overlay.d/init.lsp.magisk.rc", data=init_lsp_rc_data, mode=0o100000),
+            CpioEntry(name="overlay.d/sbin", data=b"", mode=0o40750, nlink=2),
+            CpioEntry(name="overlay.d/sbin/init-ld.xz", data=init_ld_xz, mode=0o100644),
+            CpioEntry(name="overlay.d/sbin/lsp_cust.img", data=cust_img_data, mode=0o100000),
+            CpioEntry(name="overlay.d/sbin/lsp_gapps.img", data=gapps_img_data, mode=0o100000),
+            CpioEntry(name="overlay.d/sbin/magisk.xz", data=mag_xz, mode=0o100644),
+            CpioEntry(name="overlay.d/sbin/post-fs-data.sh", data=post_fs_data, mode=0o100000),
+            CpioEntry(name="overlay.d/sbin/stub.xz", data=stub_xz, mode=0o100644),
+        ]
 
     adbkey_pub = Path.home() / ".android" / "adbkey.pub"
     if adbkey_pub.exists():
@@ -197,17 +217,25 @@ def patch_initrd(initrd_path: Path, magisk_zip_path: Path, gapps_img_path: Path,
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description="WSABuilds Native Local Builder (Windows / Pure Python)")
+    parser.add_argument("--root-sol", choices=["magisk", "none"], default="magisk", help="Root solution: magisk (default) or none (Vanilla)")
+    parser.add_argument("--gapps", choices=["pico"], default="pico", help="Google Apps variant: pico (default)")
+    parser.add_argument("--arch", choices=["x64"], default="x64", help="Architecture: x64 (default)")
+    args = parser.parse_args()
+
     script_dir = Path(__file__).resolve().parent
     magisk_on_wsa = script_dir.parent
 
     download_dir = magisk_on_wsa / "download"
     output_base = magisk_on_wsa / "output"
-    bin_dir = magisk_on_wsa / "bin" / "x64"
+    bin_dir = magisk_on_wsa / "bin" / args.arch
     installer_dir = magisk_on_wsa / "installer"
     xml_dir = magisk_on_wsa / "xml"
 
+    edition = "Banking/Enterprise Edition (Vanilla / No Root) + OpenGApps Pico" if args.root_sol == "none" else "Standard Edition (Magisk Stable + OpenGApps Pico)"
     print("====================================================")
-    print(" WSABuilds Native Local Builder (Windows / Pure Python)")
+    print(f" WSABuilds Native Local Builder ({edition})")
+    print(f" Arch: {args.arch} | Root: {args.root_sol} | GApps: {args.gapps}")
     print("====================================================")
 
     wsa_zip = download_dir / "wsa-retail.zip"
@@ -219,14 +247,21 @@ def main() -> int:
     post_fs = script_dir / "post-fs-data.sh"
     init_lsp_rc = script_dir / "init.lsp.magisk.rc"
 
-    for path, label in [
+    required_checks = [
         (wsa_zip, "WSA Retail Archive"),
-        (magisk_zip, "Magisk Stable Archive"),
         (gapps_img, "GApps Image"),
         (gapps_rc, "GApps RC"),
         (cust_img, "Cust Image"),
         (lspinit, "lspinit binary"),
-    ]:
+    ]
+    if args.root_sol == "magisk":
+        required_checks.extend([
+            (magisk_zip, "Magisk Stable Archive"),
+            (post_fs, "post-fs-data.sh"),
+            (init_lsp_rc, "init.lsp.magisk.rc"),
+        ])
+
+    for path, label in required_checks:
         if not path.exists():
             print(f"[-] ERROR: Required file not found: {label} ({path})")
             return 1
@@ -250,7 +285,8 @@ def main() -> int:
     print(f"    Target x64 package: {wsa_msix_name}")
     print(f"    Detected WSA version: {wsa_ver}")
 
-    output_dir = output_base / f"WSA_{wsa_ver}_x64"
+    folder_suffix = "_vanilla" if args.root_sol == "none" else ""
+    output_dir = output_base / f"WSA_{wsa_ver}_{args.arch}{folder_suffix}"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     target_initrd = output_dir / "Tools" / "initrd.img"
@@ -277,13 +313,14 @@ def main() -> int:
 
     patch_initrd(
         initrd_path=target_initrd,
-        magisk_zip_path=magisk_zip,
+        magisk_zip_path=magisk_zip if args.root_sol == "magisk" else None,
         gapps_img_path=gapps_img,
         gapps_rc_path=gapps_rc,
         cust_img_path=cust_img,
         lspinit_path=lspinit,
-        post_fs_path=post_fs,
-        init_lsp_rc_path=init_lsp_rc,
+        post_fs_path=post_fs if args.root_sol == "magisk" else None,
+        init_lsp_rc_path=init_lsp_rc if args.root_sol == "magisk" else None,
+        root_sol=args.root_sol,
     )
 
     print("[*] Staging Windows runtime dependencies and installer scripts ...")

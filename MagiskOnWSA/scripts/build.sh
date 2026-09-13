@@ -150,14 +150,17 @@ trap 'abort "Interrupted by user"' INT TERM
 
 usage() {
     cat <<'EOF'
-WSABuilds — Magisk Stable + OpenGApps Pico (Retail x64)
+WSABuilds — Tier 1 Core Build System (Retail x64)
 
 Usage:
   ./build.sh [options]
 
 Options:
+  --root-sol            Root solution: magisk | none  (default: magisk)
+  --gapps               Google Apps variant: pico  (default: pico)
+  --arch                Architecture: x64  (default: x64)
   --offline             Skip all downloads; use cached files in ../download/
-  --skip-download-wsa   Skip WSA download only; still download Magisk + GApps
+  --skip-download-wsa   Skip WSA download only; still download dependencies
   --magisk-custom       Use a custom Magisk already in ../download/
                           Named:  magisk-stable.zip  OR  app-stable.apk
   --compress-format     Output compression: 7z | zip | none  (default: 7z)
@@ -165,17 +168,16 @@ Options:
   --help                Show this help message and exit
 
 Examples:
-  ./build.sh
-  ./build.sh --offline
-  ./build.sh --magisk-custom
-  ./build.sh --compress-format zip
+  ./build.sh                                      # Standard Edition (Magisk + Pico)
+  ./build.sh --root-sol none                      # Banking Edition (Vanilla + Pico)
+  ./build.sh --root-sol none --compress-format 7z
 EOF
 }
 
 parse_args() {
     local opts
     opts=$(getopt \
-        --longoptions "offline,skip-download-wsa,magisk-custom,compress-format:,debug,help" \
+        --longoptions "offline,skip-download-wsa,magisk-custom,compress-format:,root-sol:,gapps:,arch:,debug,help" \
         --name "$(basename "$0")" \
         --options "" \
         -- "$@") || {
@@ -187,6 +189,27 @@ parse_args() {
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
+            --root-sol)
+                case "$2" in
+                    magisk|none) TARGET_ROOT_SOL="$2" ;;
+                    *) echo "ERROR: Invalid --root-sol '$2'. Valid: magisk, none" >&2; exit 1 ;;
+                esac
+                shift 2
+                ;;
+            --gapps)
+                case "$2" in
+                    pico) TARGET_GAPPS_VARIANT="$2" ;;
+                    *) echo "ERROR: Invalid --gapps '$2'. Valid: pico" >&2; exit 1 ;;
+                esac
+                shift 2
+                ;;
+            --arch)
+                case "$2" in
+                    x64) TARGET_ARCH="$2" ;;
+                    *) echo "ERROR: Invalid --arch '$2'. Valid: x64" >&2; exit 1 ;;
+                esac
+                shift 2
+                ;;
             --offline)
                 OFFLINE=1
                 shift
@@ -235,8 +258,14 @@ parse_args() {
 # =============================================================================
 
 setup_env() {
+    local edition_name
+    if [ "$TARGET_ROOT_SOL" = "none" ]; then
+        edition_name="Banking/Enterprise Edition (Vanilla / No Root) + OpenGApps Pico"
+    else
+        edition_name="Standard Edition (Magisk Stable + OpenGApps Pico)"
+    fi
     echo "════════════════════════════════════════════════════"
-    echo " WSABuilds  |  Magisk Stable + OpenGApps Pico"
+    echo " WSABuilds  |  ${edition_name}"
     echo " Arch: ${TARGET_ARCH}  |  Release: ${TARGET_RELEASE_TYPE}"
     echo "════════════════════════════════════════════════════"
 
@@ -423,9 +452,12 @@ verify_required_files() {
         ["VCLibs"]="$vclibs_PATH"
         ["UWP VCLibs"]="$UWPVCLibs_PATH"
         ["XAML"]="$xaml_PATH"
-        ["Magisk ZIP"]="$MAGISK_PATH"
         ["WSA-Addon cust.img"]="$CUST_PATH"
     )
+
+    if [ "$TARGET_ROOT_SOL" = "magisk" ]; then
+        required_files["Magisk ZIP"]="$MAGISK_PATH"
+    fi
 
     # GApps files — resolved from config functions
     local gapps_img_name
@@ -484,6 +516,37 @@ extract_magisk() {
 # =============================================================================
 
 integrate_magisk() {
+    if [ "$TARGET_ROOT_SOL" = "none" ]; then
+        echo -e "\n── Step 6: Integrate Initrd Trampoline (Vanilla / No Root) ───────"
+        echo "build: skipping Magisk root injection (Vanilla build requested)"
+
+        local target_initrd
+        target_initrd=$(to_native_path "$WORK_DIR/wsa/$TARGET_ARCH/Tools/initrd.img")
+        local path_lspinit
+        path_lspinit=$(to_native_path "../bin/$TARGET_ARCH/lspinit")
+        local path_cust
+        path_cust=$(to_native_path "$CUST_PATH")
+
+        # Dynamic CPIO patch command array for Vanilla trampoline (no root daemon)
+        local -a cpio_cmds=(
+            "mv init wsainit"
+            "add 0750 lspinit $path_lspinit"
+            "ln lspinit init"
+            "mkdir 0750 overlay.d"
+            "mkdir 0750 overlay.d/sbin"
+            "add 000 overlay.d/sbin/lsp_cust.img $path_cust"
+        )
+
+        "$WORK_DIR/magisk/magiskboot" cpio "$target_initrd" "${cpio_cmds[@]}" \
+            || abort "magiskboot cpio failed — unable to patch initrd for Vanilla"
+
+        "$WORK_DIR/magisk/magiskboot" cpio "$target_initrd" "exists wsainit" \
+            || abort "Verification failed: wsainit not found in patched initrd"
+
+        echo -e "done\n"
+        return
+    fi
+
     echo -e "\n── Step 6: Integrate Magisk ────────────────────────────────────"
 
     # Compress Magisk binaries with xz for storage in the ramdisk overlay
@@ -675,10 +738,14 @@ finalise_output() {
     source "$WSA_WORK_ENV" || abort "Failed to load final WSA env"
 
     # Build artifact name components
-    local name_root   # -with-magisk-<ver>(<code>)-stable
+    local name_root   # -with-magisk-<ver>(<code>)-stable or -vanilla
     local name_gapps  # -GApps-<android_ver>-pico
 
-    name_root="-with-magisk-${MAGISK_VERSION_NAME}(${MAGISK_VERSION_CODE})-stable"
+    if [ "$TARGET_ROOT_SOL" = "none" ]; then
+        name_root="-vanilla"
+    else
+        name_root="-with-magisk-${MAGISK_VERSION_NAME}(${MAGISK_VERSION_CODE})-stable"
+    fi
 
     case "$ANDROID_API" in
         30) name_gapps="-GApps-11.0-pico" ;;
@@ -688,10 +755,16 @@ finalise_output() {
     esac
 
     local artifact_name="WSA_${WSA_VER}_${TARGET_ARCH}_${WSA_REL}${name_root}${name_gapps}"
-    local short_name="WSA_${WSA_VER}_${TARGET_ARCH}"
+    local short_name
+    if [ "$TARGET_ROOT_SOL" = "none" ]; then
+        short_name="WSA_${WSA_VER}_${TARGET_ARCH}_vanilla"
+    else
+        short_name="WSA_${WSA_VER}_${TARGET_ARCH}"
+    fi
 
     mkdir -p "$OUTPUT_DIR"
     local output_path="${OUTPUT_DIR:?}/$short_name"
+    rm -rf "$output_path"
     mv "$WORK_DIR/wsa/$TARGET_ARCH" "$output_path" || abort "mv output failed"
 
     echo "build: artifact = $artifact_name"
@@ -703,9 +776,10 @@ finalise_output() {
             echo "artifact_folder=${short_name}"
             echo "artifact=${artifact_name}"
             echo "arch=${TARGET_ARCH}"
+            echo "root_sol=${TARGET_ROOT_SOL}"
             echo "built=$(date -u +%Y%m%d%H%M%S)"
             echo "file_ext=${COMPRESS_FORMAT}"
-            echo "magisk_ver=${MAGISK_VERSION_NAME}"
+            echo "magisk_ver=${MAGISK_VERSION_NAME:-none}"
             echo "gapps_variant=pico"
         } >> "$GITHUB_OUTPUT"
     fi
