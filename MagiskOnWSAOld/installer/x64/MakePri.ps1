@@ -16,7 +16,16 @@
 # Copyright (C) 2023 LSPosed Contributors
 #
 
-$MakePri = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\makepri.exe"
+$MakePri = if (Test-Path ".\makepri.exe") {
+    ".\makepri.exe"
+} elseif (Get-Command "makepri.exe" -ErrorAction SilentlyContinue) {
+    "makepri.exe"
+} else {
+    $sdkPri = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin" -Recurse -Filter "makepri.exe" -ErrorAction SilentlyContinue |
+        Where-Object { $_.DirectoryName -match '\\x64\\' } |
+        Sort-Object FullName -Descending | Select-Object -First 1
+    if ($null -ne $sdkPri) { $sdkPri.FullName } else { "makepri.exe" }
+}
 
 New-Item -Path "." -Name "priinfo" -ItemType "directory" | Out-Null
 Copy-Item .\resources.pri -Destination ".\pri\resources.pri" | Out-Null
