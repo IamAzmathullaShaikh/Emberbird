@@ -21,6 +21,8 @@ serde_json = "1.0"
 tokio = { version = "1.38", features = ["full"] }
 reqwest = { version = "0.12", features = ["json"] }
 semver = "1.0"
+sha2 = "0.10"
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.52"
@@ -28,5 +30,6 @@ windows = { version = "0.58", features = [
     "Win32_Foundation",
     "Win32_System_Threading",
     "Win32_System_Diagnostics_ToolHelp",
-    "Win32_System_Registry"
+    "Win32_System_Registry",
+    "Win32_Storage_FileSystem"
 ] }
