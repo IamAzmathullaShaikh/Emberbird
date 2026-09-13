@@ -1,0 +1,99 @@
+name: Upstream Sync
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # Runs daily at 03:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  sync:
+    name: Sync with MustardChef/WSABuilds
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Configure Git Identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Check Upstream Divergence
+        id: sync-check
+        run: |
+          git remote add upstream https://github.com/MustardChef/WSABuilds.git || true
+          git fetch upstream master
+          
+          LOCAL_COMMIT=$(git rev-parse HEAD)
+          UPSTREAM_COMMIT=$(git rev-parse upstream/master)
+          MERGE_BASE=$(git merge-base HEAD upstream/master)
+          
+          echo "local_commit=${LOCAL_COMMIT}" >> $GITHUB_OUTPUT
+          echo "upstream_commit=${UPSTREAM_COMMIT}" >> $GITHUB_OUTPUT
+          
+          if [ "${UPSTREAM_COMMIT}" = "${MERGE_BASE}" ]; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "[+] Local master is fully up to date with upstream."
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "[*] Upstream contains new commits."
+          fi
+
+      - name: Attempt Clean Merge
+        if: steps.sync-check.outputs.has_changes == 'true'
+        id: merge-attempt
+        run: |
+          BRANCH="sync/upstream-$(date +%Y%m%d-%H%M)"
+          git checkout -b "${BRANCH}"
+          echo "branch=${BRANCH}" >> $GITHUB_OUTPUT
+          
+          if git merge --no-commit --no-ff upstream/master; then
+            git commit -m "chore(upstream): merge changes from MustardChef/master"
+            echo "merge_success=true" >> $GITHUB_OUTPUT
+            echo "[+] Clean merge succeeded."
+          else
+            git merge --abort || true
+            echo "merge_success=false" >> $GITHUB_OUTPUT
+            echo "[-] Merge conflict encountered."
+          fi
+
+      - name: Run Test Suite
+        if: steps.sync-check.outputs.has_changes == 'true' && steps.merge-attempt.outputs.merge_success == 'true'
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f "MagiskOnWSA/requirements.txt" ]; then pip install -r MagiskOnWSA/requirements.txt; fi
+          python -m unittest discover -s tests -v
+          python scripts/check_doc_links.py
+          python scripts/security_scan.py
+
+      - name: Create Pull Request
+        if: steps.sync-check.outputs.has_changes == 'true' && steps.merge-attempt.outputs.merge_success == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push origin "${{ steps.merge-attempt.outputs.branch }}"
+          gh pr create \
+            --base master \
+            --head "${{ steps.merge-attempt.outputs.branch }}" \
+            --title "chore(upstream): sync changes from MustardChef/WSABuilds ($(date +'%Y-%m-%d'))" \
+            --body "Automated upstream sync from \`MustardChef/WSABuilds:master\`. Offline quality gates passed."
+
+      - name: Report Merge Conflict
+        if: steps.sync-check.outputs.has_changes == 'true' && steps.merge-attempt.outputs.merge_success == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "Upstream Sync Conflict: Manual Merge Required ($(date +'%Y-%m-%d'))" \
+            --label "upstream-conflict,needs-triage" \
+            --body "Automated sync detected merge conflicts with \`MustardChef/master\`. Please resolve manually."

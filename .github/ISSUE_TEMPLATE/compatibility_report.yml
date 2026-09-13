@@ -1,0 +1,77 @@
+name: App Compatibility Report
+description: Report an Android application compatibility result or workaround on WSA.
+title: "[Compat]: <App Name> - <Working / Workaround / Broken>"
+labels: ["compatibility", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for submitting an application compatibility report! Your report helps build the community compatibility matrix on [wsabuilds.azmathulla.dev](https://wsabuilds.azmathulla.dev/compatibility).
+  - type: input
+    id: app_name
+    attributes:
+      label: Application Name
+      description: The official name of the application.
+      placeholder: e.g. PhonePe / SBI YONO / WhatsApp
+    validations:
+      required: true
+  - type: input
+    id: package_id
+    attributes:
+      label: Package Name / Application ID
+      description: The Android package ID (from Google Play Store URL).
+      placeholder: e.g. com.phonepe.app
+    validations:
+      required: true
+  - type: dropdown
+    id: status
+    attributes:
+      label: Compatibility Status
+      description: What is the current operational status of the app?
+      options:
+        - "Working (Runs out of the box with zero issues)"
+        - "Workaround Required (Runs after specific Magisk / Zygisk / DenyList steps)"
+        - "Broken (Crashes on launch / Root detected / Won't open)"
+    validations:
+      required: true
+  - type: dropdown
+    id: root_solution
+    attributes:
+      label: Root Integration Used
+      description: Which WSA release flavor are you running?
+      options:
+        - "Magisk Stable"
+        - "KernelSU"
+        - "No Root"
+    validations:
+      required: true
+  - type: dropdown
+    id: play_integrity
+    attributes:
+      label: Play Integrity Status
+      description: Does this app require Play Integrity attestation?
+      options:
+        - "Yes - Passes MEETS_DEVICE_INTEGRITY (with PIF)"
+        - "Yes - Fails Play Integrity"
+        - "No / Not Applicable"
+    validations:
+      required: true
+  - type: textarea
+    id: workaround_steps
+    attributes:
+      label: Configuration / Workaround Steps
+      description: If a workaround is required, describe the exact toggles, modules, or settings needed.
+      placeholder: |
+        1. Enable Zygisk in Magisk settings.
+        2. Install PlayIntegrityFix module.
+        3. Add app to Magisk DenyList.
+    validations:
+      required: false
+  - type: input
+    id: wsa_version
+    attributes:
+      label: WSA Release Version
+      description: The WSA build version you tested on.
+      placeholder: e.g. 2311.40000.5.0
+    validations:
+      required: true
