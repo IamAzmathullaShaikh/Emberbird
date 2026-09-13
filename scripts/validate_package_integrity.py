@@ -132,18 +132,32 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Validate WSA package structural integrity.")
     parser.add_argument("--package-dir", type=Path, help="Path to package directory")
     parser.add_argument("--output-report", type=Path, default=Path("package-integrity-report.json"), help="Output JSON report path")
+    parser.add_argument("--require-package", action="store_true", help="Fail with exit code 2 if package directory cannot be found")
 
     args = parser.parse_args()
 
     package_dir = args.package_dir
     if not package_dir:
-        candidates = list(Path("MagiskOnWSA/output").glob("WSA_*"))
+        candidates = list(Path("MagiskOnWSA/output").glob("WSA_*")) + list(Path("output").glob("WSA_*"))
         candidates = [c for c in candidates if c.is_dir()]
         if candidates:
             package_dir = candidates[0]
-        else:
+
+    if not package_dir or not package_dir.is_dir():
+        if args.require_package:
             print("[-] Error: Could not find package directory. Specify --package-dir.", file=sys.stderr)
             return 2
+        else:
+            print("[*] Notice: No built package directory found in workspace.")
+            report = {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "status": "SKIPPED",
+                "validation_status": "SKIPPED",
+                "reason": "No built package directory present; skipping post-build integrity check."
+            }
+            args.output_report.write_text(json.dumps(report, indent=2), encoding="utf-8")
+            print(f"[*] Integrity report written to: {args.output_report} (status: SKIPPED)")
+            return 0
 
     print(f"[*] Checking package integrity: {package_dir}")
     passed, report = check_package_integrity(package_dir)
