@@ -73,6 +73,10 @@ jobs:
             "WSABuilds Utilities/Update Script" \
             "WSABuilds Utilities/Uninstall Script"
 
+      - name: Install Test Dependencies 📦
+        run: |
+          pip3 install --quiet -r MagiskOnWSA/scripts/requirements.txt
+
       - name: Run Unit Tests 🧪
         run: |
           python3 -m unittest discover -s tests -v
@@ -106,7 +110,7 @@ jobs:
 
       - name: Install Python Requirements
         run: |
-          pip3 install --quiet -r MagiskOnWSA/requirements.txt
+          pip3 install --quiet -r MagiskOnWSA/scripts/requirements.txt
 
       - name: Execute WSA Core Build Script ⚙️
         env:
