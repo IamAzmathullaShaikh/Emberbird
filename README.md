@@ -13,7 +13,7 @@
 <br/>
 <p align="center">
       <a href="https://github.com/MustardChef/WSABuilds#downloads"><img src="https://img.shields.io/github/downloads/MustardChef/WSABuilds/total?label=Total%20Downloads&amp;style=for-the-badge"/></a>
-      <a href="https://forum.xda-developers.com/t/wsabuilds-latest-windows-subsystem-for-android-wsa-builds-for-   windows-10-and-11-with-magisk-and-google-play-store.4545087/">
+      <a href="https://forum.xda-developers.com/t/wsabuilds-latest-windows-subsystem-for-android-wsa-builds-for-windows-10-and-11-with-magisk-and-google-play-store.4545087/">
             <img src="https://img.shields.io/badge/XDA%20Developers-WSABuilds-EA7100?style=for-the-badge&amp;logoColor=white&amp;logo=XDA-Developers"/></a> 
       <a href="https://ko-fi.com/N4N0K08AC"><img alt="ko-fi" src="https://ko-fi.com/img/githubbutton_sm.svg"/></a>
 </p>
@@ -101,7 +101,7 @@
 <td>Windows™ 10: 22H2 10.0.19045.2311 or higher. <br/><br/><b><i>May work on Windows™ 10: 20H1 10.0.19041.264 or higher.<b></b></i><sup>1</sup><br/><br/><sub><sup>1. You may need to install <a href="https://www.catalog.update.microsoft.com/Search.aspx?q=KB5014032" rel="noopener noreferrer" target="_blank">KB5014032</a> then install <a href="https://www.catalog.update.microsoft.com/Search.aspx?q=KB5022834" rel="noopener noreferrer" target="_blank">KB5022834</a> to use WSA on these older Windows 10 builds<b><br/><br/><b></b></b></sup></sub></b></td>
 </tr>
 <tr>
-<td colspan="2"><h5><b><i>Custom/modfied Windows OS installations (such as ReviOS, Tiny 10/11 and Ghost Spectre etc.) may have issues with running WSA.<br/></i></b></h5></td>
+<td colspan="2"><h5><b><i>Custom/modified Windows OS installations (such as ReviOS, Tiny 10/11 and Ghost Spectre etc.) may have issues with running WSA.<br/></i></b></h5></td>
 </tr>
 <tr>
 <td><img height="60" src="https://img.icons8.com/external-smashingstocks-flat-smashing-stocks/66/null/external-RAM-technology-and-devices-smashingstocks-flat-smashing-stocks.png" style="float: left;" width="60"/><h4>RAM<h4></h4></h4></td>
@@ -117,7 +117,7 @@
 </tr>
 <tr>
 <td><img height="60" src="https://img.icons8.com/3d-fluency/94/null/video-card.png" style="float: left;" width="60"/><h4>GPU<h4></h4></h4></td>
-<td colspan="2">Any compatible Intel, AMD or Nvidia GPU. <br/> GPU Performance may vary depending on its compatibility with Windows Subsystem For Android™  <br/><br/><details><summary><h4>Users with Intel HD Graphics 530 and older<h4></h4></h4></summary><br/><h5> WSA may not start or graphical glitches will occur when Intel HD Graphics 530 and Older iGPUs are used. This is a known issue, but unfortunately there are no fixes that I currently know of, plus, these GPUs are too old and do not meet Windows 11 requirements and hence are not official supported. <a href="https://github.com/MustardChef/WSABuilds/blob/master/Documentation/Usage%20Guides/General%20Usage%20Guides/ChangingGPU.md" rel="noopener noreferrer" target="_blank">Follow this guide</a> to switch to another iGPU/dGPU/eGPU that you may have or Microsoft Basic Renderer<h5></h5></h5></details><br/><details><summary><h4>Users with Nvidia GPUs<h4></h4></h4></summary><br/><h5> Nvidia GPUs are known to cause problems. If Windows Subsystem For Android™ does not start or there are graphical glitches when an Nvidia GPU is used, <a href="https://github.com/MustardChef/WSABuilds/blob/master/Documentation/Usage%20Guides/General%20Usage%20Guides/ChangingGPU.md" rel="noopener noreferrer" target="_blank">follow this guide</a> to switch to another iGPU/dGPU/eGPU  that you may have or Microsoft Basic Renderer<h5></h5></h5></details></td>
+<td colspan="2">Any compatible Intel, AMD or Nvidia GPU. <br/> GPU Performance may vary depending on its compatibility with Windows Subsystem For Android™  <br/><br/><details><summary><h4>Users with Intel HD Graphics 530 and older<h4></h4></h4></summary><br/><h5> WSA may not start or graphical glitches will occur when Intel HD Graphics 530 and Older iGPUs are used. This is a known issue, but unfortunately there are no fixes that I currently know of, plus, these GPUs are too old and do not meet Windows 11 requirements and hence are not officially supported. <a href="https://github.com/MustardChef/WSABuilds/blob/master/Documentation/Usage%20Guides/General%20Usage%20Guides/ChangingGPU.md" rel="noopener noreferrer" target="_blank">Follow this guide</a> to switch to another iGPU/dGPU/eGPU that you may have or Microsoft Basic Renderer<h5></h5></h5></details><br/><details><summary><h4>Users with Nvidia GPUs<h4></h4></h4></summary><br/><h5> Nvidia GPUs are known to cause problems. If Windows Subsystem For Android™ does not start or there are graphical glitches when an Nvidia GPU is used, <a href="https://github.com/MustardChef/WSABuilds/blob/master/Documentation/Usage%20Guides/General%20Usage%20Guides/ChangingGPU.md" rel="noopener noreferrer" target="_blank">follow this guide</a> to switch to another iGPU/dGPU/eGPU  that you may have or Microsoft Basic Renderer<h5></h5></h5></details></td>
 </tr>
 <tr>
 <td rowspan="2"><img height="60" src="https://img.icons8.com/3d-fluency/94/null/ssd.png" style="float: left;" width="60"/><h4>Storage<h4></h4></h4></td>
@@ -150,7 +150,7 @@
 
 > [!IMPORTANT]  
 > <details>
-> <summary><h3>IF YOU HAVE BEEN RECENTLY HAVING ISSUES WITH SOME APPS BREAKING OR NOT STARTING OR APPS GETTING SUCK AT LOADING SCREEN OR APPS STUCK ON SPLASHSCREEN ( STUCK ON THE APP ICON SCREEN) OR ANY OTHER SIMILAR CASES AFTER <code>2ND JANUARY 2026</code>. (CLICK HERE)</h3></summary>
+> <summary><h3>IF YOU HAVE BEEN RECENTLY HAVING ISSUES WITH SOME APPS BREAKING OR NOT STARTING OR APPS GETTING STUCK AT LOADING SCREEN OR APPS STUCK ON SPLASHSCREEN ( STUCK ON THE APP ICON SCREEN) OR ANY OTHER SIMILAR CASES AFTER <code>2ND JANUARY 2026</code>. (CLICK HERE)</h3></summary>
 >   
 > ### UPDATE TO THE LATEST LTS AND NON-LTS RELEASES:   
 >
@@ -178,7 +178,7 @@
 > ---
 > ### WSABuilds has entered LTS (Long Term Support) for WSA versions ≥ 2311.40000.5.0, where the Magisk version, KernelSU version and GApps version will be kept up to date via new releases.
 > ### This repo will not be archived and support will still be given to any users installing WSA Builds from this repo. Thank you all for using this repository and supporting my work, its been a pleasure serving this community. 
-> ### Do make sure that you keep a look out for any updates to this repo to be notified of any futher changes to WSA and WSABuilds      
+> ### Do make sure that you keep a look out for any updates to this repo to be notified of any further changes to WSA and WSABuilds      
 >
 > ---
 > </details>
@@ -188,7 +188,7 @@
 > <summary><h2>Next LTS and Non-LTS Release Date: (Click Here)</h2></summary>
 >
 > ### WSABuilds LTS 7 Hotfix (v2407.40000.4.0)
-> ~~``January 4th June 2026``~~  **Available Now (via the both Stable and Pre-release buttons in [Downloads](https://github.com/MustardChef/WSABuilds#downloads))**
+> ~~``June 4th 2026``~~  **Available Now (via the both Stable and Pre-release buttons in [Downloads](https://github.com/MustardChef/WSABuilds#downloads))**
 > ### Non-LTS Build Update (v2407.40000.4.0_v2):
 > ~~``Monday 2nd June 2025``~~  **Available Now (via the Stable release buttons in [Downloads](https://github.com/MustardChef/WSABuilds#downloads))**
 > ### WSABuilds LTS 7 (v2407.40000.4.0) 
