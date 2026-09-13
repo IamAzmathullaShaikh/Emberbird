@@ -1,0 +1,87 @@
+name: WSABuilds Manager CI
+
+on:
+  push:
+    branches: [master, experimental, feature/*]
+    paths:
+      - 'apps/manager/**'
+      - '.github/workflows/manager-build.yml'
+  pull_request:
+    branches: [master, experimental]
+    paths:
+      - 'apps/manager/**'
+      - '.github/workflows/manager-build.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: manager-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate-manager:
+    name: Build, Typecheck & Test (Windows)
+    runs-on: windows-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Rust Stable Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: 'apps/manager/src-tauri'
+
+      - name: Install Frontend Dependencies
+        working-directory: apps/manager
+        run: |
+          npm install
+
+      - name: Frontend Test Suite
+        working-directory: apps/manager
+        run: |
+          echo "[*] Executing manager frontend unit tests..."
+          npm run test
+
+      - name: Frontend TypeScript Type Checking
+        working-directory: apps/manager
+        run: |
+          echo "[*] Executing manager TypeScript typecheck..."
+          npm run typecheck
+
+      - name: Cargo Check
+        working-directory: apps/manager/src-tauri
+        run: |
+          echo "[*] Running cargo check on native desktop engine..."
+          cargo check
+
+      - name: Cargo Clippy
+        working-directory: apps/manager/src-tauri
+        run: |
+          echo "[*] Running cargo clippy linter..."
+          cargo clippy -- -D warnings
+
+      - name: Cargo Test Suite
+        working-directory: apps/manager/src-tauri
+        run: |
+          echo "[*] Running native Rust unit tests..."
+          cargo test --verbose
+
+      - name: Verification Summary
+        run: |
+          echo "[+] WSABuilds Manager validation suite passed successfully."
