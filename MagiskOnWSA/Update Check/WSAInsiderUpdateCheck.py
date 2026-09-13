@@ -12,15 +12,22 @@ import os
 import html
 import re
 import sys
-import requests
 import logging
 import subprocess
 
 from typing import Any, OrderedDict
 from xml.dom import minidom
-
-from requests import Session
 from packaging import version
+
+# Ensure directory is in sys.path for importing env_helpers
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from env_helpers import (
+    is_valid_version,
+    fetch_stored_version,
+    write_github_env,
+    configure_ssl_session,
+    sanitize_env_value,
+)
 
 
 class Prop(OrderedDict):
@@ -41,15 +48,14 @@ class Prop(OrderedDict):
 
 
 logging.captureWarnings(True)
-env_file = os.getenv('GITHUB_ENV')
 
 # Category ID of the Windows Subsystem for Android feed
 cat_id = '858014f3-3934-4abe-8078-4aa193e74ca8'
 
 release_type = "WIF"
 
-session = Session()
-session.verify = True
+# Configure session with certifi CA store and retries (verify=certifi CA bundle with MS intermediate)
+session = configure_ssl_session()
 
 # Create the update branch from the current HEAD instead of discarding the
 # whole working tree with an orphan branch when the branch does not exist yet.
@@ -66,7 +72,7 @@ xml_dir = os.environ.get(
 # Fetch the Microsoft account user code (required to access the insider feed)
 user_code = ""
 try:
-    response = requests.get(
+    response = session.get(
         "https://api.github.com/repos/bubbles-wow/MS-Account-Token/contents/token.cfg",
         timeout=30)
     if response.status_code == 200:
@@ -74,58 +80,55 @@ try:
             response.json()["content"].encode("utf-8")).decode("utf-8")
         props = Prop(content)
         user_code = props.get("user_code") or ""
-        print("Successfully get user token from server!")
+        print("Successfully got user token from server!")
         print(f"Last update time: {props.get('update_time')}\n")
     else:
         print(f"Failed to get user token from server! Error code: {response.status_code}\n")
 except Exception as exc:
     print(f"Failed to get user token from server! {exc}\n")
 
-try:
-    currentver = requests.get(
-        "https://raw.githubusercontent.com/MustardChef/WSABuilds/update/WIF.appversion",
-        timeout=30).text.replace('\n', '')
-except Exception:
-    currentver = ""
+repo = os.getenv('GITHUB_REPOSITORY', 'MustardChef/WSABuilds')
+url = f"https://raw.githubusercontent.com/{repo}/update/WIF.appversion"
+currentver = fetch_stored_version(url, session=session, default="")
 
-# Write for pushing later (keeps the stored version even if FE3 is unreachable)
-try:
-    with open('WIF.appversion', 'w') as file:
-        file.write(currentver)
-    print("WIF.appversion file written.")
-except Exception as e:
-    print(f"Error writing to file: {e}")
-
-# Validate the stored version (first run / missing branch yields HTML garbage)
-try:
-    current = version.parse(currentver)
-except Exception:
+if not is_valid_version(currentver):
     print(f"Stored version '{currentver[:40]}' is not a valid version, treating as none")
+    currentver = ""
     current = version.parse("0")
+else:
+    current = version.parse(currentver)
+    # Only write stored version if it is strictly valid
+    try:
+        with open('WIF.appversion', 'w', encoding='utf-8') as file:
+            file.write(currentver)
+        print("WIF.appversion file written.")
+    except Exception as e:
+        print(f"Error writing to file: {e}")
 
 
 def query_fe3():
     """Return the newest WSA build version from FE3, or None on failure."""
     try:
-        with open(os.path.join(xml_dir, "GetCookie.xml"), "r") as f:
+        with open(os.path.join(xml_dir, "GetCookie.xml"), "r", encoding="utf-8") as f:
             cookie_content = f.read().format(user_code)
         out = session.post(
             'https://fe3.delivery.mp.microsoft.com/ClientWebService/client.asmx',
             data=cookie_content,
             headers={'Content-Type': 'application/soap+xml; charset=utf-8'},
-            timeout=60)
+            timeout=(15, 60))
         doc = minidom.parseString(out.text)
         cookie = doc.getElementsByTagName('EncryptedData')[0].firstChild.nodeValue
-        with open(os.path.join(xml_dir, "WUIDRequest.xml"), "r") as f:
+        with open(os.path.join(xml_dir, "WUIDRequest.xml"), "r", encoding="utf-8") as f:
             cat_id_content = f.read().format(user_code, cookie, cat_id, release_type)
         out = session.post(
             'https://fe3.delivery.mp.microsoft.com/ClientWebService/client.asmx',
             data=cat_id_content,
             headers={'Content-Type': 'application/soap+xml; charset=utf-8'},
-            timeout=60)
+            timeout=(15, 60))
         doc = minidom.parseString(html.unescape(out.text))
     except Exception as exc:
         print(f"Network/XML error while querying FE3: {exc}")
+        print(f"SSL CA bundle in use: {session.verify}")
         return None
 
     filenames = {}
@@ -170,30 +173,46 @@ def query_fe3():
 wsa_build_ver = query_fe3()
 if wsa_build_ver in (None, 0):
     print("No WSA version information could be retrieved, skipping update check.")
+    write_github_env("WSA_UPDATE_STATUS", "UNAVAILABLE")
+    write_github_env("INSIDER_UPDATE", "no")
+    write_github_env("SHOULD_BUILD", "no")
     sys.exit(0)
 
 try:
-    latest = version.parse(wsa_build_ver)
+    latest = version.parse(str(wsa_build_ver))
 except Exception:
     print(f"Invalid version returned by FE3: {wsa_build_ver}")
+    write_github_env("WSA_UPDATE_STATUS", "UNAVAILABLE")
+    write_github_env("INSIDER_UPDATE", "no")
+    write_github_env("SHOULD_BUILD", "no")
     sys.exit(0)
 
 if current < latest:
     print(f"New version found: {wsa_build_ver}")
-    subprocess.Popen(git, shell=True, stdout=None, stderr=None, executable='/bin/bash').wait()
+    shell_exec = '/bin/bash' if os.path.exists('/bin/bash') else None
+    subprocess.Popen(git, shell=True, stdout=None, stderr=None, executable=shell_exec).wait()
     try:
-        with open('WIF.appversion', 'w') as file:
-            file.write(wsa_build_ver)
+        with open('WIF.appversion', 'w', encoding='utf-8') as file:
+            file.write(str(wsa_build_ver))
         print("WIF.appversion updated.")
     except Exception as e:
         print(f"Error writing to file: {e}")
-    msg = f'Update WSA Version from `v{currentver}` to `v{wsa_build_ver}`'
-    if env_file:
-        with open(env_file, "a") as wr:
-            wr.write("SHOULD_BUILD=yes\n")
-            wr.write(f"RELEASE_TYPE={release_type}\n")
-            wr.write(f"LATEST_WIF_VER={wsa_build_ver}\n")
-            wr.write(f"MSG={msg}\n")
-            wr.write("INSIDER_UPDATE=yes\n")
+    if currentver:
+        msg = f'Update WSA Version from v{currentver} to v{wsa_build_ver}'
+    else:
+        msg = f'WSA Version: v{wsa_build_ver}'
+    write_github_env("SHOULD_BUILD", "yes")
+    write_github_env("RELEASE_TYPE", release_type)
+    write_github_env("LATEST_WIF_VER", str(wsa_build_ver))
+    write_github_env("MSG", msg)
+    write_github_env("INSIDER_UPDATE", "yes")
+    write_github_env("WSA_UPDATE_STATUS", "AVAILABLE")
 else:
     print(f"WSA WIF version is up to date: {currentver}")
+    if not os.path.exists('WIF.appversion') or os.path.getsize('WIF.appversion') == 0:
+        with open('WIF.appversion', 'w', encoding='utf-8') as file:
+            file.write(str(currentver if currentver else wsa_build_ver))
+    write_github_env("WSA_UPDATE_STATUS", "NO_CHANGE")
+    write_github_env("INSIDER_UPDATE", "no")
+    write_github_env("SHOULD_BUILD", "no")
+    write_github_env("LATEST_WIF_VER", str(currentver if currentver else wsa_build_ver))

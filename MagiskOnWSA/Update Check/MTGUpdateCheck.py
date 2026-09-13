@@ -10,13 +10,23 @@ that was used.
 """
 
 import os
+import sys
 import json
-import requests
 import logging
 import subprocess
 
+# Ensure directory is in sys.path for importing env_helpers
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from env_helpers import (
+    is_valid_version,
+    fetch_stored_version,
+    write_github_env,
+    configure_ssl_session,
+    sanitize_env_value,
+)
+
 logging.captureWarnings(True)
-env_file = os.getenv('GITHUB_ENV')
+session = configure_ssl_session()
 
 # Create the update branch from the current HEAD instead of discarding the
 # whole working tree with an orphan branch when the branch does not exist yet.
@@ -24,43 +34,54 @@ git = (
     "git checkout -f update 2>/dev/null || git checkout -b update"
 )
 
+repo = os.getenv('GITHUB_REPOSITORY', 'MustardChef/WSABuilds')
+url = f"https://raw.githubusercontent.com/{repo}/update/gapps.appversion"
+currentver = fetch_stored_version(url, session=session, default="")
 
-def looks_like_version(value: str) -> bool:
-    """Reject garbage (e.g. a 404 HTML page from a missing update branch)."""
-    return bool(value) and len(value) < 40 and any(ch.isdigit() for ch in value)
-
-
-try:
-    currentver = requests.get(
-        "https://raw.githubusercontent.com/MustardChef/WSABuilds/update/gapps.appversion",
-        timeout=30).text.replace('\n', '')
-except Exception:
-    currentver = ""
-
-if not looks_like_version(currentver):
+if not is_valid_version(currentver):
     print(f"Stored version '{currentver[:40]}' is not a valid version, bootstrapping from latest.")
     currentver = ""
 
-with open('gapps.appversion', 'w') as file:
-    file.write(currentver)
+if is_valid_version(currentver):
+    with open('gapps.appversion', 'w', encoding='utf-8') as file:
+        file.write(currentver)
 
 try:
-    latestver = json.loads(requests.get(
+    headers = {"User-Agent": "WSABuilds-UpdateChecker"}
+    token = os.getenv('GITHUB_TOKEN')
+    if token:
+        headers['Authorization'] = f'Bearer {token}'
+    resp = session.get(
         "https://api.github.com/repos/MustardChef/MindTheGappsArchived/releases/latest",
-        timeout=30).content)['name'].replace('\n', '')
+        headers=headers,
+        timeout=30,
+    )
+    resp.raise_for_status()
+    latestver = str(json.loads(resp.content)['name']).strip().replace('\n', '')
 except Exception as exc:
     print(f"Failed to fetch latest MindTheGapps version: {exc}")
-    exit(1)
+    sys.exit(1)
+
+if not is_valid_version(latestver):
+    print(f"Invalid latest MindTheGapps version fetched: '{latestver}'")
+    sys.exit(1)
 
 if currentver != latestver:
-    print("New version found: " + latestver)
-    subprocess.Popen(git, shell=True, stdout=None, stderr=None, executable='/bin/bash').wait()
-    with open('gapps.appversion', 'w') as file:
+    print(f"New version found: {latestver}")
+    shell_exec = '/bin/bash' if os.path.exists('/bin/bash') else None
+    subprocess.Popen(git, shell=True, stdout=None, stderr=None, executable=shell_exec).wait()
+    with open('gapps.appversion', 'w', encoding='utf-8') as file:
         file.write(latestver)
-    mtgmsg = f"Update MindTheGapps Version from `v{currentver}` to `v{latestver}`"
+    if currentver:
+        mtgmsg = f"Update MindTheGapps Version from v{currentver} to v{latestver}"
+    else:
+        mtgmsg = f"MindTheGapps Package Version: {latestver}"
 else:
-    mtgmsg = "MindTheGapps Package Version: `" + latestver + "`"
+    if not os.path.exists('gapps.appversion') or os.path.getsize('gapps.appversion') == 0:
+        with open('gapps.appversion', 'w', encoding='utf-8') as file:
+            file.write(latestver)
+    mtgmsg = f"MindTheGapps Package Version: {latestver}"
 
-if env_file:
-    with open(env_file, "a") as wr:
-        wr.write(f"MTG_MSG={mtgmsg}\n")
+print(f"MindTheGapps Version status: {mtgmsg}")
+write_github_env("MTG_MSG", mtgmsg)
+write_github_env("MTG_VER", latestver)

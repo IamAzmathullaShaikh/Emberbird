@@ -3,13 +3,23 @@
 magiskstable.appversion file + GITHUB_ENV message."""
 
 import os
+import sys
 import json
-import requests
 import logging
 import subprocess
 
+# Ensure directory is in sys.path for importing env_helpers
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from env_helpers import (
+    is_valid_version,
+    fetch_stored_version,
+    write_github_env,
+    configure_ssl_session,
+    sanitize_env_value,
+)
+
 logging.captureWarnings(True)
-env_file = os.getenv('GITHUB_ENV')
+session = configure_ssl_session()
 
 # Create the update branch from the current HEAD instead of discarding the
 # whole working tree with an orphan branch when the branch does not exist yet.
@@ -17,44 +27,49 @@ git = (
     "git checkout -f update 2>/dev/null || git checkout -b update"
 )
 
+repo = os.getenv('GITHUB_REPOSITORY', 'MustardChef/WSABuilds')
+url = f"https://raw.githubusercontent.com/{repo}/update/magiskstable.appversion"
+currentver = fetch_stored_version(url, session=session, default="")
 
-def looks_like_version(value: str) -> bool:
-    """Reject garbage (e.g. a 404 HTML page from a missing update branch)."""
-    return bool(value) and len(value) < 40 and any(ch.isdigit() for ch in value)
-
-
-try:
-    repo = os.getenv('GITHUB_REPOSITORY', 'MustardChef/WSABuilds')
-    currentver = requests.get(
-        f"https://raw.githubusercontent.com/{repo}/update/magiskstable.appversion",
-        timeout=30).text.replace('\n', '')
-except Exception:
-    currentver = ""
-
-if not looks_like_version(currentver):
+if not is_valid_version(currentver):
     print(f"Stored version '{currentver[:40]}' is not a valid version, bootstrapping from latest.")
     currentver = ""
 
-with open('magiskstable.appversion', 'w') as file:
-    file.write(currentver)
+if is_valid_version(currentver):
+    with open('magiskstable.appversion', 'w', encoding='utf-8') as file:
+        file.write(currentver)
 
 try:
-    latestver = json.loads(requests.get(
+    resp = session.get(
         "https://github.com/topjohnwu/magisk-files/raw/master/stable.json",
-        timeout=30).content)['magisk']['version'].replace('\n', '')
+        timeout=30,
+    )
+    resp.raise_for_status()
+    latestver = str(json.loads(resp.content)['magisk']['version']).strip().replace('\n', '')
 except Exception as exc:
     print(f"Failed to fetch latest Magisk stable version: {exc}")
-    exit(1)
+    sys.exit(1)
+
+if not is_valid_version(latestver):
+    print(f"Invalid latest Magisk version fetched: '{latestver}'")
+    sys.exit(1)
 
 if currentver != latestver:
-    print("New version found: " + latestver)
-    subprocess.Popen(git, shell=True, stdout=None, stderr=None, executable='/bin/bash').wait()
-    with open('magiskstable.appversion', 'w') as file:
+    print(f"New version found: {latestver}")
+    shell_exec = '/bin/bash' if os.path.exists('/bin/bash') else None
+    subprocess.Popen(git, shell=True, stdout=None, stderr=None, executable=shell_exec).wait()
+    with open('magiskstable.appversion', 'w', encoding='utf-8') as file:
         file.write(latestver)
-    magiskstablemsg = f"Update Magisk Stable Version from `v{currentver}` to `v{latestver}`"
+    if currentver:
+        magiskstablemsg = f"Update Magisk Stable Version from v{currentver} to v{latestver}"
+    else:
+        magiskstablemsg = f"Magisk Stable Version: {latestver}"
 else:
-    magiskstablemsg = "Magisk Stable Version: `" + latestver + "`"
+    if not os.path.exists('magiskstable.appversion') or os.path.getsize('magiskstable.appversion') == 0:
+        with open('magiskstable.appversion', 'w', encoding='utf-8') as file:
+            file.write(latestver)
+    magiskstablemsg = f"Magisk Stable Version: {latestver}"
 
-if env_file:
-    with open(env_file, "a") as wr:
-        wr.write(f"MAGISK_STABLE_MSG={magiskstablemsg}\n")
+print(f"Magisk Stable Version status: {magiskstablemsg}")
+write_github_env("MAGISK_STABLE_MSG", magiskstablemsg)
+write_github_env("MAGISK_STABLE_VER", latestver)
