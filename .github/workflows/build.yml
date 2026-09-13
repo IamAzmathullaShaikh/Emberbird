@@ -70,6 +70,10 @@ jobs:
             "WSABuilds Utilities/Update Script" \
             "WSABuilds Utilities/Uninstall Script"
 
+      - name: Install Test Dependencies 📦
+        run: |
+          pip3 install --quiet -r MagiskOnWSA/scripts/requirements.txt
+
       - name: Run Offline Unit Test Suite 🧪
         run: |
           python3 -m unittest discover -s tests -v
