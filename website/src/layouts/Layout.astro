@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import SearchModal from '../components/SearchModal.astro';
 
 interface Props {
   title?: string;
@@ -32,6 +33,14 @@ const {
           <span class="text-indigo-400">WSA</span>Builds
         </a>
         <nav class="flex items-center gap-6 text-sm font-medium text-slate-300">
+          <button
+            id="header-search-btn"
+            type="button"
+            class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-400 hover:text-white transition-colors border border-slate-700"
+          >
+            <span>Search docs...</span>
+            <kbd class="px-1.5 py-0.5 rounded bg-slate-900 text-slate-400 font-mono text-[10px]">Ctrl+K</kbd>
+          </button>
           <a href="/" class="hover:text-white transition-colors">Home</a>
           <a href="/downloads" class="hover:text-white transition-colors">Downloads</a>
           <a href="/docs" class="hover:text-white transition-colors">Documentation</a>
@@ -57,5 +66,11 @@ const {
         <p class="mt-2">Licensed under Apache-2.0. Upstream tracking: MustardChef/WSABuilds.</p>
       </div>
     </footer>
+    <SearchModal />
+    <script>
+      document.getElementById('header-search-btn')?.addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('open-search'));
+      });
+    </script>
   </body>
 </html>

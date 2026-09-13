@@ -54,6 +54,8 @@
     modal?.classList.add('hidden');
   }
 
+  window.addEventListener('open-search', openSearch);
+
   window.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
       e.preventDefault();
