@@ -65,4 +65,9 @@ jobs:
             "MagiskOnWSA/Update Check" \
             MagiskOnWSAOld/scripts \
             "WSABuilds Utilities/Update Script" \
-            "WSABuilds Utilities/Uninstall Script"
+            "WSABuilds Utilities/Uninstall Script" \
+            tests
+
+      - name: Run offline unit tests 🧪
+        run: |
+          python3 -m unittest discover -s tests -v
