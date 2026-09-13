@@ -1,0 +1,18 @@
+{
+  "app_name": "PhonePe",
+  "package_id": "com.phonepe.app",
+  "category": "Banking & UPI",
+  "compatibility_status": "Workaround Required",
+  "play_integrity_required": true,
+  "tested_wsa_version": "2311.40000.5.0",
+  "tested_root_flavor": "Magisk Stable",
+  "last_tested_date": "2026-09-14",
+  "workaround_steps": [
+    "Enable Zygisk in Magisk settings.",
+    "Install PlayIntegrityFix module (v17.0+).",
+    "Add PhonePe to Magisk DenyList (Enforce DenyList ON).",
+    "Hide Magisk Manager app with random package name."
+  ],
+  "known_issues": "Fails to authenticate if USB Debugging is left enabled in WSA Settings.",
+  "verified_by_maintainer": true
+}
