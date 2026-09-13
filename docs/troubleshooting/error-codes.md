@@ -48,7 +48,7 @@ This error occurs when the Windows AppX deployment service (`AppXSvc`) lacks rea
 ### Resolution Steps
 
 #### Step 1: Move WSA Folder to an Unrestricted Directory
-Do not install WSA from protected user paths like `C:\Users\<User>\AppData\Local\Temp` or directly off an external USB drive.
+Do not install WSA from protected user paths like `C:\Users\[Username]\AppData\Local\Temp` or directly off an external USB drive.
 1. Move the extracted WSA folder to `C:\WSA` or `D:\WSA`.
 
 #### Step 2: Grant Read & Execute Permissions to Application Packages

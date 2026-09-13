@@ -1,6 +1,6 @@
 # GitHub Discussions Governance & Community Guidelines
 
-This document outlines the operational structure, category definitions, posting rules, and moderation policies for GitHub Discussions in the [IamAzmathullaShaikh/WSABuilds](https://github.com/IamAzmathullaShaikh/WSABuilds) repository.
+This document outlines the operational structure, category definitions, posting rules, and moderation policies for GitHub Discussions in the IamAzmathullaShaikh/WSABuilds repository: https://github.com/IamAzmathullaShaikh/WSABuilds
 
 ---
 
@@ -43,7 +43,7 @@ This document outlines the operational structure, category definitions, posting 
   2. Tested WSA release version and root flavor (Magisk Stable, KernelSU, No Root).
   3. Steps taken (e.g. Zygisk enabled, Shamiko, DenyList, PlayIntegrityFix version).
   4. Operational outcome (Runs perfectly, requires workaround, or crashes).
-- High-quality, reproducible reports are verified and merged into `compatibility/data/<AppName>.json`.
+- High-quality, reproducible reports are verified and merged into `compatibility/data/[AppName].json`.
 
 ### 🎉 Show and Tell
 - Share your Windows 11 desktop setups, gaming configurations, controller mapping profiles, or creative use-cases.

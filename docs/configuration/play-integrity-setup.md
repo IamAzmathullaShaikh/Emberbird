@@ -29,7 +29,7 @@ By following this guide, you can cloak root access and pass device attestation o
 
 ## 3. Step 2: Install PlayIntegrityFix Module
 
-1. Download the latest **PlayIntegrityFix** module zip release from the [PlayIntegrityFix Releases](https://github.com/chiteroman/PlayIntegrityFIX/releases).
+1. Download the latest **PlayIntegrityFix** module zip release from PlayIntegrityFix Releases: https://github.com/chiteroman/PlayIntegrityFIX/releases
 2. Open the **Magisk** app on WSA.
 3. Tap the **Modules** tab at the bottom right.
 4. Tap **Install from storage**.
