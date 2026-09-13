@@ -6,11 +6,13 @@ on:
     paths:
       - 'website/**'
       - 'docs/**'
+      - 'compatibility/**'
   pull_request:
     branches: [master, experimental]
     paths:
       - 'website/**'
       - 'docs/**'
+      - 'compatibility/**'
   workflow_dispatch:
 
 concurrency:

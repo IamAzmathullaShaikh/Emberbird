@@ -1,0 +1,69 @@
+name: Compatibility Data Validation
+
+on:
+  pull_request:
+    branches: [master, experimental, feature/*]
+    paths:
+      - 'compatibility/**'
+      - 'scripts/validate_compatibility.py'
+      - 'tests/test_compatibility_schema.py'
+  push:
+    branches: [master, feature/*]
+    paths:
+      - 'compatibility/**'
+      - 'scripts/validate_compatibility.py'
+      - 'tests/test_compatibility_schema.py'
+  workflow_dispatch:
+
+concurrency:
+  group: compat-val-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate-schema:
+    name: Schema & Submission Validation
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate Compatibility Records Against Schema
+        run: |
+          echo "[*] Auditing compatibility records in compatibility/data/..."
+          python scripts/validate_compatibility.py
+
+      - name: Execute Compatibility Unit Tests
+        run: |
+          echo "[*] Running compatibility schema and validator unit tests..."
+          python -m unittest tests/test_compatibility_schema.py -v
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Verify Compatibility Importer
+        run: |
+          echo "[*] Testing compatibility import layer..."
+          node website/scripts/import-compatibility.mjs
+
+      - name: Execute Node Compatibility Unit Tests
+        run: |
+          echo "[*] Running website compatibility utility test suite..."
+          npm run test --prefix website
+
+      - name: Validation Complete
+        run: |
+          echo "[+] All application compatibility records and schemas passed validation successfully."
