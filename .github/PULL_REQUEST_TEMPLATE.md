@@ -1,8 +1,8 @@
 ## Description
-<!-- Provide a clear, concise summary of the changes introduced by this pull request. -->
+Provide a clear, concise summary of the changes introduced by this pull request.
 
 ## Type of Change
-<!-- Check all options that apply: -->
+Select all options that apply:
 - [ ] Bug fix (non-breaking change resolving an issue)
 - [ ] New feature (non-breaking change adding functionality)
 - [ ] Documentation update (guides, troubleshooting, README)

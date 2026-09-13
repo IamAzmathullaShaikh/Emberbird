@@ -1,6 +1,6 @@
 name: Bug Report
 description: File a reproducible bug report to help us fix issues with WSABuilds.
-title: "[BUG]: <Short summary of issue>"
+title: "[BUG]: [Short summary of issue]"
 labels: ["bug", "needs-triage"]
 body:
   - type: markdown
@@ -9,8 +9,8 @@ body:
         Thank you for taking the time to report an issue!
         
         Before submitting:
-        1. Check the [Troubleshooting Guide](https://github.com/IamAzmathullaShaikh/WSABuilds/blob/master/TROUBLESHOOTING.md) and [Error Codes Guide](https://github.com/IamAzmathullaShaikh/WSABuilds/blob/master/docs/troubleshooting/error-codes.md).
-        2. Search [Existing Issues](https://github.com/IamAzmathullaShaikh/WSABuilds/issues) to prevent duplicate reports.
+        1. Check the Troubleshooting Guide: https://github.com/IamAzmathullaShaikh/WSABuilds/blob/master/TROUBLESHOOTING.md and Error Codes Guide: https://github.com/IamAzmathullaShaikh/WSABuilds/blob/master/docs/troubleshooting/error-codes.md
+        2. Search Existing Issues: https://github.com/IamAzmathullaShaikh/WSABuilds/issues to prevent duplicate reports.
         3. Confirm Hardware Virtualization is enabled in your BIOS/UEFI.
 
   - type: input
@@ -27,7 +27,7 @@ body:
     attributes:
       label: WSA Release Package & Flavor
       description: The exact release zip or build string you downloaded.
-      placeholder: "e.g. WSA_2311.40000.5.0_x64_Magisk-v30.6_GApps-Pico"
+      placeholder: "e.g. WSA_[version]_[arch]_[root]_[gapps] (check repository releases for latest version)"
     validations:
       required: true
 
