@@ -4,11 +4,6 @@ on:
   push:
     tags:
       - 'v*'
-    paths:
-      - 'manifests/**'
-      - 'deployment/**'
-      - 'scripts/validate_distribution.py'
-      - '.github/workflows/winget-release.yml'
   workflow_dispatch:
     inputs:
       target_version:
@@ -17,9 +12,20 @@ on:
         default: '0.2.0'
       dry_run:
         description: 'Dry run execution (do not publish external artifacts)'
-        required: true
+        required: false
         type: boolean
-        default: true
+        default: false
+  workflow_dispatch:
+    inputs:
+      target_version:
+        description: 'Version tag to package and validate (e.g. 0.2.0)'
+        required: false
+        default: '0.2.0'
+      dry_run:
+        description: 'Dry run execution (do not publish external artifacts)'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: winget-ci-${{ github.ref }}
@@ -61,6 +67,8 @@ jobs:
     needs: validate-metadata
     runs-on: windows-latest
     timeout-minutes: 25
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout Repository
@@ -148,6 +156,40 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
+  publish-manager-release:
+    name: Publish GitHub Release
+    needs: [package-manager]
+    runs-on: windows-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    if: github.event_name == 'workflow_dispatch' || (startsWith(github.ref, 'refs/tags/v') && github.event_name == 'push')
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          ref: ${{ github.ref }}
+
+      - name: Download Packaging Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: manager-release-artifacts
+          path: release_assets
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: WSABuilds Manager v${{ github.ref_name }}
+          files: |
+            release_assets/*.zip
+            release_assets/*.exe
+            release_assets/*.txt
+            release_assets/*.sha256
+          token: ${{ secrets.GITHUB_TOKEN }}
+          generate_release_notes: true
+
   prepare-winget:
     name: Prepare Winget Release Manifests
     needs: [validate-metadata]
@@ -166,7 +208,7 @@ jobs:
           $ver = (Get-Content deployment/version.json | ConvertFrom-Json).manager.version
           New-Item -ItemType Directory -Force -Path "winget_bundle" | Out-Null
           Copy-Item -Recurse "manifests/w/WSABuilds/WSABuildsManager/$ver" "winget_bundle/"
-          Write-Host "[+] Prepared Winget manifests bundle for v$ver (Dry-run: external submission withheld)."
+          Write-Host "[+] Prepared Winget manifests bundle for v$ver."
 
       - name: Upload Winget Manifest Artifact
         uses: actions/upload-artifact@v4
