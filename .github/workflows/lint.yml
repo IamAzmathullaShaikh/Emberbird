@@ -66,6 +66,7 @@ jobs:
             MagiskOnWSAOld/scripts \
             "WSABuilds Utilities/Update Script" \
             "WSABuilds Utilities/Uninstall Script" \
+            scripts \
             tests
 
       - name: Run offline unit tests 🧪
