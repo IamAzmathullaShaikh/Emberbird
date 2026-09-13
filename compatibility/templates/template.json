@@ -5,12 +5,12 @@
   "category": "Productivity",
   "compatibility_status": "Working",
   "play_integrity_required": false,
-  "tested_wsa_version": "2311.40000.5.0",
+  "tested_wsa_version": "REQUIRES REPOSITORY VERIFICATION",
   "tested_root_flavor": "Magisk Stable",
-  "last_tested_date": "2026-09-14",
+  "last_tested_date": "REQUIRES REPOSITORY VERIFICATION",
   "workaround_steps": [
     "1. No workaround required. Runs out of the box."
   ],
   "known_issues": "None",
-  "verified_by_maintainer": true
+  "verification_status": "unverified"
 }

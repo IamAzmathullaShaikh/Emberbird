@@ -4,13 +4,13 @@
   "category": "Banking & UPI",
   "compatibility_status": "Working",
   "play_integrity_required": true,
-  "tested_wsa_version": "2311.40000.5.0",
+  "tested_wsa_version": "REQUIRES REPOSITORY VERIFICATION",
   "tested_root_flavor": "Magisk Stable",
-  "last_tested_date": "2026-09-14",
+  "last_tested_date": "REQUIRES REPOSITORY VERIFICATION",
   "workaround_steps": [
     "Add Paytm to Magisk DenyList.",
     "Ensure SELinux is set to Enforcing."
   ],
   "known_issues": "None when DenyList is enabled.",
-  "verified_by_maintainer": true
+  "verification_status": "unverified"
 }
