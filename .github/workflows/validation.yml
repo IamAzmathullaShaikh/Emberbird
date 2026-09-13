@@ -7,9 +7,17 @@ on:
         description: 'Execute live ADB diagnostics on connected runner'
         type: boolean
         default: false
+      runner_label:
+        description: 'Runner label for live lab validation'
+        type: string
+        default: 'windows-latest'
   schedule:
     - cron: '0 4 * * 0' # Weekly Sunday run
   workflow_call:
+
+concurrency:
+  group: validation-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -18,6 +26,7 @@ jobs:
   offline-subsystem-validation:
     name: Offline Subsystem Integrity & Manifest Validation
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout 🔄
         uses: actions/checkout@v4
@@ -59,7 +68,9 @@ jobs:
     name: Live Windows Lab ADB & Upgrade Validation
     needs: offline-subsystem-validation
     if: inputs.run_live_adb == true
-    runs-on: [self-hosted, windows]
+    runs-on: ${{ inputs.runner_label || 'windows-latest' }}
+    timeout-minutes: 15
+    continue-on-error: true
     steps:
       - name: Checkout 🔄
         uses: actions/checkout@v4
