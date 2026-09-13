@@ -223,7 +223,7 @@ def main() -> None:
         # magiskboot — must run on the *host* (build machine), not the target
         import shutil
         if sys.platform == "win32" or platform.system() == "Windows":
-            host_mb = shutil.which("magiskboot") or shutil.which("magiskboot.exe") or r"C:\Users\BangerSoul\bin\magiskboot.exe"
+            host_mb = shutil.which("magiskboot") or shutil.which("magiskboot.exe")
             if host_mb and Path(host_mb).is_file():
                 shutil.copy2(host_mb, magisk_dir / "magiskboot.exe")
                 shutil.copy2(host_mb, magisk_dir / "magiskboot")

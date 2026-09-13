@@ -11,11 +11,12 @@
 # =============================================================================
 
 import os
+import shutil
 import subprocess
 import sys
 import time
 
-ADB = r"C:\Users\BangerSoul\bin\adb.exe"
+ADB = shutil.which("adb") or "adb"
 WSA_PORT = "127.0.0.1:58526"
 
 def run_cmd(cmd, shell=True):
