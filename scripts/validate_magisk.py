@@ -26,7 +26,7 @@ except ImportError:
     read_cpio_archive = None
 
 
-def validate_magisk_offline(initrd_path: Path) -> dict:
+def validate_magisk_offline(initrd_path: Path, expect_vanilla: bool = False) -> dict:
     if not initrd_path.is_file():
         return {"status": "FAILED", "reason": f"initrd.img not found at {initrd_path}"}
 
@@ -45,21 +45,34 @@ def validate_magisk_offline(initrd_path: Path) -> dict:
     checks.append({"item": "init symlink to lspinit", "passed": init_ok})
     if not init_ok: all_ok = False
 
-    # Check binaries
-    for bin_name in ["lspinit", "magiskinit", "wsainit"]:
+    # Check base trampoline binaries
+    for bin_name in ["lspinit", "wsainit"]:
         ok = (bin_name in entry_map and len(entry_map[bin_name].data) > 0)
         checks.append({"item": f"binary {bin_name}", "passed": ok})
         if not ok: all_ok = False
 
-    # Check overlay sbin
-    for overlay_file in ["overlay.d/sbin/magisk.xz", "overlay.d/sbin/stub.xz", "overlay.d/sbin/post-fs-data.sh"]:
-        ok = (overlay_file in entry_map and len(entry_map[overlay_file].data) > 0)
-        checks.append({"item": f"overlay item {overlay_file}", "passed": ok})
+    if expect_vanilla:
+        # In Vanilla builds, ensure Magisk root binaries and hooks are strictly ABSENT
+        for forbidden in ["magiskinit", "overlay.d/sbin/magisk.xz", "overlay.d/sbin/magisk64.xz", "overlay.d/sbin/post-fs-data.sh"]:
+            absent = (forbidden not in entry_map)
+            checks.append({"item": f"absence of {forbidden} (Vanilla policy)", "passed": absent})
+            if not absent: all_ok = False
+    else:
+        # Check Magisk binary
+        ok = ("magiskinit" in entry_map and len(entry_map["magiskinit"].data) > 0)
+        checks.append({"item": "binary magiskinit", "passed": ok})
         if not ok: all_ok = False
+
+        # Check overlay sbin
+        for overlay_file in ["overlay.d/sbin/magisk.xz", "overlay.d/sbin/stub.xz", "overlay.d/sbin/post-fs-data.sh"]:
+            ok = (overlay_file in entry_map and len(entry_map[overlay_file].data) > 0)
+            checks.append({"item": f"overlay item {overlay_file}", "passed": ok})
+            if not ok: all_ok = False
 
     return {
         "status": "VERIFIED" if all_ok else "FAILED",
         "type": "OFFLINE_RAMDISK_ANALYSIS",
+        "mode": "VANILLA_UNROOTED" if expect_vanilla else "MAGISK_ROOTED",
         "checks": checks,
     }
 
@@ -99,6 +112,7 @@ def validate_magisk_live(adb_port: str = "127.0.0.1:58526") -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Validate Magisk integration.")
     parser.add_argument("--package-dir", type=Path, help="Package directory for offline check")
+    parser.add_argument("--vanilla", action="store_true", help="Expect Vanilla unrooted package (verifies absence of Magisk)")
     parser.add_argument("--live", action="store_true", help="Run live ADB runtime diagnostics")
     parser.add_argument("--output-report", type=Path, default=Path("magisk-validation-report.json"))
 
@@ -112,7 +126,8 @@ def main() -> int:
 
     if args.package_dir:
         initrd = args.package_dir / "Tools" / "initrd.img"
-        report["offline"] = validate_magisk_offline(initrd)
+        is_vanilla = args.vanilla or ("vanilla" in args.package_dir.name.lower())
+        report["offline"] = validate_magisk_offline(initrd, expect_vanilla=is_vanilla)
 
     if args.live:
         report["live"] = validate_magisk_live()

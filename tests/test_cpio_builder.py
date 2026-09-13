@@ -72,6 +72,51 @@ class TestCpioArchive(unittest.TestCase):
         decompressed = lzma.decompress(compressed)
         self.assertEqual(decompressed, data)
 
+    def test_vanilla_initrd_contains_no_magisk_artifacts(self):
+        """Verify that a Vanilla initrd contains only non-root overlays and zero Magisk binaries."""
+        vanilla_entries = [
+            CpioEntry(name=".backup", data=b"", mode=0o40000, nlink=2),
+            CpioEntry(name="init", data=b"lspinit", mode=0o120000),
+            CpioEntry(name="lspinit", data=b"ELF_MOCK_LSPINIT", mode=0o100750),
+            CpioEntry(name="wsainit", data=b"ELF_MOCK_STOCK_INIT", mode=0o100777),
+            CpioEntry(name="overlay.d", data=b"", mode=0o40750, nlink=2),
+            CpioEntry(name="overlay.d/gapps.rc", data=b"on post-fs-data\n", mode=0o100000),
+            CpioEntry(name="overlay.d/sbin", data=b"", mode=0o40750, nlink=2),
+            CpioEntry(name="overlay.d/sbin/lsp_cust.img", data=b"MOCK_CUST_IMG", mode=0o100000),
+            CpioEntry(name="overlay.d/sbin/lsp_gapps.img", data=b"MOCK_GAPPS_IMG", mode=0o100000),
+        ]
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            archive_path = Path(tmpdir) / "vanilla_initrd.cpio"
+            write_cpio_archive(archive_path, vanilla_entries)
+
+            read_entries = read_cpio_archive(archive_path)
+            entry_names = {e.name for e in read_entries}
+
+            # Assert essential Vanilla components are present
+            self.assertIn("lspinit", entry_names)
+            self.assertIn("wsainit", entry_names)
+            self.assertIn("overlay.d/gapps.rc", entry_names)
+            self.assertIn("overlay.d/sbin/lsp_gapps.img", entry_names)
+
+            # Assert all Magisk root artifacts are strictly absent
+            forbidden_magisk_artifacts = [
+                "magiskinit",
+                "magisk.xz",
+                "magisk64.xz",
+                "magisk32.xz",
+                "init-ld.xz",
+                "stub.xz",
+                "init.lsp.magisk.rc",
+                "overlay.d/init.lsp.magisk.rc",
+                "overlay.d/sbin/init-ld.xz",
+                "overlay.d/sbin/magisk.xz",
+                "overlay.d/sbin/stub.xz",
+                "overlay.d/sbin/post-fs-data.sh",
+            ]
+            for artifact in forbidden_magisk_artifacts:
+                self.assertNotIn(artifact, entry_names, f"Vanilla ramdisk must not contain {artifact}")
+
 
 if __name__ == "__main__":
     unittest.main()
