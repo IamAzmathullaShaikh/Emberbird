@@ -1,0 +1,460 @@
+---
+import { DIAGNOSTIC_NODES, ERROR_CODE_MAPPINGS } from '../lib/troubleshooting';
+
+const nodesJson = JSON.stringify(DIAGNOSTIC_NODES);
+const errorsJson = JSON.stringify(ERROR_CODE_MAPPINGS);
+---
+
+<div id="wizard-container" class="relative">
+  <!-- Raw Data Payload for Client Script -->
+  <script id="wizard-data-nodes" type="application/json" set:html={nodesJson}></script>
+  <script id="wizard-data-errors" type="application/json" set:html={errorsJson}></script>
+
+  <!-- Step 0: Overview & Category Selection (Default View) -->
+  <div id="view-initial" class="space-y-8">
+    <!-- Quick Error Code Lookup -->
+    <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur">
+      <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">
+        Quick Error Code Jump
+      </h3>
+      <p class="text-xs text-slate-400 mb-4">
+        Select your specific Windows or AppX error code to jump directly to verified diagnostic steps:
+      </p>
+      <div class="flex flex-wrap gap-2.5">
+        {ERROR_CODE_MAPPINGS.map((item) => (
+          <button
+            type="button"
+            class="error-jump-btn px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-indigo-600/20 hover:border-indigo-500/50 border border-slate-700 text-xs font-mono text-indigo-300 transition-colors flex items-center gap-2"
+            data-target-node={item.targetNodeId}
+            data-error-code={item.code}
+          >
+            <span class="font-bold">{item.code}</span>
+            <span class="text-[11px] text-slate-400 hidden sm:inline truncate max-w-[200px]">({item.title.split('(')[1]?.replace(')', '') || item.category})</span>
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <!-- Category Selector Grid -->
+    <div>
+      <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">
+        Or Select an Issue Category to Diagnose
+      </h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <button
+          type="button"
+          class="cat-card p-5 rounded-xl bg-slate-900/40 hover:bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 text-left transition-all group"
+          data-cat-root="virt-start"
+        >
+          <div class="text-indigo-400 font-bold text-base group-hover:text-indigo-300 flex items-center justify-between">
+            <span>Virtualization & Hyper-V</span>
+            <span>-></span>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">
+            Error 0x80370102, BIOS VT-x / SVM disabled, HypervisorPlatform missing, VMware/VirtualBox conflicts.
+          </p>
+        </button>
+
+        <button
+          type="button"
+          class="cat-card p-5 rounded-xl bg-slate-900/40 hover:bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 text-left transition-all group"
+          data-cat-root="install-start"
+        >
+          <div class="text-indigo-400 font-bold text-base group-hover:text-indigo-300 flex items-center justify-between">
+            <span>Installation & Script Permissions</span>
+            <span>-></span>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">
+            Error 0x80070005 (Access Denied), PowerShell execution policy restrictions, Developer Mode registration.
+          </p>
+        </button>
+
+        <button
+          type="button"
+          class="cat-card p-5 rounded-xl bg-slate-900/40 hover:bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 text-left transition-all group"
+          data-cat-root="deploy-start"
+        >
+          <div class="text-indigo-400 font-bold text-base group-hover:text-indigo-300 flex items-center justify-between">
+            <span>AppX Deployment & Cache</span>
+            <span>-></span>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">
+            Error 0x80073CF9, missing AppReadiness directory, store reset with wsreset, missing VCLibs dependencies.
+          </p>
+        </button>
+
+        <button
+          type="button"
+          class="cat-card p-5 rounded-xl bg-slate-900/40 hover:bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 text-left transition-all group"
+          data-cat-root="startup-start"
+        >
+          <div class="text-indigo-400 font-bold text-base group-hover:text-indigo-300 flex items-center justify-between">
+            <span>Startup Hangs & Crashes</span>
+            <span>-></span>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">
+            Infinite splash screen loading spinner, immediate vmmemWSA termination, initrd dynamic linker issues.
+          </p>
+        </button>
+
+        <button
+          type="button"
+          class="cat-card p-5 rounded-xl bg-slate-900/40 hover:bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 text-left transition-all group"
+          data-cat-root="integrity-start"
+        >
+          <div class="text-indigo-400 font-bold text-base group-hover:text-indigo-300 flex items-center justify-between">
+            <span>Play Integrity & GMS</span>
+            <span>-></span>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">
+            Device Not Certified in Play Store, Play Integrity MEETS_DEVICE_INTEGRITY attestation, Zygisk DenyList.
+          </p>
+        </button>
+
+        <button
+          type="button"
+          class="cat-card p-5 rounded-xl bg-slate-900/40 hover:bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 text-left transition-all group"
+          data-cat-root="adb-start"
+        >
+          <div class="text-indigo-400 font-bold text-base group-hover:text-indigo-300 flex items-center justify-between">
+            <span>ADB Connection & Debugging</span>
+            <span>-></span>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">
+            Port 58526 connection refused, unauthorized device status, Developer options configuration.
+          </p>
+        </button>
+
+        <button
+          type="button"
+          class="cat-card p-5 rounded-xl bg-slate-900/40 hover:bg-slate-900/80 border border-slate-800 hover:border-indigo-500/40 text-left transition-all group"
+          data-cat-root="root-start"
+        >
+          <div class="text-indigo-400 font-bold text-base group-hover:text-indigo-300 flex items-center justify-between">
+            <span>Root Detection & Banking</span>
+            <span>-></span>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">
+            Apps closing on launch, Magisk app cloaking, Shamiko module, SBI YONO USB debugging detection.
+          </p>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 1: Active Diagnostic Card View -->
+  <div id="view-active-node" class="hidden space-y-6" data-pagefind-body>
+    <!-- Top Navigation Header inside Wizard -->
+    <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+      <button
+        id="wizard-back-btn"
+        type="button"
+        class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-white transition-colors"
+      >
+        <span><- Back</span>
+      </button>
+      <div id="wizard-breadcrumbs" class="text-xs font-mono text-indigo-400"></div>
+      <button
+        id="wizard-reset-btn"
+        type="button"
+        class="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+      >
+        Restart Wizard
+      </button>
+    </div>
+
+    <!-- Node Card Body -->
+    <div class="p-6 sm:p-8 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur space-y-6">
+      <!-- Title & Badges -->
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span id="node-cat-badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/30 capitalize"></span>
+            <span id="node-code-badge" class="hidden px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-rose-500/10 text-rose-300 border border-rose-500/30"></span>
+          </div>
+          <h2 id="node-title" class="text-xl sm:text-2xl font-bold text-white tracking-tight"></h2>
+        </div>
+      </div>
+
+      <!-- Symptom Box -->
+      <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80">
+        <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Observed Symptom</div>
+        <p id="node-symptom" class="text-sm text-slate-200 leading-relaxed"></p>
+      </div>
+
+      <!-- Validation Step -->
+      <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-3">
+        <div class="text-xs font-semibold uppercase tracking-wider text-indigo-400">Diagnostic Verification Step</div>
+        <p id="node-validation" class="text-sm text-slate-300"></p>
+
+        <!-- PowerShell Diagnostic Command Box -->
+        <div id="node-ps-container" class="hidden space-y-1.5 pt-2 border-t border-slate-800/60">
+          <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+            <span>PowerShell Diagnostic Command (Run in elevated terminal):</span>
+            <button
+              id="node-copy-ps-btn"
+              type="button"
+              class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 transition-colors border border-slate-700 select-none"
+            >
+              Copy Command
+            </button>
+          </div>
+          <pre id="node-ps-command" class="p-3 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono text-emerald-400 overflow-x-auto select-all whitespace-pre-wrap"></pre>
+        </div>
+      </div>
+
+      <!-- Decision Branches (Next Steps) -->
+      <div id="node-branches-container" class="space-y-3">
+        <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Select Observed Verification Outcome:</div>
+        <div id="node-branches-list" class="flex flex-col gap-2.5"></div>
+      </div>
+
+      <!-- Remediation Steps -->
+      <div id="node-remediation-container" class="p-5 rounded-xl bg-indigo-950/20 border border-indigo-500/30 space-y-3">
+        <div class="text-xs font-bold uppercase tracking-wider text-indigo-300">Recommended Resolution Procedure:</div>
+        <ol id="node-remediation-list" class="list-decimal pl-5 space-y-2 text-xs sm:text-sm text-slate-200"></ol>
+      </div>
+
+      <!-- Related Documentation & Compatibility Cross-Links -->
+      <div id="node-links-container" class="pt-4 border-t border-slate-800/80 flex flex-wrap items-center gap-3 text-xs">
+        <span class="text-slate-400 font-medium">Related Guides:</span>
+        <div id="node-links-list" class="flex flex-wrap gap-2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  interface DiagnosticBranch {
+    label: string;
+    nextNodeId: string;
+    description?: string;
+  }
+
+  interface DiagnosticNode {
+    id: string;
+    title: string;
+    category: string;
+    symptom: string;
+    errorCode?: string;
+    validationStep: string;
+    powershellCommand?: string;
+    branches: DiagnosticBranch[];
+    remediation: string[];
+    relatedDocs?: { title: string; url: string }[];
+    relatedCompat?: { title: string; url: string }[];
+  }
+
+  interface ErrorCodeMapping {
+    code: string;
+    title: string;
+    targetNodeId: string;
+    category: string;
+  }
+
+  const nodesRaw = document.getElementById('wizard-data-nodes')?.textContent || '[]';
+  const errorsRaw = document.getElementById('wizard-data-errors')?.textContent || '[]';
+  const nodes: DiagnosticNode[] = JSON.parse(nodesRaw);
+  const errorMappings: ErrorCodeMapping[] = JSON.parse(errorsRaw);
+
+  const nodeMap = new Map<string, DiagnosticNode>();
+  for (const n of nodes) {
+    nodeMap.set(n.id, n);
+  }
+
+  const viewInitial = document.getElementById('view-initial');
+  const viewActive = document.getElementById('view-active-node');
+  const backBtn = document.getElementById('wizard-back-btn');
+  const resetBtn = document.getElementById('wizard-reset-btn');
+  const breadcrumbsEl = document.getElementById('wizard-breadcrumbs');
+
+  const titleEl = document.getElementById('node-title');
+  const catBadgeEl = document.getElementById('node-cat-badge');
+  const codeBadgeEl = document.getElementById('node-code-badge');
+  const symptomEl = document.getElementById('node-symptom');
+  const validationEl = document.getElementById('node-validation');
+  const psContainer = document.getElementById('node-ps-container');
+  const psCommandEl = document.getElementById('node-ps-command');
+  const copyPsBtn = document.getElementById('node-copy-ps-btn');
+  const branchesContainer = document.getElementById('node-branches-container');
+  const branchesList = document.getElementById('node-branches-list');
+  const remediationList = document.getElementById('node-remediation-list');
+  const linksContainer = document.getElementById('node-links-container');
+  const linksList = document.getElementById('node-links-list');
+
+  let historyStack: string[] = [];
+
+  function renderNode(nodeId: string, addToHistory = true) {
+    const node = nodeMap.get(nodeId);
+    if (!node) return;
+
+    if (addToHistory) {
+      historyStack.push(nodeId);
+    }
+
+    if (viewInitial && viewActive) {
+      viewInitial.classList.add('hidden');
+      viewActive.classList.remove('hidden');
+    }
+
+    if (breadcrumbsEl) {
+      breadcrumbsEl.textContent = `Step ${historyStack.length} (${node.category})`;
+    }
+
+    if (titleEl) titleEl.textContent = node.title;
+    if (catBadgeEl) catBadgeEl.textContent = node.category;
+
+    if (codeBadgeEl) {
+      if (node.errorCode) {
+        codeBadgeEl.textContent = node.errorCode;
+        codeBadgeEl.classList.remove('hidden');
+      } else {
+        codeBadgeEl.classList.add('hidden');
+      }
+    }
+
+    if (symptomEl) symptomEl.textContent = node.symptom;
+    if (validationEl) validationEl.textContent = node.validationStep;
+
+    if (psContainer && psCommandEl) {
+      if (node.powershellCommand) {
+        psCommandEl.textContent = node.powershellCommand;
+        psContainer.classList.remove('hidden');
+      } else {
+        psContainer.classList.add('hidden');
+      }
+    }
+
+    // Render Branches
+    if (branchesContainer && branchesList) {
+      branchesList.innerHTML = '';
+      if (node.branches && node.branches.length > 0) {
+        branchesContainer.classList.remove('hidden');
+        node.branches.forEach((b) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'w-full p-3 rounded-lg bg-slate-800/90 hover:bg-indigo-600/20 border border-slate-700 hover:border-indigo-500/50 text-left transition-colors text-xs font-medium text-slate-200 flex items-center justify-between group';
+          btn.innerHTML = `<span>${b.label}</span><span class="text-indigo-400 group-hover:translate-x-0.5 transition-transform">-></span>`;
+          btn.addEventListener('click', () => {
+            renderNode(b.nextNodeId);
+          });
+          branchesList.appendChild(btn);
+        });
+      } else {
+        branchesContainer.classList.add('hidden');
+      }
+    }
+
+    // Render Remediation
+    if (remediationList) {
+      remediationList.innerHTML = '';
+      node.remediation.forEach((step) => {
+        const li = document.createElement('li');
+        li.textContent = step;
+        remediationList.appendChild(li);
+      });
+    }
+
+    // Render Related Links
+    if (linksContainer && linksList) {
+      linksList.innerHTML = '';
+      const allLinks = [...(node.relatedDocs || []), ...(node.relatedCompat || [])];
+      if (allLinks.length > 0) {
+        linksContainer.classList.remove('hidden');
+        allLinks.forEach((link) => {
+          const a = document.createElement('a');
+          a.href = link.url;
+          a.className = 'inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 transition-colors border border-slate-700';
+          a.innerHTML = `<span>${link.title}</span> <span>-></span>`;
+          linksList.appendChild(a);
+        });
+      } else {
+        linksContainer.classList.add('hidden');
+      }
+    }
+
+    // Scroll to top of wizard
+    document.getElementById('wizard-container')?.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function goBack() {
+    if (historyStack.length > 1) {
+      historyStack.pop(); // Remove current
+      const prevId = historyStack[historyStack.length - 1];
+      renderNode(prevId, false);
+    } else {
+      resetWizard();
+    }
+  }
+
+  function resetWizard() {
+    historyStack = [];
+    if (viewInitial && viewActive) {
+      viewActive.classList.add('hidden');
+      viewInitial.classList.remove('hidden');
+    }
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+
+  // Bind Event Listeners
+  backBtn?.addEventListener('click', goBack);
+  resetBtn?.addEventListener('click', resetWizard);
+
+  copyPsBtn?.addEventListener('click', () => {
+    const cmd = psCommandEl?.textContent || '';
+    if (cmd) {
+      navigator.clipboard.writeText(cmd).then(() => {
+        if (copyPsBtn) {
+          copyPsBtn.textContent = 'Copied!';
+          setTimeout(() => {
+            copyPsBtn.textContent = 'Copy Command';
+          }, 2000);
+        }
+      });
+    }
+  });
+
+  // Bind category cards
+  document.querySelectorAll('.cat-card').forEach((card) => {
+    card.addEventListener('click', () => {
+      const rootId = (card as HTMLElement).dataset.catRoot;
+      if (rootId) renderNode(rootId);
+    });
+  });
+
+  // Bind quick error jump buttons
+  document.querySelectorAll('.error-jump-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const target = (btn as HTMLElement).dataset.targetNode;
+      if (target) renderNode(target);
+    });
+  });
+
+  // URL query parameter deep linking (?code=0x80370102 or ?node=virt-start)
+  const urlParams = new URLSearchParams(window.location.search);
+  const codeParam = urlParams.get('code');
+  const nodeParam = urlParams.get('node');
+  const catParam = urlParams.get('category');
+
+  if (codeParam) {
+    const mapping = errorMappings.find((m) => m.code.toLowerCase() === codeParam.trim().toLowerCase());
+    if (mapping) {
+      renderNode(mapping.targetNodeId);
+    }
+  } else if (nodeParam && nodeMap.has(nodeParam)) {
+    renderNode(nodeParam);
+  } else if (catParam) {
+    const catRootMap: Record<string, string> = {
+      virtualization: 'virt-start',
+      installation: 'install-start',
+      deployment: 'deploy-start',
+      startup: 'startup-start',
+      integrity: 'integrity-start',
+      adb: 'adb-start',
+      root: 'root-start'
+    };
+    if (catRootMap[catParam.toLowerCase()]) {
+      renderNode(catRootMap[catParam.toLowerCase()]);
+    }
+  }
+</script>
