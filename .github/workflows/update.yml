@@ -74,25 +74,53 @@ jobs:
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
 
-      # Check OpenGApps Pico version — we query the opengapps/x86_64 releases
+      # Check OpenGApps Pico version — resilient discovery with fallback
       - name: Check OpenGApps Pico version ☑️
         run: |
-          echo "Checking latest OpenGApps Pico (x86_64 / Android 13) …"
-          LATEST=$(curl -s \
-            "https://api.github.com/repos/opengapps/x86_64/releases/latest" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            | python3 -c "
-          import json, sys, re
-          data = json.load(sys.stdin)
-          tag = data.get('tag_name', '')
-          assets = [a['name'] for a in data.get('assets', [])
-                    if re.search(r'pico.*13\.0.*x86_64|x86_64.*13\.0.*pico', a['name'], re.I)]
+          echo "Checking latest OpenGApps Pico (x86_64) …"
+          python3 -c "
+          import json, os, re, sys, urllib.request
+
+          env_file = os.getenv('GITHUB_ENV')
+          api_url = 'https://api.github.com/repos/opengapps/x86_64/releases/latest'
+          headers = {'User-Agent': 'WSABuilds-UpdateCheck'}
+          token = os.getenv('GITHUB_TOKEN')
+          if token:
+              headers['Authorization'] = f'Bearer {token}'
+
+          tag = 'NOT_FOUND'
+          asset_name = 'NOT_FOUND'
+
+          try:
+              req = urllib.request.Request(api_url, headers=headers)
+              with urllib.request.urlopen(req, timeout=30) as resp:
+                  data = json.loads(resp.read().decode('utf-8'))
+              tag = data.get('tag_name') or 'NOT_FOUND'
+              raw_assets = [a.get('name', '') for a in data.get('assets', [])]
+              print(f'Release tag found: {tag}')
+              print(f'Total release assets: {len(raw_assets)}')
+              if raw_assets:
+                  print('Available assets: ' + ', '.join(raw_assets[:10]))
+                  matching = [a for a in raw_assets if re.search(r'pico.*x86_64|x86_64.*pico', a, re.I)]
+                  if matching:
+                      asset_name = matching[0]
+                      print(f'Matched OpenGApps asset: {asset_name}')
+                  else:
+                      print('No assets matching pico x86_64 pattern.')
+              else:
+                  print(f'Notice: Release {tag} contains no attached assets.')
+          except Exception as exc:
+              print(f'Error querying OpenGApps release: {exc}')
+
+          if env_file:
+              with open(env_file, 'a', encoding='utf-8') as f:
+                  f.write(f'OPENGAPPS_PICO_TAG={tag}\n')
+                  f.write(f'OPENGAPPS_PICO_ASSET={asset_name}\n')
           print(f'OPENGAPPS_PICO_TAG={tag}')
-          print(f'OPENGAPPS_PICO_ASSET={assets[0] if assets else \"\"}')
-          ")
-          echo "$LATEST" >> "$GITHUB_ENV"
-          echo "OpenGApps Pico info:"
-          echo "$LATEST"
+          print(f'OPENGAPPS_PICO_ASSET={asset_name}')
+          "
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Check WSA retail version using repository-local script
       - name: Check WSA Retail version ☑️
@@ -104,16 +132,24 @@ jobs:
 
       - name: Summarise component versions 📋
         run: |
-          echo "Magisk Stable  : ${{ env.MAGISK_STABLE_MSG }}"
-          echo "OpenGApps Pico : ${{ env.OPENGAPPS_PICO_TAG }}"
-          echo "WSA Retail     : ${{ env.LATEST_RETAIL_VER }}"
-          echo "WSA update?    : ${{ env.RETAIL_UPDATE }}"
+          echo "=========================================="
+          echo "Component Versions & Update Status"
+          echo "=========================================="
+          echo "Magisk Version  : $MAGISK_STABLE_MSG"
+          echo "OpenGApps Tag   : $OPENGAPPS_PICO_TAG"
+          echo "OpenGApps Asset : $OPENGAPPS_PICO_ASSET"
+          echo "WSA Version     : $LATEST_RETAIL_VER"
+          echo "Update Status   : $WSA_UPDATE_STATUS"
+          echo "Build Triggered : $RETAIL_UPDATE"
+          echo "=========================================="
 
     outputs:
-      MAGISK_STABLE_MSG:  ${{ env.MAGISK_STABLE_MSG }}
-      OPENGAPPS_PICO_TAG: ${{ env.OPENGAPPS_PICO_TAG }}
-      RETAIL_UPDATE:      ${{ env.RETAIL_UPDATE }}
-      LATEST_RETAIL_VER:  ${{ env.LATEST_RETAIL_VER }}
+      MAGISK_STABLE_MSG:    ${{ env.MAGISK_STABLE_MSG }}
+      OPENGAPPS_PICO_TAG:   ${{ env.OPENGAPPS_PICO_TAG }}
+      OPENGAPPS_PICO_ASSET: ${{ env.OPENGAPPS_PICO_ASSET }}
+      RETAIL_UPDATE:        ${{ env.RETAIL_UPDATE }}
+      LATEST_RETAIL_VER:    ${{ env.LATEST_RETAIL_VER }}
+      WSA_UPDATE_STATUS:    ${{ env.WSA_UPDATE_STATUS }}
 
   # ---------------------------------------------------------------------------
   # update-downloadlinks — update README badges / download links table
@@ -220,6 +256,7 @@ jobs:
           GITHUB_WORKSPACE:     ${{ github.workspace }}
           MAGISK_STABLE_MSG:    ${{ needs.check.outputs.MAGISK_STABLE_MSG }}
           OPENGAPPS_PICO_TAG:   ${{ needs.check.outputs.OPENGAPPS_PICO_TAG }}
+          OPENGAPPS_PICO_ASSET: ${{ needs.check.outputs.OPENGAPPS_PICO_ASSET }}
           WSA_VER:              ${{ env.WSA_VER }}
         run: |
           import os, re
