@@ -44,6 +44,7 @@ jobs:
       - name: Setup Python3 Virtual Enviroment 🐍
         working-directory: MagiskOnWSAOld/scripts
         run: |
+          abort() { echo "FATAL: $*" >&2; exit 1; }
           sudo apt-get update
           PYTHON_VENV_DIR="$(dirname "$PWD")/python3-env"
           python3 -m venv "$PYTHON_VENV_DIR" || abort "Failed to create python3 virtual env"
