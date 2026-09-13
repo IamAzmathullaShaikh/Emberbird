@@ -10,9 +10,10 @@ SCRIPTS_DIR = REPO_ROOT / "scripts"
 CONFIG_DIR = REPO_ROOT / "config"
 sys.path.insert(0, str(SCRIPTS_DIR))
 
-from validate_package_identity import extract_manifest_identity, validate_identity
+from validate_package_identity import extract_manifest_identity, validate_identity, validate_baseline_schema
 from validate_package_integrity import check_package_integrity
 from generate_release_metadata import compute_hashes, generate_metadata_and_checksums
+from security_scan import audit_repository
 
 
 class TestIdentityAndIntegrity(unittest.TestCase):
@@ -28,6 +29,12 @@ class TestIdentityAndIntegrity(unittest.TestCase):
         self.assertEqual(data["package_name"], "MicrosoftCorporationII.WindowsSubsystemForAndroid")
         self.assertEqual(data["publisher_id"], "8wekyb3d8bbwe")
         self.assertEqual(data["package_family_name"], "MicrosoftCorporationII.WindowsSubsystemForAndroid_8wekyb3d8bbwe")
+
+    def test_baseline_schema_validation_mode_b(self):
+        passed, report = validate_baseline_schema(self.baseline_path)
+        self.assertTrue(passed, "Baseline schema validation must pass for valid baseline JSON")
+        self.assertEqual(report["status"], "BASELINE_SCHEMA_VERIFIED")
+        self.assertEqual(report["mode"], "MODE_B_BASELINE_SCHEMA_ONLY")
 
     def test_manifest_identity_extraction(self):
         if not self.sample_manifest.exists():
@@ -84,6 +91,10 @@ class TestIdentityAndIntegrity(unittest.TestCase):
             self.assertEqual(meta["variant"], "Test_Variant_x64")
             self.assertEqual(len(meta["artifacts"]), 1)
             self.assertEqual(meta["artifacts"][0]["filename"], "test_artifact.7z")
+
+    def test_security_audit_scanner(self):
+        count, findings = audit_repository(REPO_ROOT)
+        self.assertEqual(count, 0, f"Repository security audit failed with {count} violation(s): {findings}")
 
 
 if __name__ == "__main__":
