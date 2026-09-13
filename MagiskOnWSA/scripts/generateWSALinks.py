@@ -56,22 +56,27 @@ release_name_map = {"retail": "Retail", "RP": "Release Preview",
                     "WIS": "Insider Slow", "WIF": "Insider Fast"}
 release_type = sys.argv[2] if sys.argv[2] != "" else "Retail"
 release_name = release_name_map[release_type]
-download_dir = Path.cwd().parent / \
-    "download" if sys.argv[3] == "" else Path(sys.argv[3])
+BASE_DIR = Path(__file__).resolve().parent.parent
+XML_DIR = BASE_DIR / "xml"
+download_dir = BASE_DIR / "download" if sys.argv[3] == "" else Path(sys.argv[3])
 ms_account_conf = download_dir/".ms_account"
 tempScript = sys.argv[4]
 skip_wsa_download = sys.argv[5] == "1" if len(sys.argv) >= 6 else False
 cat_id = '858014f3-3934-4abe-8078-4aa193e74ca8'
 user = ''
-session = Session()
-session.verify = True
+
+# Import central SSL configuration with certifi CA bundle + Microsoft intermediate CA
+sys.path.insert(0, str((BASE_DIR / "Update Check").resolve()))
+from env_helpers import configure_ssl_session
+
+session = configure_ssl_session()
 if ms_account_conf.is_file():
     with open(ms_account_conf, "r") as f:
         conf = Prop(f.read())
         user = conf.get('user_code')
 print(
     f"Generating WSA download link: arch={arch} release_type={release_name}\n", flush=True)
-with open(Path.cwd().parent / ("xml/GetCookie.xml"), "r") as f:
+with open(XML_DIR / "GetCookie.xml", "r") as f:
     cookie_content = f.read().format(user)
 
 out = session.post(
@@ -82,7 +87,7 @@ out = session.post(
 doc = minidom.parseString(out.text)
 cookie = doc.getElementsByTagName('EncryptedData')[0].firstChild.nodeValue
 
-with open(Path.cwd().parent / "xml/WUIDRequest.xml", "r") as f:
+with open(XML_DIR / "WUIDRequest.xml", "r") as f:
     cat_id_content = f.read().format(user, cookie, cat_id, release_type)
 
 out = session.post(
@@ -119,7 +124,7 @@ for node in doc.getElementsByTagName('NewUpdates')[0].getElementsByTagName('Upda
                 identities[fileinfo[0]] = ([update_identity.attributes['UpdateID'].value,
                                             update_identity.attributes['RevisionNumber'].value], fileinfo[1])
 
-with open(Path.cwd().parent / "xml/FE3FileUrl.xml", "r") as f:
+with open(XML_DIR / "FE3FileUrl.xml", "r") as f:
     FE3_file_content = f.read()
 
 if not download_dir.is_dir():
