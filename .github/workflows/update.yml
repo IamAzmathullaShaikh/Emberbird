@@ -151,8 +151,8 @@ jobs:
       - name: Commit and push if changed
         run: |
           git diff --quiet && { echo "No changes to README.md"; exit 0; }
-          git config --global user.email "68516357+MustardChef@users.noreply.github.com"
-          git config --global user.name  "MustardChef"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name  "github-actions[bot]"
           git commit -am "Update download link for WSA ${{ env.LATEST_VER }}"
           git pull --rebase origin master
           git push
@@ -184,7 +184,7 @@ jobs:
         id: check-tag
         with:
           tag:  ${{ env.WIN11X64_TAG }}
-          repo: "MustardChef/WSABuilds"
+          repo: ${{ github.repository }}
 
       - name: Stop if tag already exists
         if: steps.check-tag.outputs.exists == 'true'
