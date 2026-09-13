@@ -9,6 +9,10 @@ on:
     - cron: '0 0 * * 1' # Weekly Monday
   workflow_dispatch:
 
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -16,24 +20,53 @@ jobs:
   secret-scan:
     name: Secret & Machine Path Detection
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout 🔄
         uses: actions/checkout@v4
 
-      - name: Scan for Leaked Personal Access Tokens 🛡️
+      - name: Setup Python 🐍
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run Repository Security & Secret Audit 🛡️
         run: |
-          echo "Scanning for GitHub tokens (ghp_, gho_, github_pat_)..."
-          if git grep -i "ghp_\|gho_\|github_pat_" -- "*.py" "*.sh" "*.yml" "*.ps1" "*.yaml" "*.json"; then
-            echo "ERROR: Potential secret/token detected in source tree!" >&2
+          python3 scripts/security_scan.py
+
+      - name: Fast Git Grep Secret & Token Scan 🔍
+        run: |
+          echo "Scanning tracked files for GitHub Personal Access Tokens..."
+          # Exclude security.yml from self-matching and scan tracked files
+          MATCHES=$(git grep -E -I -n "ghp_[A-Za-z0-9_]{36}|gho_[A-Za-z0-9_]{36}|github_pat_[A-Za-z0-9_]{82}|https://[A-Za-z0-9_:]*ghp_[A-Za-z0-9_]{36}@" \
+            -- ":(exclude).github/workflows/security.yml" \
+               ":(exclude)scripts/security_scan.py" || true)
+          if [ -n "$MATCHES" ]; then
+            echo "::error::Potential secret/token detected in source tree!"
+            echo "$MATCHES"
             exit 1
           fi
           echo "No tokens detected. Clean."
 
-      - name: Scan for Hardcoded Developer Machine Paths 🚫
+      - name: Fast Git Grep Developer Machine Path Scan 🚫
         run: |
-          echo "Scanning for hardcoded user paths (BangerSoul, C:\Users\...)..."
-          if git grep -n "BangerSoul" -- "*.py" "*.sh" "*.ps1" "*.yml" "*.yaml" "*.json"; then
-            echo "ERROR: Machine-specific developer path detected!" >&2
+          echo "Scanning for hardcoded user paths in scripts and configs..."
+          MATCHES=$(git grep -E -I -n "(C:[\\/][Uu]sers[\\/]|/home/)[A-Za-z0-9_-]+" \
+            -- ":(exclude).github/workflows/security.yml" \
+               ":(exclude)scripts/security_scan.py" \
+               ":(exclude)tests/**" \
+               ":(exclude)docs/**" \
+               ":(exclude)Documentation/**" || true)
+          USER_MATCHES=$(git grep -n "BangerSoul" \
+            -- ":(exclude).github/workflows/security.yml" \
+               ":(exclude)scripts/security_scan.py" \
+               ":(exclude)tests/**" \
+               ":(exclude)docs/**" \
+               ":(exclude)Documentation/**" || true)
+          if [ -n "$MATCHES" ] || [ -n "$USER_MATCHES" ]; then
+            echo "::error::Machine-specific developer path detected!"
+            [ -n "$MATCHES" ] && echo "$MATCHES"
+            [ -n "$USER_MATCHES" ] && echo "$USER_MATCHES"
             exit 1
           fi
           echo "No machine-specific paths detected. Clean."
