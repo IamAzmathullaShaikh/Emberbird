@@ -66,8 +66,9 @@ xml_dir = os.environ.get(
 user_code = ""
 
 try:
+    repo = os.getenv('GITHUB_REPOSITORY', 'MustardChef/WSABuilds')
     currentver = requests.get(
-        "https://raw.githubusercontent.com/MustardChef/WSABuilds/update/retail.appversion",
+        f"https://raw.githubusercontent.com/{repo}/update/retail.appversion",
         timeout=30).text.replace('\n', '')
 except Exception:
     currentver = ""

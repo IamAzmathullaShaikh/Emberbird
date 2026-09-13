@@ -2,7 +2,7 @@ import os
 from bs4 import BeautifulSoup, Tag
 
 # Load the README.md file
-with open('README.md', 'r') as file:
+with open('README.md', 'r', encoding='utf-8', errors='replace') as file:
     readme_content = file.read()
 
 # Parse the content with BeautifulSoup
@@ -68,25 +68,32 @@ for row_num, row in enumerate(target_table.find_all('tr')):
                 table_matrix[i][j] = cell
 
 # Replace the content of the specified cells
+updated_count = 0
 for (row_num, col_num), env_var in release_types[release_type]:
     # Check if the cell coordinates are within the range of the table matrix
     if row_num < len(table_matrix) and col_num < len(table_matrix[row_num]):
         github_env_var = os.getenv(env_var)
         if github_env_var is None:
-            print(f"The {env_var} environment variable is not set")
-            exit(1)
+            print(f"[*] Notice: {env_var} environment variable is not set; preserving existing table entry.")
+            continue
 
         # Parse the GitHub ENV variable with BeautifulSoup
         github_env_var_soup = BeautifulSoup(github_env_var, 'html.parser')
 
         # Replace the cell content with the GitHub ENV variable
         target_cell = table_matrix[row_num][col_num]
-        target_cell.clear()
-        target_cell.append(github_env_var_soup)
+        if target_cell is not None:
+            target_cell.clear()
+            target_cell.append(github_env_var_soup)
+            updated_count += 1
+            print(f"[+] Successfully updated {env_var} at table cell ({row_num}, {col_num})")
     else:
-        print(f"Cell coordinates ({row_num}, {col_num}) are out of range")
-        exit(1)
+        print(f"[-] Warning: Cell coordinates ({row_num}, {col_num}) are out of range")
 
-# Write the updated content back to the README.md file
-with open('README.md', 'w') as file:
-    file.write(str(soup))
+# Write the updated content back to the README.md file if updates occurred
+if updated_count > 0:
+    with open('README.md', 'w', encoding='utf-8') as file:
+        file.write(str(soup))
+    print(f"[+] README.md successfully updated with {updated_count} download link(s).")
+else:
+    print("[*] No download links were modified in README.md.")

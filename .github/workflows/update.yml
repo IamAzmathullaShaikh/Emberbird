@@ -1,9 +1,9 @@
 # =============================================================================
 # update.yml — WSABuilds automated update & release dispatch
 #
-# Triggered manually (workflow_dispatch) or via the GitHub UI.
+# Triggered manually (workflow_dispatch).
 # Checks for new WSA retail versions and component updates, then dispatches
-# a single build:  WSA x64  |  Magisk Stable  |  OpenGApps Pico
+# a single build: WSA x64 | Magisk Stable | OpenGApps Pico
 #
 # Inputs:
 #   wsa_ver      (optional) Override the WSA version to build.
@@ -37,6 +37,13 @@ on:
         options:
           - retail
 
+concurrency:
+  group: update-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
 # =============================================================================
 # Jobs
 # =============================================================================
@@ -49,6 +56,9 @@ jobs:
   check:
     name: Check component versions
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout ♻️
@@ -57,11 +67,12 @@ jobs:
       - name: Install Python dependencies 🐍
         run: pip3 install --quiet beautifulsoup4 lxml requests packaging
 
-      # Check Magisk stable version — outputs MAGISK_STABLE_MSG env var
+      # Check Magisk stable version using repository-local script
       - name: Check Magisk Stable version ✅
         run: |
-          wget -q https://github.com/MustardChef/WSABuilds/raw/master/MagiskOnWSA/Update%20Check/MagiskStableUpdateCheck.py
-          python3 MagiskStableUpdateCheck.py
+          python3 "MagiskOnWSA/Update Check/MagiskStableUpdateCheck.py"
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
 
       # Check OpenGApps Pico version — we query the opengapps/x86_64 releases
       - name: Check OpenGApps Pico version ☑️
@@ -83,15 +94,13 @@ jobs:
           echo "OpenGApps Pico info:"
           echo "$LATEST"
 
-      # Check WSA retail version — outputs RETAIL_UPDATE + LATEST_RETAIL_VER
+      # Check WSA retail version using repository-local script
       - name: Check WSA Retail version ☑️
         run: |
-          wget -q https://github.com/MustardChef/WSABuilds/raw/master/MagiskOnWSA/Update%20Check/WSARetailUpdateCheck.py
-          # WSARetailUpdateCheck.py clones the MagiskOnWSALocal xml/ dir;
-          # supply it the path to our local copy.
-          python3 WSARetailUpdateCheck.py
+          python3 "MagiskOnWSA/Update Check/WSARetailUpdateCheck.py"
         env:
           WSA_XML_DIR: ${{ github.workspace }}/MagiskOnWSA/xml
+          GITHUB_REPOSITORY: ${{ github.repository }}
 
       - name: Summarise component versions 📋
         run: |
@@ -113,8 +122,9 @@ jobs:
     name: Update README download links
     runs-on: ubuntu-latest
     needs: [check]
-    # Run when either the caller supplied an explicit version OR a new WSA
-    # retail version was detected.
+    timeout-minutes: 15
+    permissions:
+      contents: write
     if: inputs.wsa_ver != '' || needs.check.outputs.RETAIL_UPDATE == 'yes'
 
     steps:
@@ -134,8 +144,7 @@ jobs:
       - name: Resolve WSA version and compose badge links
         run: |
           ver="${{ inputs.wsa_ver || needs.check.outputs.LATEST_RETAIL_VER }}"
-          # Windows 11 x64 stable badge (blue)
-          win11x64='<p><a href="https://github.com/MustardChef/WSABuilds/releases/tag/Windows_11_'"${ver}"'"><img alt="win11x64downstable" src="https://img.shields.io/badge/Download%20Latest%20Stable%20Build-Windows%2011%20x64-blue?style=for-the-badge&amp;logo=windows11"/></a></p>'
+          win11x64='<p><a href="https://github.com/'"${{ github.repository }}"'/releases/tag/Windows_11_'"${ver}"'"><img alt="win11x64downstable" src="https://img.shields.io/badge/Download%20Latest%20Stable%20Build-Windows%2011%20x64-blue?style=for-the-badge&amp;logo=windows11"/></a></p>'
           {
             echo "LINK_FOR_W11X64=${win11x64}"
             echo "LATEST_VER=${ver}"
@@ -164,11 +173,16 @@ jobs:
     name: Create release tag and shell
     runs-on: ubuntu-latest
     needs: [check, update-downloadlinks]
+    timeout-minutes: 15
+    permissions:
+      contents: write
     if: inputs.wsa_ver != '' || needs.check.outputs.RETAIL_UPDATE == 'yes'
 
     steps:
       - name: Checkout 🔄
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Resolve WSA version
         run: |
@@ -178,13 +192,15 @@ jobs:
             echo "WIN11X64_TAG=Windows_11_${ver}"
           } >> "$GITHUB_ENV"
 
-      # Abort if the tag already exists — prevents duplicate releases
+      # Native Git tag check — prevents duplicate releases without 3rd-party action
       - name: Check if Windows 11 x64 tag exists
-        uses: mukunku/tag-exists-action@v1.6.0
         id: check-tag
-        with:
-          tag:  ${{ env.WIN11X64_TAG }}
-          repo: ${{ github.repository }}
+        run: |
+          if git rev-parse -q --verify "refs/tags/${{ env.WIN11X64_TAG }}" >/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Stop if tag already exists
         if: steps.check-tag.outputs.exists == 'true'
@@ -192,12 +208,10 @@ jobs:
           echo "Tag ${{ env.WIN11X64_TAG }} already exists — nothing to do."
           exit 1
 
-      # Download the Windows 11 x64 retail release notes template
-      - name: Download release notes template 📥
+      # Use local in-repo release notes template (no external gist dependency)
+      - name: Prepare release notes template 📥
         run: |
-          wget -q \
-            https://gist.github.com/MustardChef/788d12344916043a7a3df9c1165b8843/raw/a8084d98b28cf650a60c74f3abf0484640bd36b7/Windows11x64retail.md \
-            -O Windows11x64.md
+          cp templates/release-notes-retail.md Windows11x64.md
 
       # Substitute template placeholders
       - name: Fill in release notes ✏️
@@ -206,6 +220,7 @@ jobs:
           GITHUB_WORKSPACE:     ${{ github.workspace }}
           MAGISK_STABLE_MSG:    ${{ needs.check.outputs.MAGISK_STABLE_MSG }}
           OPENGAPPS_PICO_TAG:   ${{ needs.check.outputs.OPENGAPPS_PICO_TAG }}
+          WSA_VER:              ${{ env.WSA_VER }}
         run: |
           import os, re
           from datetime import datetime, timezone
@@ -215,7 +230,7 @@ jobs:
           time = now.strftime("%H:%M:%S UTC")
 
           path = os.path.join(os.environ["GITHUB_WORKSPACE"], "Windows11x64.md")
-          with open(path) as f:
+          with open(path, "r", encoding="utf-8") as f:
               text = f.read()
 
           substitutions = {
@@ -223,6 +238,7 @@ jobs:
               "<<TIMEOF RELEASE>>":      time,
               "<<REASONFOR RELEASE>>":   "Scheduled update",
               "<<WSA ANDROID VERSION>>": "Android 13",
+              "<<WSA_VER>>":             os.environ.get("WSA_VER", ""),
               "<<MAGISK STABLE VER>>":   os.environ.get("MAGISK_STABLE_MSG", ""),
               "<<GAPPS VARIANT>>":       "OpenGApps Pico",
               "<<GAPPS TAG>>":           os.environ.get("OPENGAPPS_PICO_TAG", ""),
@@ -230,7 +246,6 @@ jobs:
           for placeholder, value in substitutions.items():
               text = text.replace(placeholder, value)
 
-          # Also handle the older << >> style used in some templates
           text = re.sub(r"<<DATEOFRELEASE>>",   date,                              text)
           text = re.sub(r"<<TIMEOFRELEASE>>",   time,                              text)
           text = re.sub(r"<<REASONFORRELEASE>>","Scheduled update",                text)
@@ -238,7 +253,7 @@ jobs:
           text = re.sub(r"<<MAGISKSTABLEVERSION>>",
                         os.environ.get("MAGISK_STABLE_MSG", "").replace("\\", ""), text)
 
-          with open(path, "w") as f:
+          with open(path, "w", encoding="utf-8") as f:
               f.write(text)
           print("Release notes updated.")
 
@@ -255,7 +270,8 @@ jobs:
   # ---------------------------------------------------------------------------
   build-retail-x64:
     name: Build — WSA x64 Magisk Stable + Pico GApps (Retail)
-    permissions: write-all
+    permissions:
+      contents: write
     needs: [check, check-and-create-tag, update-downloadlinks]
     if: inputs.wsa_ver != '' || needs.check.outputs.RETAIL_UPDATE == 'yes'
 
