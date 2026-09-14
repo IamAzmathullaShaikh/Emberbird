@@ -55,7 +55,7 @@ jobs:
         run: |
           BRANCH="sync/upstream-$(date +%Y%m%d-%H%M)"
           git checkout -b "${BRANCH}"
-          echo "branch=${BRANCH}" >> $GITHUB_OUTPUT
+          echo "branch=${BRANCH}" >> "$GITHUB_OUTPUT"
           
           if git merge --no-commit --no-ff upstream/master; then
             git commit -m "chore(upstream): merge changes from MustardChef/master"
