@@ -49,10 +49,10 @@ jobs:
           echo "[*] Running compatibility schema and validator unit tests..."
           python -m unittest tests/test_compatibility_schema.py -v
 
-      - name: Set up Node.js
+      - name: Set up Node.js 24 (type-stripping for .ts test imports)
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 tag head 2026-09-14
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Verify Compatibility Importer
         run: |
