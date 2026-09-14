@@ -38,14 +38,14 @@ jobs:
           UPSTREAM_COMMIT=$(git rev-parse upstream/master)
           MERGE_BASE=$(git merge-base HEAD upstream/master)
           
-          echo "local_commit=${LOCAL_COMMIT}" >> $GITHUB_OUTPUT
-          echo "upstream_commit=${UPSTREAM_COMMIT}" >> $GITHUB_OUTPUT
+          echo "local_commit=${LOCAL_COMMIT}" >> "$GITHUB_OUTPUT"
+          echo "upstream_commit=${UPSTREAM_COMMIT}" >> "$GITHUB_OUTPUT"
           
           if [ "${UPSTREAM_COMMIT}" = "${MERGE_BASE}" ]; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
             echo "[+] Local master is fully up to date with upstream."
           else
-            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
             echo "[*] Upstream contains new commits."
           fi
 
@@ -59,11 +59,11 @@ jobs:
           
           if git merge --no-commit --no-ff upstream/master; then
             git commit -m "chore(upstream): merge changes from MustardChef/master"
-            echo "merge_success=true" >> $GITHUB_OUTPUT
+            echo "merge_success=true" >> "$GITHUB_OUTPUT"
             echo "[+] Clean merge succeeded."
           else
             git merge --abort || true
-            echo "merge_success=false" >> $GITHUB_OUTPUT
+            echo "merge_success=false" >> "$GITHUB_OUTPUT"
             echo "[-] Merge conflict encountered."
           fi
 
