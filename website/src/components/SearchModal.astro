@@ -30,8 +30,11 @@
   async function loadPagefind() {
     if (pagefindLoaded) return;
     try {
-      // Lazy load Pagefind from static dist directory
-      const pagefind = await import(/* @vite-ignore */ '/pagefind/pagefind.js');
+      // Lazy load Pagefind from static dist directory. Specifier is computed
+      // so Rollup cannot statically resolve it (pagefind.js only exists in
+      // dist after `pagefind --site dist` runs post-build).
+      const spec = ['/pagefind/pagefind.js'].join('');
+      const pagefind = await import(/* @vite-ignore */ spec);
       await pagefind.init();
       pagefindInstance = pagefind;
       pagefindLoaded = true;
