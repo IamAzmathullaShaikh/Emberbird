@@ -132,36 +132,28 @@ jobs:
           cat tsconfig.json
           echo "[*] Starting tsc..."
           set +e
-          echo "[*] Running tsc WITH emit (this is what npm run build does)..."
-          echo "[*] tsc version: $(npx tsc --version)"
-          echo "[*] tsconfig.json:"
-          python3 -c "
-import json
-with open('tsconfig.json') as f:
-    d = json.load(f)
-for k, v in d.get('compilerOptions', {}).items():
-    print(f'  {k}: {v}')
-"
-          echo "[*] Starting tsc..."
-          npx tsc 2>&1
-          TSC_EXIT=$?
+          set +e
+          echo "[*] Running tsc WITH emit on Windows runner..."
+          echo "[*] tsc version: $(npx tsc --version 2>&1)"
+          echo "[*] node: $(node --version 2>&1)"
+          echo "[*] npm: $(npm --version 2>&1)"
+          echo "[*] OS: $(uname -a 2>/dev/null || echo 'Windows')"
+          echo "[*] pwd: $(pwd)"
+          echo "[*] ls src/: $(ls src/ 2>&1 | head -5)"
+          echo "[*] tsconfig.json compilerOptions:"
+          node -e "const d=require('./tsconfig.json');for(const[k,v]of Object.entries(d.compilerOptions))console.log('  '+k+':',typeof v==='boolean'?v:v)" 2>&1 || cat tsconfig.json
+          echo "[*] Starting tsc (capture full output)..."
+          npx tsc 2>&1 | tee /tmp/tsc_output.log
+          TSC_EXIT=${PIPESTATUS[0]}
           set -e
           echo "[*] tsc exit code: $TSC_EXIT"
-          echo "[*] Checking if dist/ was created:"
-          if [ -d dist/ ]; then
-            echo "  dist/ exists"
-            ls -la dist/
-          else
-            echo "  dist/ NOT created"
+          echo "[*] Full tsc output saved to /tmp/tsc_output.log"
+          echo "[*] Output file size: $(wc -c < /tmp/tsc_output.log 2>/dev/null || echo 0) bytes"
+          if [ $TSC_EXIT -ne 0 ]; then
+            echo "[!] TSC FAILED. Showing last 50 lines of output:"
+            tail -50 /tmp/tsc_output.log
           fi
-          if [ -d dist/assets/ ]; then
-            echo "  dist/assets/ exists"
-            ls -la dist/assets/
-          else
-            echo "  dist/assets/ NOT created"
-          fi
-          echo "[*] Checking for tsbuildinfo:"
-          ls -la .tsbuildinfo 2>/dev/null || echo "  No .tsbuildinfo"
+          echo "[*] Checking dist/: $(ls dist/ 2>&1 | head -5 || echo 'not found')"
           exit $TSC_EXIT
 
       - name: Vite Build
