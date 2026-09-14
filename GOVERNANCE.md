@@ -152,7 +152,7 @@ Tag push (`v*`) triggers `winget-release.yml`:
 | Area | Status |
 |---|---|
 | PAT incident | **BLOCKED** — exposed token still ACTIVE (HTTP 200, all 21 scopes); owner must revoke (§6). Zero misuse evidence: 0 deploy keys, 0 webhooks, owner-only collaborator, event actors = owner + Actions bot. |
-| Website deploy | **WORKING AWAITING SECRETS** — pipeline fully green locally (tests 22/22, typecheck clean, build + Pagefind verified); deploy step activates automatically once `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` secrets exist. |
+| Website deploy | **WORKING — PRODUCTION LIVE** at https://wsabuilds-website.pages.dev (2026-09-14). Enablement record: Pages project `wsabuilds-website` created via API (action's 401 on missing project was misleading); `production_branch` aligned to `main`; token IP-filter (error 9109) had to be lifted in the Cloudflare dashboard — CI runners are not fixed-IP. Credentials pasted into chat must be rotated (§10). |
 | Reproducibility | **PASS** — Cargo.lock + package-lock committed, `npm ci` enforced, Rust toolchain pinned 1.98.1 |
 | Supply chain | **PASS** — all actions SHA-pinned across every workflow; zero `@v` tags |
 | Analytics cycle | **PASS** — 7/7 tests (injection, schema const, aggregation recount, dashboard regeneration) |
