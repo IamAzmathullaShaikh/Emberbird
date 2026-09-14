@@ -38,3 +38,10 @@ Desktop.ini
 *-report.json
 release-metadata.json
 checksums.*
+
+# Node
+node_modules/
+
+# Manager CI artifact staging (local copies of release assets)
+dist_artifacts/
+dist_artifacts_ci/
