@@ -28,7 +28,7 @@ pub struct UpdateStatus {
 }
 
 pub fn clean_version(ver: &str) -> String {
-    ver.trim().trim_start_matches(|c| c == 'v' || c == 'V').to_string()
+    ver.trim().trim_start_matches(['v', 'V']).to_string()
 }
 
 pub fn compare_semver(current: &str, latest: &str) -> i32 {

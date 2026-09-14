@@ -231,7 +231,7 @@ pub fn subsystem_baseline_version() -> Option<String> {
 pub fn is_version_older(version: &str, baseline: &str) -> bool {
     let parse = |v: &str| -> Vec<(u64, String)> {
         v.trim()
-            .trim_start_matches(|c| c == 'v' || c == 'V')
+            .trim_start_matches(['v', 'V'])
             .split('.')
             .map(|seg| {
                 let digits: String = seg.chars().take_while(|c| c.is_ascii_digit()).collect();

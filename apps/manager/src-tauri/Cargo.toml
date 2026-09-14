@@ -6,12 +6,6 @@ authors = ["WSABuilds Community"]
 license = "Apache-2.0"
 edition = "2021"
 
-# Compile-time fallback for the subsystem baseline used by the unified state
-# model (apps/manager/src-tauri/src/state.rs). Kept in sync with
-# deployment/version.json -> subsystem_baseline.wsa_version.
-[env]
-WSA_BASELINE_VERSION = "2311.40000.5.0"
-
 [lib]
 name = "wsabuilds_manager_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
