@@ -98,7 +98,16 @@ jobs:
           VITE_PUBLIC_RELEASES_URL: https://github.com/IamAzmathullaShaikh/WSABuilds/releases
         run: |
           echo "[*] Running TypeScript type checker (noEmit)..."
-          npx tsc --noEmit
+          echo "[*] TypeScript version: $(npx tsc --version)"
+          echo "[*] Node version: $(node --version)"
+          echo "[*] npm version: $(npm --version)"
+          echo "[*] Running tsc --noEmit with full output..."
+          npx tsc --noEmit 2>&1 || true
+          echo "[*] tsc exit code: $?"
+          echo "[*] Checking for any .tsbuildinfo or build cache..."
+          ls -la .tsbuildinfo 2>/dev/null || echo "  No .tsbuildinfo found"
+          echo "[*] tsconfig.json settings:"
+          cat tsconfig.json | python3 -c "import sys,json;d=json.load(sys.stdin);print(f'  strict={d["compilerOptions"].get("strict","?")}');print(f'  noUnusedLocals={d["compilerOptions"].get("noUnusedLocals","?")}');print(f'  noUnusedParameters={d["compilerOptions"].get("noUnusedParameters","?")}');print(f'  moduleResolution={d["compilerOptions"].get("moduleResolution","?")}');print(f'  skipLibCheck={d["compilerOptions"].get("skipLibCheck","?")}')" 2>/dev/null || cat tsconfig.json
 
       - name: Frontend Build
         working-directory: apps/manager
