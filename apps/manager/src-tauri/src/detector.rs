@@ -21,7 +21,7 @@ pub fn detect_subsystem() -> WsaStatus {
     let dev_mode = check_developer_mode();
     let virt = check_virtualization();
     let running = check_processes();
-    let (installed, ver, path, vhdx) = check_package_registration();
+    let (_, ver, path, vhdx) = check_package_registration();
 
     // Single authoritative derivation. `installed` is re-derived from the
     // state so the boolean can never contradict the state the UI renders.

@@ -47,11 +47,11 @@ jobs:
           cargo check 2>&1 | Tee-Object -FilePath $env:GITHUB_WORKSPACE/check.txt
           "exit=$LASTEXITCODE" >> $env:GITHUB_OUTPUT
 
-      - name: Cargo Clippy (capture, no -D)
+      - name: Cargo Clippy (exact CI gate command)
         working-directory: apps/manager/src-tauri
         shell: pwsh
         run: |
-          cargo clippy 2>&1 | Tee-Object -FilePath $env:GITHUB_WORKSPACE/clippy.txt
+          cargo clippy -- -D warnings 2>&1 | Tee-Object -FilePath $env:GITHUB_WORKSPACE/clippy.txt
           "exit=$LASTEXITCODE" >> $env:GITHUB_OUTPUT
 
       - name: Publish Evidence to Step Summary
