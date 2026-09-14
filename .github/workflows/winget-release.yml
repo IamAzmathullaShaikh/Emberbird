@@ -20,8 +20,7 @@ concurrency:
   group: winget-ci-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   validate-metadata:
