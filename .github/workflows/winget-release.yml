@@ -137,17 +137,27 @@ jobs:
           echo "    TAURI_DEBUG=$TAURI_DEBUG"
           echo "[*] Running npm run build (tsc && vite build)..."
           set +e
-          npm run build 2>&1
-          BUILD_EXIT=$?
+          echo "[*] Step 1: Running tsc (with emit)..."
+          npx tsc 2>&1
+          TSC_EXIT=$?
+          echo "[*] tsc exit code: $TSC_EXIT"
+          echo "[*] Step 2: Running vite build..."
+          if [ $TSC_EXIT -eq 0 ]; then
+            npx vite build 2>&1
+            VITE_EXIT=$?
+            echo "[*] vite build exit code: $VITE_EXIT"
+          else
+            echo "[!] Skipping vite build because tsc failed"
+            VITE_EXIT=1
+          fi
+          echo "[*] Combined exit: tsc=$TSC_EXIT vite=$VITE_EXIT"
           set -e
-          echo "[*] Build exit code: $BUILD_EXIT"
-          if [ $BUILD_EXIT -ne 0 ]; then
-            echo "[!] Build failed with exit code $BUILD_EXIT"
-            echo "[*] Checking dist/ contents after failure:"
+          if [ $TSC_EXIT -ne 0 ] || [ $VITE_EXIT -ne 0 ]; then
+            echo "[!] Build failed. Checking dist/:"
             ls -la dist/ 2>/dev/null || echo "  dist/ not found"
             ls -la dist/assets/ 2>/dev/null || echo "  dist/assets/ not found"
           fi
-          exit $BUILD_EXIT
+          exit $((TSC_EXIT || VITE_EXIT))
 
       - name: Cargo Build Desktop Binary
         working-directory: apps/manager/src-tauri
