@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
+
+PackageIdentifier: WSABuilds.WSABuildsManager
+PackageVersion: 0.2.2
+PackageLocale: en-US
+Publisher: WSABuilds
+PublisherUrl: https://github.com/IamAzmathullaShaikh/WSABuilds
+PublisherSupportUrl: https://github.com/IamAzmathullaShaikh/WSABuilds/issues
+PackageName: WSABuilds Manager
+PackageUrl: https://github.com/IamAzmathullaShaikh/WSABuilds
+License: Apache-2.0
+LicenseUrl: https://github.com/IamAzmathullaShaikh/WSABuilds/blob/master/LICENSE
+Copyright: Copyright (c) 2026 WSABuilds Community
+ShortDescription: Native desktop manager for Windows Subsystem for Android lifecycle, backups, and builds.
+Description: WSABuilds Manager is a lightweight native desktop application to manage WSA lifecycle, perform verified cold VHDX backups, restore containers with rollback safety, and coordinate build upgrades.
+Tags:
+  - wsa
+  - android
+  - subsystem
+  - magisk
+  - kernelsu
+  - backup
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0
