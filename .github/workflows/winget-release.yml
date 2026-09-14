@@ -132,18 +132,36 @@ jobs:
           cat tsconfig.json
           echo "[*] Starting tsc..."
           set +e
+          echo "[*] Running tsc WITH emit (this is what npm run build does)..."
+          echo "[*] tsc version: $(npx tsc --version)"
+          echo "[*] tsconfig.json:"
+          python3 -c "
+import json
+with open('tsconfig.json') as f:
+    d = json.load(f)
+for k, v in d.get('compilerOptions', {}).items():
+    print(f'  {k}: {v}')
+"
+          echo "[*] Starting tsc..."
           npx tsc 2>&1
           TSC_EXIT=$?
           set -e
           echo "[*] tsc exit code: $TSC_EXIT"
-          if [ $TSC_EXIT -eq 0 ]; then
-            echo "[+] TypeScript compilation successful"
-            echo "[*] Output files:"
-            ls -la dist/ 2>/dev/null || echo "  dist/ not created"
-            ls -la dist/assets/ 2>/dev/null || echo "  dist/assets/ not created"
+          echo "[*] Checking if dist/ was created:"
+          if [ -d dist/ ]; then
+            echo "  dist/ exists"
+            ls -la dist/
           else
-            echo "[!] TypeScript compilation FAILED (exit $TSC_EXIT)"
+            echo "  dist/ NOT created"
           fi
+          if [ -d dist/assets/ ]; then
+            echo "  dist/assets/ exists"
+            ls -la dist/assets/
+          else
+            echo "  dist/assets/ NOT created"
+          fi
+          echo "[*] Checking for tsbuildinfo:"
+          ls -la .tsbuildinfo 2>/dev/null || echo "  No .tsbuildinfo"
           exit $TSC_EXIT
 
       - name: Vite Build
