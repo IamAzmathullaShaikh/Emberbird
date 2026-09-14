@@ -115,7 +115,38 @@ jobs:
           echo "[*] tsconfig.json:"
           cat tsconfig.json
 
-      - name: Frontend Build
+      - name: TypeScript Emit
+        working-directory: apps/manager
+        env:
+          NODE_ENV: production
+          VITE_PUBLIC_GITHUB_REPO: IamAzmathullaShaikh/WSABuilds
+          VITE_PUBLIC_GITHUB_REPO_URL: https://github.com/IamAzmathullaShaikh/WSABuilds
+          VITE_PUBLIC_RELEASES_URL: https://github.com/IamAzmathullaShaikh/WSABuilds/releases
+        shell: bash
+        run: |
+          echo "[*] Running TypeScript compilation (tsc with emit)..."
+          echo "[*] tsc version: $(npx tsc --version)"
+          echo "[*] node version: $(node --version)"
+          echo "[*] Working directory: $(pwd)"
+          echo "[*] tsconfig.json:"
+          cat tsconfig.json
+          echo "[*] Starting tsc..."
+          set +e
+          npx tsc 2>&1
+          TSC_EXIT=$?
+          set -e
+          echo "[*] tsc exit code: $TSC_EXIT"
+          if [ $TSC_EXIT -eq 0 ]; then
+            echo "[+] TypeScript compilation successful"
+            echo "[*] Output files:"
+            ls -la dist/ 2>/dev/null || echo "  dist/ not created"
+            ls -la dist/assets/ 2>/dev/null || echo "  dist/assets/ not created"
+          else
+            echo "[!] TypeScript compilation FAILED (exit $TSC_EXIT)"
+          fi
+          exit $TSC_EXIT
+
+      - name: Vite Build
         working-directory: apps/manager
         env:
           NODE_ENV: production
@@ -125,39 +156,29 @@ jobs:
           TAURI_DEBUG: false
         shell: bash
         run: |
-          echo "[*] Building production frontend bundle..."
-          echo "[*] Node version: $(node --version)"
-          echo "[*] npm version: $(npm --version)"
-          echo "[*] Vite version: $(npx vite --version 2>/dev/null || echo 'unknown')"
+          echo "[*] Running Vite production build..."
+          echo "[*] vite version: $(npx vite --version 2>/dev/null || echo 'unknown')"
           echo "[*] Environment:"
-          echo "    NODE_ENV=$NODE_ENV"
-          echo "    VITE_PUBLIC_GITHUB_REPO=$VITE_PUBLIC_GITHUB_REPO"
-          echo "    VITE_PUBLIC_GITHUB_REPO_URL=$VITE_PUBLIC_GITHUB_REPO_URL"
-          echo "    VITE_PUBLIC_RELEASES_URL=$VITE_PUBLIC_RELEASES_URL"
-          echo "    TAURI_DEBUG=$TAURI_DEBUG"
-          echo "[*] Running npm run build (tsc && vite build)..."
+          echo "    NODE_ENV=${NODE_ENV:-not set}"
+          echo "    VITE_PUBLIC_GITHUB_REPO=${VITE_PUBLIC_GITHUB_REPO:-not set}"
+          echo "    VITE_PUBLIC_RELEASES_URL=${VITE_PUBLIC_RELEASES_URL:-not set}"
+          echo "[*] Checking dist/ exists: $(ls dist/index.html 2>/dev/null && echo 'yes' || echo 'no')"
           set +e
-          echo "[*] Step 1: Running tsc (with emit)..."
-          npx tsc 2>&1
-          TSC_EXIT=$?
-          echo "[*] tsc exit code: $TSC_EXIT"
-          echo "[*] Step 2: Running vite build..."
-          if [ $TSC_EXIT -eq 0 ]; then
-            npx vite build 2>&1
-            VITE_EXIT=$?
-            echo "[*] vite build exit code: $VITE_EXIT"
-          else
-            echo "[!] Skipping vite build because tsc failed"
-            VITE_EXIT=1
-          fi
-          echo "[*] Combined exit: tsc=$TSC_EXIT vite=$VITE_EXIT"
+          npx vite build 2>&1
+          VITE_EXIT=$?
           set -e
-          if [ $TSC_EXIT -ne 0 ] || [ $VITE_EXIT -ne 0 ]; then
-            echo "[!] Build failed. Checking dist/:"
+          echo "[*] vite build exit code: $VITE_EXIT"
+          if [ $VITE_EXIT -eq 0 ]; then
+            echo "[+] Vite build successful"
+            echo "[*] Final dist/ contents:"
+            ls -la dist/
+            ls -la dist/assets/
+          else
+            echo "[!] Vite build FAILED (exit $VITE_EXIT)"
+            echo "[*] dist/ after failure:"
             ls -la dist/ 2>/dev/null || echo "  dist/ not found"
-            ls -la dist/assets/ 2>/dev/null || echo "  dist/assets/ not found"
           fi
-          exit $((TSC_EXIT || VITE_EXIT))
+          exit $VITE_EXIT
 
       - name: Cargo Build Desktop Binary
         working-directory: apps/manager/src-tauri
