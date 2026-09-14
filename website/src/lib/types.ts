@@ -53,6 +53,8 @@ export interface UnifiedRelease {
   notes: string;
   releaseUrl: string;
   assets: NormalizedAsset[];
+  /** Coarse product family of the release, derived from its tag. */
+  channel: 'manager' | 'wsa';
 }
 
 export interface ReleaseFilterOptions {
@@ -64,4 +66,8 @@ export interface ReleaseFilterOptions {
 export interface ReleaseProvider {
   name: string;
   getLatestRelease(): Promise<UnifiedRelease | null>;
+  /** Fetch a specific release by exact tag (e.g. `v0.2.2` or `wsa-v2311.40000.5.0`). */
+  getReleaseByTag(tag: string): Promise<UnifiedRelease | null>;
+  /** Fetch every published release, newest first (as ordered by the GitHub API). */
+  listReleases(): Promise<UnifiedRelease[]>;
 }

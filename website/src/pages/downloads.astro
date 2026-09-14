@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import IntegrityModal from '../components/IntegrityModal.astro';
-import { defaultReleaseService } from '../lib/release-service';
+import { pinnedReleaseService } from '../lib/release-service';
 import versionData from '../../../deployment/version.json';
 
 const releasesUrl = import.meta.env.PUBLIC_RELEASES_URL;
@@ -9,9 +9,14 @@ if (!releasesUrl) {
   throw new Error('Configuration error: PUBLIC_RELEASES_URL environment variable is required.');
 }
 
-const release = await defaultReleaseService.getLatestRelease();
-const assets = release?.assets || [];
+const [managerRelease, wsaRelease] = await Promise.all([
+  pinnedReleaseService.getLatestForChannel('manager'),
+  pinnedReleaseService.getLatestForChannel('wsa')
+]);
+const managerAssets = managerRelease?.assets || [];
+const wsaAssets = wsaRelease?.assets || [];
 const managerMeta = versionData.manager;
+const wsaBaseline = versionData.subsystem_baseline;
 const wingetInstallCmd = `winget install ${managerMeta.winget_package_id}`;
 ---
 
@@ -22,10 +27,10 @@ const wingetInstallCmd = `winget install ${managerMeta.winget_package_id}`;
         Verified Release Builds
       </div>
       <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
-        Available Releases & Packages
+        Available Releases &amp; Packages
       </h1>
       <p class="mt-4 text-slate-400 leading-relaxed">
-        Download verified pre-configured Windows Subsystem for Android packages. Filter by processor architecture, root management, and Google Services integration.
+        Download verified pre-configured Windows Subsystem for Android packages and the WSABuilds Manager. Every asset below is pinned to a specific release tag and checksum-published.
       </p>
     </div>
 
@@ -117,7 +122,7 @@ const wingetInstallCmd = `winget install ${managerMeta.winget_package_id}`;
       <div class="bg-slate-900 border border-emerald-500/30 rounded-xl p-6 relative overflow-hidden">
         <div class="flex items-center justify-between mb-3">
           <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-            Tier 1 • Enterprise & Banking
+            Tier 1 • Enterprise &amp; Banking
           </span>
           <span class="text-xs text-slate-400 font-mono">x64</span>
         </div>
@@ -133,55 +138,25 @@ const wingetInstallCmd = `winget install ${managerMeta.winget_package_id}`;
       </div>
     </div>
 
-    {release ? (
+    <!-- WSA Package Table (Tier 1 x64 editions) -->
+    {wsaRelease ? (
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 mb-10">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6 mb-6">
           <div>
-            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Current Build Version</div>
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Current WSA Build Version</div>
             <div class="text-2xl font-bold text-white mt-1 flex items-center gap-3">
-              <span>{release.tag}</span>
+              <span>{wsaRelease.tag}</span>
               <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-normal">
-                {release.assets.length} packages
+                {wsaAssets.length} packages
               </span>
+            </div>
+            <div class="text-xs text-slate-500 mt-1 font-mono">
+              WSA baseline {wsaBaseline.wsa_version} · Android {wsaBaseline.android_version}
             </div>
           </div>
           <div class="text-right sm:text-right">
             <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Published Date</div>
-            <div class="text-sm font-medium text-slate-300 mt-1">{release.formattedDate}</div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-              Architecture
-            </label>
-            <select id="filter-arch" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-              <option value="all" selected>All Architectures</option>
-              <option value="x64">x64 (Intel / AMD)</option>
-              <option value="arm64">arm64 (Snapdragon)</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-              Root Flavor / Edition
-            </label>
-            <select id="filter-root" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-              <option value="all" selected>All Editions</option>
-              <option value="Magisk">Standard Edition (Magisk Root)</option>
-              <option value="NoRoot">Banking Edition (Vanilla / No Root)</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-              Google Apps
-            </label>
-            <select id="filter-gapps" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-              <option value="all" selected>All GApps Variants</option>
-              <option value="GApps-Pico">OpenGApps Pico (Play Store)</option>
-            </select>
+            <div class="text-sm font-medium text-slate-300 mt-1">{wsaRelease.formattedDate}</div>
           </div>
         </div>
 
@@ -190,23 +165,26 @@ const wingetInstallCmd = `winget install ${managerMeta.winget_package_id}`;
             <thead class="text-xs uppercase bg-slate-950 text-slate-400 border-b border-slate-800">
               <tr>
                 <th class="px-4 py-3">Package Asset</th>
+                <th class="px-4 py-3">Edition</th>
                 <th class="px-4 py-3">Arch</th>
-                <th class="px-4 py-3">Root</th>
                 <th class="px-4 py-3">GApps</th>
                 <th class="px-4 py-3">Size</th>
                 <th class="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody id="package-table-body" class="divide-y divide-slate-800/60">
-              {assets.map((asset) => (
-                <tr
-                  class="hover:bg-slate-800/40 transition-colors package-row"
-                  data-arch={asset.architecture}
-                  data-root={asset.rootFlavor}
-                  data-gapps={asset.gappsFlavor}
-                >
+            <tbody class="divide-y divide-slate-800/60">
+              {wsaAssets.map((asset) => (
+                <tr class="hover:bg-slate-800/40 transition-colors">
                   <td class="px-4 py-3.5 font-mono text-xs text-white max-w-xs truncate">
                     {asset.fileName}
+                  </td>
+                  <td class="px-4 py-3.5">
+                    <span class:list={['px-2 py-0.5 rounded text-xs font-medium',
+                      asset.rootFlavor === 'Magisk'
+                        ? 'bg-indigo-500/20 text-indigo-300'
+                        : 'bg-emerald-500/20 text-emerald-300']}>
+                      {asset.rootFlavor === 'Magisk' ? 'Standard (Rooted)' : 'Banking (No Root)'}
+                    </span>
                   </td>
                   <td class="px-4 py-3.5">
                     <span class="px-2 py-0.5 rounded text-xs font-medium bg-slate-800 text-slate-300">
@@ -214,14 +192,10 @@ const wingetInstallCmd = `winget install ${managerMeta.winget_package_id}`;
                     </span>
                   </td>
                   <td class="px-4 py-3.5">
-                    <span class="px-2 py-0.5 rounded text-xs font-medium bg-indigo-500/20 text-indigo-300">
-                      {asset.rootFlavor}
-                    </span>
-                  </td>
-                  <td class="px-4 py-3.5">
                     <span class="px-2 py-0.5 rounded text-xs font-medium bg-emerald-500/20 text-emerald-300">
                       {asset.gappsFlavor}
                     </span>
+                    <span class="ml-1 text-[10px] text-slate-500">+ Play Store</span>
                   </td>
                   <td class="px-4 py-3.5 text-xs text-slate-400">
                     {asset.formattedSize}
@@ -229,7 +203,7 @@ const wingetInstallCmd = `winget install ${managerMeta.winget_package_id}`;
                   <td class="px-4 py-3.5 text-right space-x-2">
                     <button
                       type="button"
-                      onclick={`window.openIntegrityModal('${asset.fileName}', '${asset.sha256}')`}
+                      onclick={`window.openIntegrityModal('${asset.fileName}', '${asset.sha256 || ''}')`}
                       class="px-2.5 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
                     >
                       Checksum
@@ -246,23 +220,144 @@ const wingetInstallCmd = `winget install ${managerMeta.winget_package_id}`;
             </tbody>
           </table>
         </div>
+
+        <div class="mt-4 text-xs text-slate-500">
+          SHA-256 checksums for both editions are published in
+          <a href={`${releasesUrl}/download/${wsaRelease.tag}/checksums.txt`} class="text-indigo-400 hover:text-indigo-300 underline">checksums.txt</a>
+          on the same release. Full validation reports (package identity, integrity, Magisk &amp; GApps) ship alongside every build.
+        </div>
       </div>
     ) : (
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-10 text-center">
-        <h3 class="text-lg font-bold text-white mb-2">Live Releases Feed</h3>
+      <div class="bg-slate-900 border border-amber-500/30 rounded-2xl p-10 text-center mb-10">
+        <h3 class="text-lg font-bold text-white mb-2">WSA Package Feed Unavailable</h3>
         <p class="text-sm text-slate-400 max-w-xl mx-auto mb-6">
-          Release metadata will populate during production builds. Access current packages directly on the GitHub Releases portal.
+          The WSA release feed could not be resolved right now. Access the current Tier 1 builds directly on the GitHub Releases portal.
         </p>
+        <a
+          href={`${releasesUrl}/tag/${wsaBaseline.release_tag}`}
+          class="px-6 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors"
+        >
+          Open WSA Release ({wsaBaseline.release_tag})
+        </a>
+      </div>
+    )}
+
+    <!-- Manager Package Table -->
+    {managerRelease ? (
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 mb-10">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6 mb-6">
+          <div>
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Current Manager Version</div>
+            <div class="text-2xl font-bold text-white mt-1 flex items-center gap-3">
+              <span>{managerRelease.tag}</span>
+              <span class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-normal">
+                {managerAssets.length} packages
+              </span>
+            </div>
+          </div>
+          <div class="text-right sm:text-right">
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Published Date</div>
+            <div class="text-sm font-medium text-slate-300 mt-1">{managerRelease.formattedDate}</div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-300">
+            <thead class="text-xs uppercase bg-slate-950 text-slate-400 border-b border-slate-800">
+              <tr>
+                <th class="px-4 py-3">Package Asset</th>
+                <th class="px-4 py-3">Type</th>
+                <th class="px-4 py-3">Arch</th>
+                <th class="px-4 py-3">Size</th>
+                <th class="px-4 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/60">
+              {managerAssets.map((asset) => (
+                <tr class="hover:bg-slate-800/40 transition-colors">
+                  <td class="px-4 py-3.5 font-mono text-xs text-white max-w-xs truncate">
+                    {asset.fileName}
+                  </td>
+                  <td class="px-4 py-3.5">
+                    <span class="px-2 py-0.5 rounded text-xs font-medium bg-indigo-500/20 text-indigo-300">
+                      {asset.fileName.endsWith('.exe') ? 'Installer (NSIS)' : 'Portable (ZIP)'}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3.5">
+                    <span class="px-2 py-0.5 rounded text-xs font-medium bg-slate-800 text-slate-300">
+                      {asset.architecture}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3.5 text-xs text-slate-400">
+                    {asset.formattedSize}
+                  </td>
+                  <td class="px-4 py-3.5 text-right space-x-2">
+                    <button
+                      type="button"
+                      onclick={`window.openIntegrityModal('${asset.fileName}', '${asset.sha256 || ''}')`}
+                      class="px-2.5 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                    >
+                      Checksum
+                    </button>
+                    <a
+                      href={asset.downloadUrl}
+                      class="inline-block px-3 py-1 text-xs font-semibold rounded bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
+                    >
+                      Download
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-4 text-xs text-slate-500">
+          Per-asset SHA-256 sidecars (<span class="font-mono">.sha256</span>) and a combined
+          <a href={`${releasesUrl}/download/v${managerMeta.version}/WSABuildsManager-${managerMeta.version}-checksums.txt`} class="text-indigo-400 hover:text-indigo-300 underline">checksums.txt</a>
+          are published with every Manager release.
+        </div>
+      </div>
+    ) : (
+      <div class="bg-slate-900 border border-amber-500/30 rounded-2xl p-10 text-center mb-10">
+        <h3 class="text-lg font-bold text-white mb-2">Manager Package Feed Unavailable</h3>
+        <p class="text-sm text-slate-400 max-w-xl mx-auto mb-6">
+          The Manager release feed could not be resolved right now. Access the current build directly on the GitHub Releases portal.
+        </p>
+        <a
+          href={`${releasesUrl}/tag/v${managerMeta.version}`}
+          class="px-6 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors"
+        >
+          Open Manager Release (v{managerMeta.version})
+        </a>
+      </div>
+    )}
+
+    <!-- ARM64 Tier-2 Redirect Card -->
+    <div class="bg-slate-900 border border-slate-700/60 border-dashed rounded-2xl p-6 sm:p-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="max-w-xl">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-600">
+              Tier 2 • On-Demand
+            </span>
+            <span class="text-xs text-slate-400 font-mono">arm64</span>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-2">ARM64 (Snapdragon) Builds</h3>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Native Qualcomm Snapdragon packages are produced on demand rather than on every release cycle. If your PC runs a native ARM processor (e.g. Surface Pro X / Pro 11), check the releases portal for the latest ARM64 build.
+          </p>
+        </div>
         <a
           href={releasesUrl}
           target="_blank"
           rel="noopener noreferrer"
-          class="px-6 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors"
+          class="shrink-0 px-5 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white text-sm font-semibold transition-colors"
         >
-          Open GitHub Releases Portal
+          View All Releases
         </a>
       </div>
-    )}
+    </div>
 
     <div class="mt-8 text-center text-xs text-slate-500">
       Checksums are computed during CI build stages and verified before deployment.
@@ -272,37 +367,6 @@ const wingetInstallCmd = `winget install ${managerMeta.winget_package_id}`;
   <IntegrityModal />
 
   <script>
-    const filterArch = document.getElementById('filter-arch') as HTMLSelectElement;
-    const filterRoot = document.getElementById('filter-root') as HTMLSelectElement;
-    const filterGApps = document.getElementById('filter-gapps') as HTMLSelectElement;
-    const rows = document.querySelectorAll<HTMLTableRowElement>('.package-row');
-
-    function applyFilters() {
-      const arch = filterArch?.value || 'all';
-      const root = filterRoot?.value || 'all';
-      const gapps = filterGApps?.value || 'all';
-
-      rows.forEach((row) => {
-        const rowArch = row.dataset.arch;
-        const rowRoot = row.dataset.root;
-        const rowGApps = row.dataset.gapps;
-
-        const matchArch = arch === 'all' || rowArch === arch;
-        const matchRoot = root === 'all' || rowRoot === root;
-        const matchGApps = gapps === 'all' || rowGApps === gapps;
-
-        if (matchArch && matchRoot && matchGApps) {
-          row.classList.remove('hidden');
-        } else {
-          row.classList.add('hidden');
-        }
-      });
-    }
-
-    filterArch?.addEventListener('change', applyFilters);
-    filterRoot?.addEventListener('change', applyFilters);
-    filterGApps?.addEventListener('change', applyFilters);
-
     const copyBtn = document.getElementById('copy-winget-btn');
     const wingetCmd = document.getElementById('winget-cmd');
     copyBtn?.addEventListener('click', async () => {

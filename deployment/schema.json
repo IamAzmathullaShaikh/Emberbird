@@ -50,11 +50,15 @@
     },
     "subsystem_baseline": {
       "type": "object",
-      "required": ["wsa_version", "android_version"],
+      "required": ["wsa_version", "android_version", "release_tag"],
       "additionalProperties": false,
       "properties": {
         "wsa_version": { "type": "string" },
-        "android_version": { "type": "string" }
+        "android_version": { "type": "string" },
+        "release_tag": {
+          "type": "string",
+          "pattern": "^wsa-v"
+        }
       }
     }
   }

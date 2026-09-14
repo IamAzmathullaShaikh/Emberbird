@@ -4,10 +4,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const repoRoot = path.resolve(import.meta.dirname, '../../');
-const metricsFile = path.join(repoRoot, 'website', 'src', 'content', 'analytics', 'metrics.json');
+const metricsFile = path.join(repoRoot, 'website', 'src', 'data', 'analytics-metrics.json');
 
 test('website imported analytics metrics exist and adhere to zero PII', () => {
-  assert.ok(fs.existsSync(metricsFile), 'website metrics.json must exist');
+  assert.ok(fs.existsSync(metricsFile), 'website analytics-metrics.json must exist');
 
   const content = fs.readFileSync(metricsFile, 'utf8');
   const data = JSON.parse(content);
