@@ -150,9 +150,9 @@ Tag push (`v*`) triggers `winget-release.yml`:
 | Area | Status |
 |---|---|
 | PAT incident | **BLOCKED** — exposed token still ACTIVE (HTTP 200, all 21 scopes); owner must revoke (§6). Zero misuse evidence: 0 deploy keys, 0 webhooks, owner-only collaborator, event actors = owner + Actions bot. |
-| Website deploy | **RECOVERED** (pipeline level) — Node 24 + `.ts` type-stripping fixes the test blocker; trigger realigned to `main`+`master`; deploy step requires Cloudflare secrets by design. Owner must add `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID`. |
+| Website deploy | **WORKING AWAITING SECRETS** — pipeline fully green locally (tests 22/22, typecheck clean, build + Pagefind verified); deploy step activates automatically once `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` secrets exist. |
 | Reproducibility | **PASS** — Cargo.lock + package-lock committed, `npm ci` enforced, Rust toolchain pinned 1.98.1 |
 | Supply chain | **PASS** — all actions SHA-pinned across every workflow; zero `@v` tags |
 | Analytics cycle | **PASS** — 7/7 tests (injection, schema const, aggregation recount, dashboard regeneration) |
 | Compatibility cycle | **PARTIAL** — records schema-valid; runtime statuses for Google Play/Play Services/YONO/WhatsApp/Telegram/Spotify/Netflix REQUIRES TARGET ENVIRONMENT VERIFICATION (interactive adb RSA approval required) |
-| Winget | **VALIDATED** — 0.2.1 manifest set passes `winget validate`; real hash published |
+| Winget | **VALIDATED** — 0.2.2 manifest set passes `winget validate`; real published hash set post-release |

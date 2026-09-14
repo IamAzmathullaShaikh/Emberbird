@@ -12,7 +12,7 @@ Installers:
   - Architecture: x64
     InstallerType: nullsoft
     InstallerUrl: https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.2/WSABuildsManager-Setup-0.2.2-x64.exe
-    InstallerSha256: "28a4c9cfe39b3b3e05fd2b228cae145aeba2388fc3586c94db1459bdf34520a5" # BOOTSTRAP: 0.2.1 hash per GOVERNANCE.md section 9.6; replace with the real v0.2.2 asset hash immediately after publication
+    InstallerSha256: "887443bad0aeb3eec04ff367b4768edad2cc0e1b2fcd6b9b255f5bfd3181466a"
     Scope: user
 ManifestType: installer
 ManifestVersion: 1.6.0
