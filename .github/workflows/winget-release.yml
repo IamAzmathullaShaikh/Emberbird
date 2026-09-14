@@ -55,10 +55,6 @@ jobs:
     needs: validate-metadata
     runs-on: windows-latest
     timeout-minutes: 25
-    env:
-      VITE_PUBLIC_GITHUB_REPO: IamAzmathullaShaikh/WSABuilds
-      VITE_PUBLIC_GITHUB_REPO_URL: https://github.com/IamAzmathullaShaikh/WSABuilds
-      VITE_PUBLIC_RELEASES_URL: https://github.com/IamAzmathullaShaikh/WSABuilds/releases
     permissions:
       contents: write
 
@@ -75,6 +71,8 @@ jobs:
 
       - name: Setup Rust Stable Toolchain
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: 'x86_64-pc-windows-msvc'
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
@@ -84,17 +82,54 @@ jobs:
       - name: Install Frontend Dependencies
         working-directory: apps/manager
         run: |
-          npm install
+          npm ci
+
+      - name: TypeScript Diagnostics
+        working-directory: apps/manager
+        env:
+          NODE_ENV: production
+          VITE_PUBLIC_GITHUB_REPO: IamAzmathullaShaikh/WSABuilds
+          VITE_PUBLIC_GITHUB_REPO_URL: https://github.com/IamAzmathullaShaikh/WSABuilds
+          VITE_PUBLIC_RELEASES_URL: https://github.com/IamAzmathullaShaikh/WSABuilds/releases
+        run: |
+          echo "[*] Running TypeScript type checker (noEmit)..."
+          npx tsc --noEmit
 
       - name: Frontend Build
         working-directory: apps/manager
+        env:
+          NODE_ENV: production
+          VITE_PUBLIC_GITHUB_REPO: IamAzmathullaShaikh/WSABuilds
+          VITE_PUBLIC_GITHUB_REPO_URL: https://github.com/IamAzmathullaShaikh/WSABuilds
+          VITE_PUBLIC_RELEASES_URL: https://github.com/IamAzmathullaShaikh/WSABuilds/releases
+          TAURI_DEBUG: false
         run: |
+          echo "[*] Building production frontend bundle..."
           npm run build
+          echo "[*] Frontend build artifacts:"
+          ls -la dist/
+          echo "[*] dist/assets/*:"
+          ls -la dist/assets/ || true
 
       - name: Cargo Build Desktop Binary
         working-directory: apps/manager/src-tauri
         run: |
+          echo "[*] Building release binary (cargo build --release)..."
           cargo build --release
+          echo "[*] Release binary location:"
+          ls -la target/release/wsabuilds-manager.exe
+
+      - name: Tauri Bundle NSIS Installer
+        working-directory: apps/manager/src-tauri
+        env:
+          VITE_PUBLIC_GITHUB_REPO: IamAzmathullaShaikh/WSABuilds
+          VITE_PUBLIC_GITHUB_REPO_URL: https://github.com/IamAzmathullaShaikh/WSABuilds
+          VITE_PUBLIC_RELEASES_URL: https://github.com/IamAzmathullaShaikh/WSABuilds/releases
+        run: |
+          echo "[*] Building NSIS installer via Tauri bundler..."
+          cargo tauri build --bundles nsis
+          echo "[*] NSIS installer output:"
+          Get-ChildItem -Path target/release/bundle/nsis -Filter "*.exe" -Recurse | Select-Object -ExpandProperty FullName
 
       - name: Bundle Artifacts & Checksums
         shell: pwsh
@@ -106,38 +141,51 @@ jobs:
           $bin = "apps/manager/src-tauri/target/release/wsabuilds-manager.exe"
           if (Test-Path $bin) {
             Copy-Item $bin "dist_artifacts/wsabuilds-manager.exe"
-            
-            # Create portable archive
-            Compress-Archive -Path "dist_artifacts/wsabuilds-manager.exe", "LICENSE" -DestinationPath "dist_artifacts/WSABuildsManager-Portable-$ver-x64.zip"
-            
-            # Locate or stage setup installer executable
-            $nsisInstaller = Get-ChildItem -Path "apps/manager/src-tauri/target/release/bundle/nsis/*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
-            if ($nsisInstaller) {
-              Copy-Item $nsisInstaller.FullName "dist_artifacts/WSABuildsManager-Setup-$ver-x64.exe"
-            } else {
-              # If built without full NSIS bundler, stage release executable as setup binary target
-              Copy-Item $bin "dist_artifacts/WSABuildsManager-Setup-$ver-x64.exe"
-            }
-            
-            # Generate SHA256 checksums for both targets
-            $portableHash = (Get-FileHash "dist_artifacts/WSABuildsManager-Portable-$ver-x64.zip" -Algorithm SHA256).Hash.ToLower()
-            $setupHash = (Get-FileHash "dist_artifacts/WSABuildsManager-Setup-$ver-x64.exe" -Algorithm SHA256).Hash.ToLower()
-            
-            # Write individual sidecars
-            "$portableHash *WSABuildsManager-Portable-$ver-x64.zip" | Out-File -Encoding utf8 "dist_artifacts/WSABuildsManager-Portable-$ver-x64.zip.sha256"
-            "$setupHash *WSABuildsManager-Setup-$ver-x64.exe" | Out-File -Encoding utf8 "dist_artifacts/WSABuildsManager-Setup-$ver-x64.exe.sha256"
-            
-            # Consolidated checksum file
-            @(
-              "$setupHash *WSABuildsManager-Setup-$ver-x64.exe",
-              "$portableHash *WSABuildsManager-Portable-$ver-x64.zip"
-            ) | Out-File -Encoding utf8 "dist_artifacts/WSABuildsManager-$ver-checksums.txt"
-            
-            Write-Host "[+] Dual packaging generated:"
-            Write-Host "    - Portable: WSABuildsManager-Portable-$ver-x64.zip ($portableHash)"
-            Write-Host "    - Setup:    WSABuildsManager-Setup-$ver-x64.exe ($setupHash)"
+            Write-Host "[+] Release binary staged: wsabuilds-manager.exe"
           } else {
-            Write-Host "[!] Note: Running in dry-run/preview mode without release binary."
+            Write-Host "[!] ERROR: Release binary not found at expected path."
+            exit 1
+          }
+          
+          # Create portable archive
+          Compress-Archive -Path "dist_artifacts/wsabuilds-manager.exe", "LICENSE" -DestinationPath "dist_artifacts/WSABuildsManager-Portable-$ver-x64.zip"
+          Write-Host "[+] Portable ZIP created: WSABuildsManager-Portable-$ver-x64.zip"
+          
+          # Locate or stage setup installer executable
+          $nsisInstaller = Get-ChildItem -Path "apps/manager/src-tauri/target/release/bundle/nsis/*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($nsisInstaller) {
+            Copy-Item $nsisInstaller.FullName "dist_artifacts/WSABuildsManager-Setup-$ver-x64.exe"
+            Write-Host "[+] NSIS installer staged: WSABuildsManager-Setup-$ver-x64.exe"
+          } else {
+            # Fallback: stage release executable as setup binary target
+            Write-Host "[!] WARNING: NSIS installer not found. Staging release binary as setup fallback."
+            Copy-Item $bin "dist_artifacts/WSABuildsManager-Setup-$ver-x64.exe"
+          }
+          
+          # Generate SHA256 checksums for both targets
+          $portableHash = (Get-FileHash "dist_artifacts/WSABuildsManager-Portable-$ver-x64.zip" -Algorithm SHA256).Hash.ToLower()
+          $setupHash = (Get-FileHash "dist_artifacts/WSABuildsManager-Setup-$ver-x64.exe" -Algorithm SHA256).Hash.ToLower()
+          
+          # Write individual sidecars
+          "$portableHash *WSABuildsManager-Portable-$ver-x64.zip" | Out-File -Encoding utf8 "dist_artifacts/WSABuildsManager-Portable-$ver-x64.zip.sha256"
+          "$setupHash *WSABuildsManager-Setup-$ver-x64.exe" | Out-File -Encoding utf8 "dist_artifacts/WSABuildsManager-Setup-$ver-x64.exe.sha256"
+          
+          # Consolidated checksum file
+          @(
+            "$setupHash *WSABuildsManager-Setup-$ver-x64.exe",
+            "$portableHash *WSABuildsManager-Portable-$ver-x64.zip"
+          ) | Out-File -Encoding utf8 "dist_artifacts/WSABuildsManager-$ver-checksums.txt"
+          
+          Write-Host "[+] Dual packaging generated:"
+          Write-Host "    - Portable: WSABuildsManager-Portable-$ver-x64.zip ($portableHash)"
+          Write-Host "    - Setup:    WSABuildsManager-Setup-$ver-x64.exe ($setupHash)"
+          
+          # Artifact validation report
+          Write-Host "[+] Artifact validation:"
+          Get-ChildItem dist_artifacts | ForEach-Object {
+            $bytes = $_.Length
+            $type = (Get-Item $_.FullName).Extension
+            Write-Host "    - $($_.Name): $bytes bytes ($type)"
           }
 
       - name: Upload Packaging Artifacts
