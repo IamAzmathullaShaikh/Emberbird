@@ -32,8 +32,9 @@
 Tag push (`v*`) triggers `winget-release.yml`:
 1. `validate-metadata` — distribution + winget manifest validation
 2. `package-manager` — tag↔version gate → `npm ci` → `tsc --noEmit` → `npx tauri build --bundles nsis` → MZ-header + size Reality Gate → SHA256 checksums + sidecars
-3. `publish-manager-release` — independent re-hash of every asset against the checksums manifest → `softprops/action-gh-release` publishes assets (`overwrite_files: true`)
-4. `prepare-winget` — archives manifests for the release version
+3. `sign-release` — **Azure Trusted Signing stage** (after the Reality Gate, before publication): when the five `AZURE_*` secrets are configured, artifacts are Authenticode-signed (`azure/trusted-signing-action`, SHA-pinned) and all checksums/sidecars are **recomputed from the signed bytes** (signing rewrites PE files). When unconfigured, the stage is a no-op guard and unsigned artifacts flow through unchanged — the pipeline never blocks or lies about signing state. Post-sign gate: `Get-AuthenticodeSignature` must report `Valid`.
+4. `publish-manager-release` — independent re-hash of every asset against the checksums manifest → `softprops/action-gh-release` publishes assets (`overwrite_files: true`)
+5. `prepare-winget` — archives manifests for the release version
 
 **Post-release (automated where possible, otherwise manual):**
 - [ ] All four jobs green on the tag run
