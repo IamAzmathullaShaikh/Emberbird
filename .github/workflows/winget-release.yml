@@ -269,10 +269,10 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: WSABuilds Manager ${{ github.ref_name }}
           files: |
-            release_assets/*.zip
-            release_assets/*.exe
-            release_assets/*.txt
-            release_assets/*.sha256
+            release_assets/WSABuildsManager-*.zip
+            release_assets/WSABuildsManager-*.exe
+            release_assets/WSABuildsManager-*.txt
+            release_assets/WSABuildsManager-*.sha256
           token: ${{ secrets.GITHUB_TOKEN }}
           generate_release_notes: true
           overwrite_files: true
