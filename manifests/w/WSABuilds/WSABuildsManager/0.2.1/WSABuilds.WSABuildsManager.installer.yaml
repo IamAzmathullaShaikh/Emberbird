@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
+
+PackageIdentifier: WSABuilds.WSABuildsManager
+PackageVersion: 0.2.1
+MinimumOSVersion: 10.0.19045.0
+InstallerType: nullsoft
+InstallModes:
+  - interactive
+  - silent
+  - silentWithProgress
+Installers:
+  - Architecture: x64
+    InstallerType: nullsoft
+    InstallerUrl: https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.1/WSABuildsManager-Setup-0.2.1-x64.exe
+    InstallerSha256: "7005f7a7a6dfcd92825a8658ac4fa2cbc691f15983f3220933024db1cb8f5d68" # PLACEHOLDER: 0.2.0 hash as bootstrap; MUST be replaced with the real v0.2.1 asset hash immediately after the release publishes (NSIS output is not reproducible across environments)
+    Scope: user
+ManifestType: installer
+ManifestVersion: 1.6.0
