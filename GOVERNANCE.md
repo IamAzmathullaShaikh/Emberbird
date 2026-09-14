@@ -143,6 +143,8 @@ Tag push (`v*`) triggers `winget-release.yml`:
 
 **Effort estimate:** ~0.5 day CI work + external approval latency (days–weeks).
 
+**Expected user impact:** pre-signing, Windows SmartScreen shows "Unknown publisher" on first run and users must click "More info → Run anyway" — a measurable adoption friction. Post-signing, SmartScreen reputation accrues over downloads; installers eventually run with the publisher name displayed, and enterprise environments (SmartScreen/WDAC policies) can allowlist by publisher. Unsigned → signed is the single highest-trust-per-effort improvement available to distribution.
+
 ---
 
 ## Appendix C: v0.2.2 Hardening Status Snapshot (2026-09-14)
@@ -156,3 +158,18 @@ Tag push (`v*`) triggers `winget-release.yml`:
 | Analytics cycle | **PASS** — 7/7 tests (injection, schema const, aggregation recount, dashboard regeneration) |
 | Compatibility cycle | **PARTIAL** — records schema-valid; runtime statuses for Google Play/Play Services/YONO/WhatsApp/Telegram/Spotify/Netflix REQUIRES TARGET ENVIRONMENT VERIFICATION (interactive adb RSA approval required) |
 | Winget | **VALIDATED** — 0.2.2 manifest set passes `winget validate`; real published hash set post-release |
+
+## Appendix D: Compatibility Runtime Roadmap (next validation cycle)
+
+**Current coverage (schema-verified, runtime `unverified`):** Paytm, PhonePe, WhatsApp, YONO. **No records yet:** Google Play, Play Services, Telegram, Spotify, Netflix.
+
+| Cycle step | Action | Prerequisite | Output |
+|---|---|---|---|
+| 1 | Human grants adb RSA approval (Appendix A steps 1–3) | Maintainer at the WSA host machine | `adb devices` shows `device` |
+| 2 | Capture platform baseline: Android version, root flavor, GApps presence | Step 1 | Platform row in validation matrix |
+| 3 | Exercise the 4 existing records in-app (launch, login, core function) | Step 2 | Status + evidence per record; set `verification_status: verified` only after reproduction |
+| 4 | Author records for the 5 uncovered targets (start `community_submitted`) | Approved APK sources | `compatibility/data/<App>.json` — schema-validated by CI |
+| 5 | Run `aggregate.py`, commit refreshed `metrics.json`, verify analytics tests | Step 3–4 | Portal + analytics reflect real coverage |
+| 6 | Re-run website build (auto-triggered) and confirm portal pages render new records | Step 5 | Website sync evidence |
+
+**Evidence requirements per app:** screenshot or screen recording of the core function running; APK source noted in the record; Play Integrity behavior observed (attestation passes/fails); any workaround steps reproduced verbatim before recording.
