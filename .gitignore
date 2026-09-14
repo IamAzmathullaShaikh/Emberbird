@@ -48,3 +48,4 @@ dist_artifacts_ci/
 
 # Clean-room E2E output (scripts/e2e_clean_room.py)
 dist_clean/
+dist_winget_submission/

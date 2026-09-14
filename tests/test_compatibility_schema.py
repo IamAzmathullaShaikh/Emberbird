@@ -47,6 +47,47 @@ class TestCompatibilitySchema(unittest.TestCase):
             errors = vc.validate_file(jf)
             self.assertEqual(errors, [], f"Record {jf.name} should pass validation")
 
+    def test_coverage_matrix_records_present(self):
+        """The advertised coverage matrix must stay complete: every record
+        shown on the Compatibility Hub must exist in compatibility/data/."""
+        data_dir = self.root_dir / "compatibility" / "data"
+        expected = {
+            "Paytm.json",
+            "PhonePe.json",
+            "WhatsApp.json",
+            "YONO.json",
+            "Telegram.json",
+            "Spotify.json",
+            "Netflix.json",
+            "GooglePlayStore.json",
+            "GooglePlayServices.json",
+        }
+        present = {p.name for p in data_dir.glob("*.json")}
+        missing = expected - present
+        self.assertEqual(missing, set(), f"Coverage matrix missing records: {sorted(missing)}")
+
+        # Package IDs for the new records must match the real Android packages.
+        expected_ids = {
+            "Telegram.json": "org.telegram.messenger.web",
+            "Spotify.json": "com.spotify.music",
+            "Netflix.json": "com.netflix.mediaclient",
+            "GooglePlayStore.json": "com.android.vending",
+            "GooglePlayServices.json": "com.google.android.gms",
+        }
+        for name, package_id in expected_ids.items():
+            with open(data_dir / name, encoding="utf-8") as f:
+                self.assertEqual(json.load(f)["package_id"], package_id)
+
+    def test_new_records_use_honest_verification_status(self):
+        """Unexercised runtime claims must be marked unverified with the
+        target-environment placeholder, per the Runtime Reality Gate."""
+        data_dir = self.root_dir / "compatibility" / "data"
+        for name in ["Telegram.json", "Spotify.json", "Netflix.json", "GooglePlayStore.json", "GooglePlayServices.json"]:
+            with open(data_dir / name, encoding="utf-8") as f:
+                rec = json.load(f)
+            self.assertEqual(rec["verification_status"], "unverified", name)
+            self.assertIn("REQUIRES TARGET ENVIRONMENT VERIFICATION", rec["tested_wsa_version"], name)
+
     def test_missing_required_fields_rejected(self):
         for field in vc.REQUIRED_FIELDS:
             invalid_record = dict(self.valid_sample)

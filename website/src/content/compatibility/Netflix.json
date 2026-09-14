@@ -1,0 +1,18 @@
+{
+  "$schema": "../schema.json",
+  "app_name": "Netflix",
+  "package_id": "com.netflix.mediaclient",
+  "category": "Streaming & Media",
+  "compatibility_status": "Workaround Required",
+  "play_integrity_required": true,
+  "tested_wsa_version": "REQUIRES TARGET ENVIRONMENT VERIFICATION",
+  "tested_root_flavor": "Magisk Stable",
+  "last_tested_date": "REQUIRES TARGET ENVIRONMENT VERIFICATION",
+  "workaround_steps": [
+    "Use a Magisk root build with DenyList configured to hide root from the Netflix app.",
+    "Expect reduced maximum playback resolution; HD (1080p) streams are gated by Widevine L1, which WSA does not provide.",
+    "If playback fails after app updates, clear the app data and re-authenticate."
+  ],
+  "known_issues": "Widevine L1 is unavailable under WSA, so playback is capped below HD and some titles refuse to stream entirely.",
+  "verification_status": "unverified"
+}

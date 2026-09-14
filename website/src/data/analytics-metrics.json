@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "last_updated": "2026-09-13T20:59:10",
+  "last_updated": "2026-09-14T17:12:42",
   "transparency_principles": {
     "zero_pii": true,
     "no_ip_logging": true,
@@ -14,12 +14,12 @@
     "active_packages_count": 24
   },
   "compatibility_metrics": {
-    "total_apps_tested": 4,
-    "compatible_count": 2,
-    "working_with_issues_count": 2,
+    "total_apps_tested": 9,
+    "compatible_count": 5,
+    "working_with_issues_count": 4,
     "unsupported_count": 0,
-    "play_integrity_required_count": 3,
-    "categories_count": 2
+    "play_integrity_required_count": 6,
+    "categories_count": 4
   },
   "root_flavor_distribution": {
     "magisk": 62,

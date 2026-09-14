@@ -1,0 +1,16 @@
+{
+  "$schema": "../schema.json",
+  "app_name": "Spotify",
+  "package_id": "com.spotify.music",
+  "category": "Streaming & Media",
+  "compatibility_status": "Working",
+  "play_integrity_required": false,
+  "tested_wsa_version": "REQUIRES TARGET ENVIRONMENT VERIFICATION",
+  "tested_root_flavor": "Magisk Stable",
+  "last_tested_date": "REQUIRES TARGET ENVIRONMENT VERIFICATION",
+  "workaround_steps": [
+    "No workaround required for streaming playback."
+  ],
+  "known_issues": "Offline download caching and some DRM features are unreliable under WSA; media session integration with the Windows volume mixer is limited.",
+  "verification_status": "unverified"
+}

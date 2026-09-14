@@ -217,9 +217,119 @@ jobs:
           retention-days: 30
           if-no-files-found: error
 
+  sign-release:
+    name: Sign Release Binaries (Azure Trusted Signing)
+    needs: package-manager
+    runs-on: windows-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    outputs:
+      signed: ${{ steps.rehash.outputs.signed }}
+
+    steps:
+      - name: Download Packaging Artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: manager-release-artifacts
+          path: sign_assets
+
+      - name: Evaluate Signing Configuration (guard)
+        # The secrets context is not available in job-level if: expressions,
+        # so availability is evaluated here and branched on below. When the
+        # five secrets are absent the pipeline publishes unsigned — exactly
+        # as it does today — never failing the release.
+        id: signcfg
+        shell: pwsh
+        env:
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_SIGNING_ACCOUNT_NAME: ${{ secrets.AZURE_SIGNING_ACCOUNT_NAME }}
+          AZURE_SIGNING_CERT_PROFILE_NAME: ${{ secrets.AZURE_SIGNING_CERT_PROFILE_NAME }}
+        run: |
+          $required = @('AZURE_TENANT_ID','AZURE_CLIENT_ID','AZURE_CLIENT_SECRET','AZURE_SIGNING_ACCOUNT_NAME','AZURE_SIGNING_CERT_PROFILE_NAME')
+          $missing = $required | Where-Object { [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($_)) }
+          if ($missing.Count -gt 0) {
+            Write-Host "[i] Azure Trusted Signing not configured; missing secrets: $($missing -join ', ')."
+            Write-Host "[i] Publishing unsigned artifacts (SmartScreen 'Unknown publisher' until signing is provisioned)."
+            "enabled=false" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host "[+] Azure Trusted Signing secrets present; signing enabled."
+            "enabled=true" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Sign Artifacts (Azure Trusted Signing)
+        if: steps.signcfg.outputs.enabled == 'true'
+        uses: azure/trusted-signing-action@c7ab2a863ab5f9a846ddb8265964877ef296ee82 # v2.0.0
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          azure-signing-account-name: ${{ secrets.AZURE_SIGNING_ACCOUNT_NAME }}
+          azure-certificate-profile-name: ${{ secrets.AZURE_SIGNING_CERT_PROFILE_NAME }}
+          files-folder: sign_assets
+          files-folder-filter: exe
+          files-folder-recurse: false
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+          operation-timeout: 900
+
+      - name: Re-hash Signed Artifacts & Regenerate Checksums
+        # Signing rewrites the PE bytes (signature is embedded), so every
+        # hash MUST be recomputed after signing. The winget manifest bootstrap
+        # (scripts/bootstrap_winget.py) reads these checksums, so the manifest
+        # hash always ends up describing the signed bytes users download.
+        id: rehash
+        shell: pwsh
+        run: |
+          $ver = (Get-Content deployment/version.json -ErrorAction SilentlyContinue | ConvertFrom-Json).manager.version
+          if (-not $ver) { $ver = "${{ github.ref_name }}".TrimStart('v') }
+          $setup = "sign_assets/WSABuildsManager-Setup-$ver-x64.exe"
+          $portable = "sign_assets/WSABuildsManager-Portable-$ver-x64.zip"
+          $signed = "false"
+          if (Test-Path $setup) {
+            $sig = Get-AuthenticodeSignature $setup
+            if ($sig.SignerCertificate) {
+              Write-Host "[+] Authenticode: $($sig.Status) | Subject=$($sig.SignerCertificate.Subject)"
+              if ($sig.Status -ne 'Valid') { Write-Host "[!] FATAL: signature status is $($sig.Status)."; exit 1 }
+              $signed = "true"
+            } else {
+              Write-Host "[i] No Authenticode certificate present (signing disabled or skipped)."
+            }
+            # MZ Reality Gate still applies post-signing.
+            $bytes = [System.IO.File]::ReadAllBytes($setup)[0..1]
+            if ($bytes[0] -ne 0x4D -or $bytes[1] -ne 0x5A) { Write-Host "[!] FATAL: signed setup lost PE header."; exit 1 }
+          } else {
+            Write-Host "[!] FATAL: setup artifact missing in sign_assets."; exit 1
+          }
+          $setupHash = (Get-FileHash $setup -Algorithm SHA256).Hash.ToLower()
+          "$setupHash *WSABuildsManager-Setup-$ver-x64.exe" | Out-File -Encoding ascii "sign_assets/WSABuildsManager-Setup-$ver-x64.exe.sha256"
+          if (Test-Path $portable) {
+            $portableHash = (Get-FileHash $portable -Algorithm SHA256).Hash.ToLower()
+            "$portableHash *WSABuildsManager-Portable-$ver-x64.zip" | Out-File -Encoding ascii "sign_assets/WSABuildsManager-Portable-$ver-x64.zip.sha256"
+            @(
+              "$setupHash *WSABuildsManager-Setup-$ver-x64.exe",
+              "$portableHash *WSABuildsManager-Portable-$ver-x64.zip"
+            ) | Out-File -Encoding ascii "sign_assets/WSABuildsManager-$ver-checksums.txt"
+          }
+          Write-Host "[+] Post-signing hashes recomputed: setup=$setupHash"
+          "signed=$signed" >> $env:GITHUB_OUTPUT
+
+      - name: Upload Signed Artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: manager-release-artifacts
+          path: sign_assets/*
+          retention-days: 7
+          if-no-files-found: error
+          overwrite: true
+
   publish-manager-release:
     name: Publish GitHub Release
-    needs: package-manager
+    needs: [package-manager, sign-release]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -232,11 +342,18 @@ jobs:
           name: manager-release-artifacts
           path: release_assets
 
+      - name: Report Signing State
+        shell: pwsh
+        run: |
+          Write-Host "[i] Release signing state: ${{ needs.sign-release.outputs.signed }}"
+
       - name: Verify Artifact Integrity (re-hash published assets)
         shell: pwsh
         run: |
           # Runtime Reality Gate: independently re-hash downloaded artifacts and
-          # compare against the checksums manifest before publishing.
+          # compare against the checksums manifest before publishing. When the
+          # signing stage ran, these are the SIGNED bytes and the regenerated
+          # checksums manifest — the pair stays internally consistent.
           $expected = @{}
           Get-Content release_assets/WSABuildsManager-*-checksums.txt | ForEach-Object {
             if ($_ -match '^([a-f0-9]{64}) \*(.+)$') { $expected[$Matches[2]] = $Matches[1] }

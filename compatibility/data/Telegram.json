@@ -1,0 +1,16 @@
+{
+  "$schema": "../schema.json",
+  "app_name": "Telegram",
+  "package_id": "org.telegram.messenger.web",
+  "category": "Communication",
+  "compatibility_status": "Working",
+  "play_integrity_required": false,
+  "tested_wsa_version": "REQUIRES TARGET ENVIRONMENT VERIFICATION",
+  "tested_root_flavor": "Magisk Stable / No Root",
+  "last_tested_date": "REQUIRES TARGET ENVIRONMENT VERIFICATION",
+  "workaround_steps": [
+    "No workaround required. Runs out of the box on both Magisk and No-Root builds."
+  ],
+  "known_issues": "Voice and video calls may require manual microphone/camera permission grants in WSA Settings.",
+  "verification_status": "unverified"
+}

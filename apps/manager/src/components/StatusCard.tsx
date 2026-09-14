@@ -1,4 +1,5 @@
 import React from 'react';
+import { projectSubsystemStatus } from '../lib/state';
 import type { WsaStatus } from '../lib/types';
 
 interface StatusCardProps {
@@ -15,15 +16,35 @@ export const StatusCard: React.FC<StatusCardProps> = ({ status }) => {
     );
   }
 
+  const projected = projectSubsystemStatus(status);
+  const { presentation } = projected;
+
   return (
     <div className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800 space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
           Subsystem Status & Environment
         </h2>
-        <span className="text-xs font-mono text-indigo-400">
-          {status.installed ? (status.package_version || 'Detected') : 'No Subsystem'}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={`w-2 h-2 rounded-full ${presentation.dotClass}`} />
+          <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${presentation.badgeClass}`}>
+            {presentation.label}
+          </span>
+          <span className="text-xs font-mono text-indigo-400">
+            {projected.versionLabel !== '—' ? projected.versionLabel : ''}
+          </span>
+        </div>
+      </div>
+
+      <div className={`p-3 rounded-xl text-xs ${presentation.badgeClass} bg-opacity-40`}>
+        {presentation.guidance}
+        {status.state_evidence.length > 0 && (
+          <ul className="mt-1.5 space-y-0.5 text-[11px] opacity-80">
+            {status.state_evidence.map((e, i) => (
+              <li key={i}>• {e}</li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -57,7 +78,7 @@ export const StatusCard: React.FC<StatusCardProps> = ({ status }) => {
 
       {status.vhdx_path && (
         <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/60 text-xs">
-          <span className="text-slate-500 block mb-0.5">Userdata VHDX Storage:</span>
+          <span className="text-slate-500 block mb-0.5">Userdata VHDX Storage{status.state === 'NOT_INSTALLED' ? ' (orphaned data — no subsystem)' : ''}:</span>
           <code className="text-slate-300 font-mono text-[11px] select-all break-all">{status.vhdx_path}</code>
         </div>
       )}

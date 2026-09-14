@@ -42,6 +42,10 @@ function mockInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> 
           'C:\\Program Files\\WindowsApps\\MicrosoftCorporationII.WindowsSubsystemForAndroid_2311.40000.5.0_x64__8wekyb3d8bbwe',
         vhdx_path:
           '%LOCALAPPDATA%\\Packages\\MicrosoftCorporationII.WindowsSubsystemForAndroid_8wekyb3d8bbwe\\LocalCache\\userdata.vhdx',
+        state: 'INSTALLED',
+        state_evidence: [
+          'Installed version 2311.40000.5.0 satisfies the supported baseline 2311.40000.5.0.',
+        ],
       } as unknown as T);
 
     case 'check_for_updates':

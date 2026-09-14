@@ -1,0 +1,127 @@
+name: Runtime Compatibility Validation
+
+# Executable GOVERNANCE.md Appendix D: runs the runtime compatibility harness
+# against a live WSA instance when one is reachable (self-hosted runner on the
+# WSA host machine), and always validates report/submission schemas.
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_probes:
+        description: 'Attempt live adb probes (requires a runner with WSA + adb)'
+        required: false
+        type: boolean
+        default: false
+      apps:
+        description: 'Comma-separated app names (default: all harness targets)'
+        required: false
+        default: ''
+  pull_request:
+    branches: [master, main]
+    paths:
+      - 'scripts/runtime_compatibility.py'
+      - 'compatibility/**'
+      - 'tests/test_runtime_compatibility.py'
+  push:
+    branches: [master, main]
+    paths:
+      - 'scripts/runtime_compatibility.py'
+      - 'tests/test_runtime_compatibility.py'
+
+concurrency:
+  group: runtime-compat-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  harness-validation:
+    name: Harness Tests & Schema Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4 tag head 2026-09-14
+
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+
+      - name: Execute Harness Unit Tests
+        run: |
+          echo "[*] Running runtime compatibility harness tests..."
+          python3 -m unittest tests.test_runtime_compatibility -v
+
+      - name: Validate Compatibility Records
+        run: |
+          echo "[*] Validating compatibility records and submissions..."
+          python3 scripts/validate_compatibility.py
+
+      - name: Honesty Gate (no-environment placeholder path)
+        # Proves in CI that the harness refuses to claim statuses without adb.
+        run: |
+          python3 scripts/runtime_compatibility.py --adb non-existent-adb; code=$?
+          if [ "$code" -eq 2 ]; then
+            echo "[+] Honesty gate passed: harness exits 2 without a live environment."
+          else
+            echo "[!] FATAL: harness exit code $code — expected 2 (REQUIRES TARGET ENVIRONMENT VERIFICATION)."
+            exit 1
+          fi
+
+      - name: Validation Complete
+        run: echo "[+] Runtime compatibility tooling validated."
+
+  live-probes:
+    name: Live WSA Probes (self-hosted)
+    needs: harness-validation
+    # Only executes when explicitly dispatched with run_probes=true AND a
+    # self-hosted runner is attached. The runner must be on the WSA host
+    # machine with adb on PATH (GOVERNANCE.md Appendix A steps 1-3).
+    if: github.event_name == 'workflow_dispatch' && inputs.run_probes
+    runs-on: self-hosted
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4 tag head 2026-09-14
+
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+
+      - name: Execute Runtime Compatibility Harness
+        id: harness
+        # Exit 2 = no live environment: recorded honestly, never a failure lie.
+        run: |
+          python3 scripts/runtime_compatibility.py \
+            --apps "${{ inputs.apps }}" \
+            --summary | tee runtime_summary.md
+          echo "exitcode=$?" >> "$GITHUB_OUTPUT"
+        continue-on-error: true
+
+      - name: Interpret Harness Result
+        run: |
+          code="${{ steps.harness.outputs.exitcode }}"
+          if [ "$code" = "0" ]; then
+            echo "[+] Live probes completed; submissions + runtime report emitted."
+          elif [ "$code" = "2" ]; then
+            echo "[!] No live WSA environment: REQUIRES TARGET ENVIRONMENT VERIFICATION."
+          else
+            echo "[!] Harness execution failure (exit $code)."
+            exit 1
+          fi
+
+      - name: Upload Runtime Evidence
+        if: always() && hashFiles('compatibility/submissions/*') != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: runtime-compatibility-evidence
+          path: |
+            compatibility/submissions/*
+            runtime_summary.md
+          retention-days: 30
+          if-no-files-found: ignore

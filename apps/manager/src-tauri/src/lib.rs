@@ -7,6 +7,7 @@ pub mod installer;
 pub mod registry;
 pub mod releases;
 pub mod restore;
+pub mod state;
 
 use commands::{
     check_for_updates, create_vhdx_backup, detect_wsa_status, execute_upgrade, get_latest_releases,
