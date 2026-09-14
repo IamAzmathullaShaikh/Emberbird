@@ -282,10 +282,12 @@ mod tests {
         }
     }
 
-    /// Scenario: fresh machine — nothing has ever been installed.
+    /// Scenario: fresh machine — detection ran and definitively found no
+    /// package registration (`Some(false)`). A failed query (`None`) must
+    /// stay `Unknown`; a definitive negative is `NotInstalled`.
     #[test]
     fn fresh_machine_is_not_installed() {
-        let d = derive_subsystem_state(&inputs(None, None, None, None));
+        let d = derive_subsystem_state(&inputs(Some(false), None, None, None));
         assert_eq!(d.state, SubsystemState::NotInstalled);
         assert!(!d.state.has_known_version());
     }
