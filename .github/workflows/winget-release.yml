@@ -257,7 +257,7 @@ jobs:
               Write-Host "[!] REALITY GATE FAILURE: $name hash mismatch (expected $($expected[$name]), got $actual)."
               $failed = $true
             } else {
-              Write-Host "[+] $name: hash verified."
+              Write-Host "[+] ${name}: hash verified."
             }
           }
           if ($failed) { exit 1 }
