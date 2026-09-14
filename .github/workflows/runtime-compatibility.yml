@@ -50,6 +50,11 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Setup Node.js 24 (type-stripping for .ts imports)
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 tag head 2026-09-14
+        with:
+          node-version: 24
+
       - name: Execute Harness Unit Tests
         run: |
           echo "[*] Running runtime compatibility harness tests..."
@@ -62,8 +67,11 @@ jobs:
 
       - name: Honesty Gate (no-environment placeholder path)
         # Proves in CI that the harness refuses to claim statuses without adb.
+        # `|| code=$?` captures the intentional exit 2 without tripping the
+        # step's implicit `set -e` (a bare failing command would abort here).
         run: |
-          python3 scripts/runtime_compatibility.py --adb non-existent-adb; code=$?
+          code=0
+          python3 scripts/runtime_compatibility.py --adb non-existent-adb || code=$?
           if [ "$code" -eq 2 ]; then
             echo "[+] Honesty gate passed: harness exits 2 without a live environment."
           else
