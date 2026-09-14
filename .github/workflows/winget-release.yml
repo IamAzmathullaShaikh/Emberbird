@@ -22,11 +22,17 @@ concurrency:
 
 permissions: {}
 
+env:
+  APP_DIR: apps/manager
+  TAURI_DIR: apps/manager/src-tauri
+
 jobs:
   validate-metadata:
     name: Validate Distribution & Winget Manifests
     runs-on: windows-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout Repository
@@ -38,7 +44,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip'
 
       - name: Install Python Dependencies
         run: |
@@ -54,7 +59,7 @@ jobs:
     name: Package Desktop Release & Checksums
     needs: validate-metadata
     runs-on: windows-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     permissions:
       contents: write
 
@@ -81,41 +86,21 @@ jobs:
 
       - name: Install Frontend Dependencies
         working-directory: apps/manager
-        run: |
-          echo "[*] Installing frontend dependencies..."
-          npm install --prefer-offline --no-audit
-          echo "[+] Dependencies installed successfully"
-          echo "[*] Verifying installation:"
-          npm ls --depth=0 2>&1 | head -10
-          echo "[*] node_modules entry count: $(ls node_modules | wc -l)"
-
-      - name: TypeScript Diagnostics
-        working-directory: apps/manager
-        env:
-          NODE_ENV: production
-          VITE_PUBLIC_GITHUB_REPO: IamAzmathullaShaikh/WSABuilds
-          VITE_PUBLIC_GITHUB_REPO_URL: https://github.com/IamAzmathullaShaikh/WSABuilds
-          VITE_PUBLIC_RELEASES_URL: https://github.com/IamAzmathullaShaikh/WSABuilds/releases
         shell: bash
         run: |
-          echo "[*] Running TypeScript type checker (noEmit)..."
+          echo "[*] Installing frontend dependencies (npm ci)..."
+          npm ci
+          echo "[+] npm ci completed"
+
+      - name: TypeScript Check
+        working-directory: apps/manager
+        shell: bash
+        run: |
           echo "[*] TypeScript version: $(npx tsc --version)"
-          echo "[*] Node version: $(node --version)"
-          echo "[*] npm version: $(npm --version)"
-          echo "[*] Running tsc --noEmit with full output..."
-          set +e
-          npx tsc --noEmit 2>&1
-          TSC_EXIT=$?
-          set -e
-          echo "[*] tsc exit code: $TSC_EXIT"
-          if [ $TSC_EXIT -ne 0 ]; then
-            echo "[!] TypeScript check found errors (exit code $TSC_EXIT)"
-            echo "[!] This may be a version-specific issue. Checking tsconfig..."
-          fi
-          echo "[*] tsconfig.json:"
-          cat tsconfig.json
+          npx tsc --noEmit
+          echo "[+] TypeScript check passed"
 
-      - name: TypeScript Emit
+      - name: Tauri Build (NSIS Installer + Release Binary)
         working-directory: apps/manager
         env:
           NODE_ENV: production
@@ -124,148 +109,68 @@ jobs:
           VITE_PUBLIC_RELEASES_URL: https://github.com/IamAzmathullaShaikh/WSABuilds/releases
         shell: bash
         run: |
-          echo "[*] Running TypeScript compilation (tsc with emit)..."
-          echo "[*] tsc version: $(npx tsc --version)"
-          echo "[*] node version: $(node --version)"
-          echo "[*] Working directory: $(pwd)"
-          echo "[*] tsconfig.json:"
-          cat tsconfig.json
-          echo "[*] Starting tsc..."
-          set +e
-          set +e
-          echo "[*] Running tsc WITH emit on Windows runner..."
-          echo "[*] tsc version: $(npx tsc --version 2>&1)"
-          echo "[*] node: $(node --version 2>&1)"
-          echo "[*] npm: $(npm --version 2>&1)"
-          echo "[*] OS: $(uname -a 2>/dev/null || echo 'Windows')"
-          echo "[*] pwd: $(pwd)"
-          echo "[*] ls src/: $(ls src/ 2>&1 | head -5)"
-          echo "[*] tsconfig.json compilerOptions:"
-          node -e "const d=require('./tsconfig.json');for(const[k,v]of Object.entries(d.compilerOptions))console.log('  '+k+':',typeof v==='boolean'?v:v)" 2>&1 || cat tsconfig.json
-          echo "[*] Starting tsc (capture full output)..."
-          npx tsc 2>&1 | tee /tmp/tsc_output.log
-          TSC_EXIT=${PIPESTATUS[0]}
-          set -e
-          echo "[*] tsc exit code: $TSC_EXIT"
-          echo "[*] Full tsc output saved to /tmp/tsc_output.log"
-          echo "[*] Output file size: $(wc -c < /tmp/tsc_output.log 2>/dev/null || echo 0) bytes"
-          if [ $TSC_EXIT -ne 0 ]; then
-            echo "[!] TSC FAILED. Showing last 50 lines of output:"
-            tail -50 /tmp/tsc_output.log
-          fi
-          echo "[*] Checking dist/: $(ls dist/ 2>&1 | head -5 || echo 'not found')"
-          exit $TSC_EXIT
+          echo "[*] Running npx tauri build (runs beforeBuildCommand: npm run build, then cargo build + NSIS bundling)..."
+          npx tauri build --bundles nsis
+          echo "[+] Tauri build completed"
 
-      - name: Vite Build
-        working-directory: apps/manager
-        env:
-          NODE_ENV: production
-          VITE_PUBLIC_GITHUB_REPO: IamAzmathullaShaikh/WSABuilds
-          VITE_PUBLIC_GITHUB_REPO_URL: https://github.com/IamAzmathullaShaikh/WSABuilds
-          VITE_PUBLIC_RELEASES_URL: https://github.com/IamAzmathullaShaikh/WSABuilds/releases
-          TAURI_DEBUG: false
-        shell: bash
-        run: |
-          echo "[*] Running Vite production build..."
-          echo "[*] vite version: $(npx vite --version 2>/dev/null || echo 'unknown')"
-          echo "[*] Environment:"
-          echo "    NODE_ENV=${NODE_ENV:-not set}"
-          echo "    VITE_PUBLIC_GITHUB_REPO=${VITE_PUBLIC_GITHUB_REPO:-not set}"
-          echo "    VITE_PUBLIC_RELEASES_URL=${VITE_PUBLIC_RELEASES_URL:-not set}"
-          echo "[*] Checking dist/ exists: $(ls dist/index.html 2>/dev/null && echo 'yes' || echo 'no')"
-          set +e
-          npx vite build 2>&1
-          VITE_EXIT=$?
-          set -e
-          echo "[*] vite build exit code: $VITE_EXIT"
-          if [ $VITE_EXIT -eq 0 ]; then
-            echo "[+] Vite build successful"
-            echo "[*] Final dist/ contents:"
-            ls -la dist/
-            ls -la dist/assets/
-          else
-            echo "[!] Vite build FAILED (exit $VITE_EXIT)"
-            echo "[*] dist/ after failure:"
-            ls -la dist/ 2>/dev/null || echo "  dist/ not found"
-          fi
-          exit $VITE_EXIT
-
-      - name: Cargo Build Desktop Binary
-        working-directory: apps/manager/src-tauri
-        run: |
-          echo "[*] Building release binary (cargo build --release)..."
-          cargo build --release
-          echo "[*] Release binary location:"
-          ls -la target/release/wsabuilds-manager.exe
-
-      - name: Tauri Bundle NSIS Installer
-        working-directory: apps/manager/src-tauri
-        env:
-          VITE_PUBLIC_GITHUB_REPO: IamAzmathullaShaikh/WSABuilds
-          VITE_PUBLIC_GITHUB_REPO_URL: https://github.com/IamAzmathullaShaikh/WSABuilds
-          VITE_PUBLIC_RELEASES_URL: https://github.com/IamAzmathullaShaikh/WSABuilds/releases
-        run: |
-          echo "[*] Building NSIS installer via Tauri bundler..."
-          cargo tauri build --bundles nsis
-          echo "[*] NSIS installer output:"
-          Get-ChildItem -Path target/release/bundle/nsis -Filter "*.exe" -Recurse | Select-Object -ExpandProperty FullName
-
-      - name: Bundle Artifacts & Checksums
+      - name: Stage Artifacts & Checksums
         shell: pwsh
         run: |
           $ver = (Get-Content deployment/version.json | ConvertFrom-Json).manager.version
           New-Item -ItemType Directory -Force -Path "dist_artifacts" | Out-Null
-          
-          # Copy release binary to distribution staging
+
           $bin = "apps/manager/src-tauri/target/release/wsabuilds-manager.exe"
-          if (Test-Path $bin) {
-            Copy-Item $bin "dist_artifacts/wsabuilds-manager.exe"
-            Write-Host "[+] Release binary staged: wsabuilds-manager.exe"
-          } else {
-            Write-Host "[!] ERROR: Release binary not found at expected path."
+          if (-not (Test-Path $bin)) {
+            Write-Host "[!] FATAL: Release binary not found at $bin"
+            Get-ChildItem -Recurse apps/manager/src-tauri/target/release -Filter "*.exe" -ErrorAction SilentlyContinue | Select-Object -First 10 FullName
             exit 1
           }
-          
-          # Create portable archive
+          Copy-Item $bin "dist_artifacts/wsabuilds-manager.exe"
+
+          # Portable archive: binary + LICENSE
           Compress-Archive -Path "dist_artifacts/wsabuilds-manager.exe", "LICENSE" -DestinationPath "dist_artifacts/WSABuildsManager-Portable-$ver-x64.zip"
-          Write-Host "[+] Portable ZIP created: WSABuildsManager-Portable-$ver-x64.zip"
-          
-          # Locate or stage setup installer executable
-          $nsisInstaller = Get-ChildItem -Path "apps/manager/src-tauri/target/release/bundle/nsis/*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
-          if ($nsisInstaller) {
-            Copy-Item $nsisInstaller.FullName "dist_artifacts/WSABuildsManager-Setup-$ver-x64.exe"
-            Write-Host "[+] NSIS installer staged: WSABuildsManager-Setup-$ver-x64.exe"
-          } else {
-            # Fallback: stage release executable as setup binary target
-            Write-Host "[!] WARNING: NSIS installer not found. Staging release binary as setup fallback."
-            Copy-Item $bin "dist_artifacts/WSABuildsManager-Setup-$ver-x64.exe"
+
+          # NSIS installer: REQUIRED, no fallback to raw binary
+          $nsisInstaller = Get-ChildItem -Path "apps/manager/src-tauri/target/release/bundle/nsis" -Filter "*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $nsisInstaller) {
+            Write-Host "[!] FATAL: NSIS installer not found in bundle directory."
+            Get-ChildItem -Recurse apps/manager/src-tauri/target/release/bundle -ErrorAction SilentlyContinue | Select-Object -First 20 FullName
+            exit 1
           }
-          
-          # Generate SHA256 checksums for both targets
+          Copy-Item $nsisInstaller.FullName "dist_artifacts/WSABuildsManager-Setup-$ver-x64.exe"
+
+          # SHA256 checksums + sidecars
           $portableHash = (Get-FileHash "dist_artifacts/WSABuildsManager-Portable-$ver-x64.zip" -Algorithm SHA256).Hash.ToLower()
           $setupHash = (Get-FileHash "dist_artifacts/WSABuildsManager-Setup-$ver-x64.exe" -Algorithm SHA256).Hash.ToLower()
-          
-          # Write individual sidecars
-          "$portableHash *WSABuildsManager-Portable-$ver-x64.zip" | Out-File -Encoding utf8 "dist_artifacts/WSABuildsManager-Portable-$ver-x64.zip.sha256"
-          "$setupHash *WSABuildsManager-Setup-$ver-x64.exe" | Out-File -Encoding utf8 "dist_artifacts/WSABuildsManager-Setup-$ver-x64.exe.sha256"
-          
-          # Consolidated checksum file
+          "$portableHash *WSABuildsManager-Portable-$ver-x64.zip" | Out-File -Encoding ascii "dist_artifacts/WSABuildsManager-Portable-$ver-x64.zip.sha256"
+          "$setupHash *WSABuildsManager-Setup-$ver-x64.exe" | Out-File -Encoding ascii "dist_artifacts/WSABuildsManager-Setup-$ver-x64.exe.sha256"
           @(
             "$setupHash *WSABuildsManager-Setup-$ver-x64.exe",
             "$portableHash *WSABuildsManager-Portable-$ver-x64.zip"
-          ) | Out-File -Encoding utf8 "dist_artifacts/WSABuildsManager-$ver-checksums.txt"
-          
-          Write-Host "[+] Dual packaging generated:"
-          Write-Host "    - Portable: WSABuildsManager-Portable-$ver-x64.zip ($portableHash)"
-          Write-Host "    - Setup:    WSABuildsManager-Setup-$ver-x64.exe ($setupHash)"
-          
-          # Artifact validation report
+          ) | Out-File -Encoding ascii "dist_artifacts/WSABuildsManager-$ver-checksums.txt"
+
+          # Build Reality Gate: reject stubs/text files masquerading as executables
           Write-Host "[+] Artifact validation:"
-          Get-ChildItem dist_artifacts | ForEach-Object {
-            $bytes = $_.Length
-            $type = (Get-Item $_.FullName).Extension
-            Write-Host "    - $($_.Name): $bytes bytes ($type)"
+          $staging = "dist_artifacts/wsabuilds-manager.exe"
+          $setup = "dist_artifacts/WSABuildsManager-Setup-$ver-x64.exe"
+          $failures = @()
+          foreach ($f in @($staging, $setup)) {
+            $bytes = [System.IO.File]::ReadAllBytes($f)[0..1]
+            if ($bytes[0] -ne 0x4D -or $bytes[1] -ne 0x5A) {
+              $failures += "$($f): missing MZ/PE header"
+            }
+            if ($f -eq $setup -and (Get-Item $f).Length -lt 1MB) {
+              $failures += "$($f): NSIS installer suspiciously small ($((Get-Item $f).Length) bytes)"
+            }
           }
+          if ($failures.Count -gt 0) {
+            $failures | ForEach-Object { Write-Host "[!] REALITY GATE FAILURE: $_" }
+            exit 1
+          }
+          Get-ChildItem dist_artifacts | ForEach-Object {
+            Write-Host "    - $($_.Name): $($_.Length) bytes"
+          }
+          Write-Host "[+] Reality Gate passed: both executables are real PE binaries."
 
       - name: Upload Packaging Artifacts
         uses: actions/upload-artifact@v4
@@ -273,23 +178,17 @@ jobs:
           name: manager-release-artifacts
           path: dist_artifacts/*
           retention-days: 7
-          if-no-files-found: ignore
+          if-no-files-found: error
 
   publish-manager-release:
     name: Publish GitHub Release
     needs: package-manager
-    runs-on: windows-latest
-    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: write
-    if: github.event_name == 'workflow_dispatch' || (startsWith(github.ref, 'refs/tags/v') && github.event_name == 'push')
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-          ref: ${{ github.ref }}
-
       - name: Download Packaging Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -300,7 +199,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: WSABuilds Manager v${{ github.ref_name }}
+          name: WSABuilds Manager ${{ github.ref_name }}
           files: |
             release_assets/*.zip
             release_assets/*.exe
@@ -314,6 +213,8 @@ jobs:
     needs: validate-metadata
     runs-on: windows-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout Repository
