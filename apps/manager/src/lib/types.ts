@@ -1,3 +1,14 @@
+/**
+ * Authoritative subsystem lifecycle states (mirror of the Rust `SubsystemState`).
+ * Values are SCREAMING_SNAKE_CASE exactly as the backend serializes them.
+ */
+export type SubsystemState =
+  | 'NOT_INSTALLED'
+  | 'INSTALLED'
+  | 'INSTALLED_OUTDATED'
+  | 'PARTIALLY_INSTALLED'
+  | 'UNKNOWN';
+
 export interface WsaStatus {
   installed: boolean;
   package_version: string | null;
@@ -6,6 +17,10 @@ export interface WsaStatus {
   is_running: boolean;
   install_path: string | null;
   vhdx_path: string | null;
+  /** Authoritative lifecycle state — the ONLY source the UI may render install wording from. */
+  state: SubsystemState;
+  /** Evidence trail explaining how `state` was derived on the backend. */
+  state_evidence: string[];
 }
 
 export interface ReleaseAsset {

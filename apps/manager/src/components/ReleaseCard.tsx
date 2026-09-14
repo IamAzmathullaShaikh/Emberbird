@@ -1,13 +1,23 @@
 import React from 'react';
-import type { UpdateStatus } from '../lib/types';
+import { projectSubsystemStatus } from '../lib/state';
+import type { WsaStatus, UpdateStatus } from '../lib/types';
 
 interface ReleaseCardProps {
+  status: WsaStatus | null;
   updateStatus: UpdateStatus | null;
   onCheckUpdates: () => void;
   checking: boolean;
 }
 
-export const ReleaseCard: React.FC<ReleaseCardProps> = ({ updateStatus, onCheckUpdates, checking }) => {
+export const ReleaseCard: React.FC<ReleaseCardProps> = ({ status, updateStatus, onCheckUpdates, checking }) => {
+  // Version wording derives from the unified state model, never from the
+  // update payload alone — this is what prevents "Not Installed" appearing
+  // next to a known installed version.
+  const projected = projectSubsystemStatus(status);
+  const installedLabel = projected.presentation.mayShowVersion
+    ? (updateStatus?.current_version || projected.versionLabel)
+    : projected.presentation.label;
+
   return (
     <div className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800 space-y-4">
       <div className="flex items-center justify-between">
@@ -30,7 +40,7 @@ export const ReleaseCard: React.FC<ReleaseCardProps> = ({ updateStatus, onCheckU
             <div>
               <div className="text-slate-500">Current Installed WSA</div>
               <div className="font-mono text-sm font-bold text-white mt-0.5">
-                {updateStatus.current_version || 'Not Installed'}
+                {installedLabel}
               </div>
             </div>
             <div className="text-right">

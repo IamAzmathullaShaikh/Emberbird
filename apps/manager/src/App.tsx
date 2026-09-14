@@ -6,6 +6,7 @@ import { BackupView } from './components/BackupView';
 import { RestoreView } from './components/RestoreView';
 import { UpdateView } from './components/UpdateView';
 import { detectWsaStatus, checkForUpdates } from './lib/ipc';
+import { normalizeStatusPayload } from './lib/state';
 import type { WsaStatus, UpdateStatus, NavigationTab } from './lib/types';
 
 export const App: React.FC = () => {
@@ -19,9 +20,10 @@ export const App: React.FC = () => {
     setLoadingStatus(true);
     try {
       const res = await detectWsaStatus();
-      setStatus(res);
+      setStatus(normalizeStatusPayload(res));
     } catch (err) {
       console.error('Failed to detect WSA status:', err);
+      setStatus(normalizeStatusPayload(null));
     } finally {
       setLoadingStatus(false);
     }
@@ -59,6 +61,7 @@ export const App: React.FC = () => {
           <>
             <StatusCard status={status} />
             <ReleaseCard
+              status={status}
               updateStatus={updateStatus}
               onCheckUpdates={handleCheckUpdates}
               checking={checkingUpdates}
