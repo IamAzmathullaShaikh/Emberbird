@@ -123,13 +123,31 @@ jobs:
           VITE_PUBLIC_GITHUB_REPO_URL: https://github.com/IamAzmathullaShaikh/WSABuilds
           VITE_PUBLIC_RELEASES_URL: https://github.com/IamAzmathullaShaikh/WSABuilds/releases
           TAURI_DEBUG: false
+        shell: bash
         run: |
           echo "[*] Building production frontend bundle..."
-          npm run build
-          echo "[*] Frontend build artifacts:"
-          ls -la dist/
-          echo "[*] dist/assets/*:"
-          ls -la dist/assets/ || true
+          echo "[*] Node version: $(node --version)"
+          echo "[*] npm version: $(npm --version)"
+          echo "[*] Vite version: $(npx vite --version 2>/dev/null || echo 'unknown')"
+          echo "[*] Environment:"
+          echo "    NODE_ENV=$NODE_ENV"
+          echo "    VITE_PUBLIC_GITHUB_REPO=$VITE_PUBLIC_GITHUB_REPO"
+          echo "    VITE_PUBLIC_GITHUB_REPO_URL=$VITE_PUBLIC_GITHUB_REPO_URL"
+          echo "    VITE_PUBLIC_RELEASES_URL=$VITE_PUBLIC_RELEASES_URL"
+          echo "    TAURI_DEBUG=$TAURI_DEBUG"
+          echo "[*] Running npm run build (tsc && vite build)..."
+          set +e
+          npm run build 2>&1
+          BUILD_EXIT=$?
+          set -e
+          echo "[*] Build exit code: $BUILD_EXIT"
+          if [ $BUILD_EXIT -ne 0 ]; then
+            echo "[!] Build failed with exit code $BUILD_EXIT"
+            echo "[*] Checking dist/ contents after failure:"
+            ls -la dist/ 2>/dev/null || echo "  dist/ not found"
+            ls -la dist/assets/ 2>/dev/null || echo "  dist/assets/ not found"
+          fi
+          exit $BUILD_EXIT
 
       - name: Cargo Build Desktop Binary
         working-directory: apps/manager/src-tauri
