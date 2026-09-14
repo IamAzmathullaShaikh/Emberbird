@@ -1,57 +1,113 @@
+#!/usr/bin/env python3
+"""
+Analytics validation cycle tests.
+
+Derived from the v0.2.2 hardening audit (Phase 8). These tests pin the
+privacy-first analytics guarantees so regressions fail loudly in CI:
+
+  1. metrics.json validates against services/analytics/schema.json
+  2. zero-PII enforcement: forbidden keys must raise (validator failure test)
+  3. privacy schema enforcement: zero_pii=false must fail schema (const)
+  4. aggregation integrity: independent recount matches metrics.json
+  5. dashboard readiness: aggregate.py regenerates identical metrics
+     (modulo the last_updated timestamp)
+
+Run: python3 -m unittest tests.test_analytics -v
+"""
+
+import copy
+import importlib.util
 import json
 import unittest
 from pathlib import Path
 
-from scripts.validate_analytics import (
-    REPO_ROOT,
-    SCHEMA_FILE,
-    METRICS_FILE,
-    assert_no_pii_keys,
-    validate_analytics_schema,
-    validate_aggregation_integrity,
-)
+REPO_ROOT = Path(__file__).resolve().parent.parent
+SCHEMA = REPO_ROOT / "services" / "analytics" / "schema.json"
+METRICS = REPO_ROOT / "services" / "analytics" / "metrics.json"
+AGGREGATE = REPO_ROOT / "services" / "analytics" / "aggregate.py"
+COMPAT_DATA = REPO_ROOT / "compatibility" / "data"
+
+try:
+    import jsonschema
+except ImportError:  # pragma: no cover
+    jsonschema = None
 
 
-class TestAnalyticsSubsystem(unittest.TestCase):
-    def setUp(self):
-        self.schema_file = SCHEMA_FILE
-        self.metrics_file = METRICS_FILE
+def _load_aggregate_module():
+    spec = importlib.util.spec_from_file_location("aggregate", AGGREGATE)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
 
-    def test_schema_and_metrics_files_exist(self):
-        """Verify schema and metrics files exist on disk."""
-        self.assertTrue(self.schema_file.exists(), "schema.json must exist")
-        self.assertTrue(self.metrics_file.exists(), "metrics.json must exist")
 
-    def test_zero_pii_enforcement(self):
-        """Verify metrics.json contains zero forbidden PII keys."""
-        data = json.loads(self.metrics_file.read_text(encoding="utf-8"))
-        violations = assert_no_pii_keys(data)
-        self.assertEqual(violations, [], f"PII violations detected: {violations}")
+@unittest.skipUnless(jsonschema is not None, "jsonschema not installed")
+class TestAnalyticsSchema(unittest.TestCase):
+    def test_metrics_validate_against_schema(self):
+        schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+        metrics = json.loads(METRICS.read_text(encoding="utf-8"))
+        jsonschema.validate(metrics, schema)
 
-    def test_pii_detector_flags_forbidden_keys(self):
-        """Verify that PII detector correctly flags injected forbidden keys."""
-        bad_payload = {
-            "public_metric": 100,
-            "user_data": {"client_ip": "192.168.1.1", "device_id": "ABC-123"},
-        }
-        violations = assert_no_pii_keys(bad_payload)
-        self.assertEqual(len(violations), 2)
-        self.assertTrue(any("client_ip" in v for v in violations))
-        self.assertTrue(any("device_id" in v for v in violations))
+    def test_zero_pii_false_rejected_by_schema(self):
+        schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+        metrics = json.loads(METRICS.read_text(encoding="utf-8"))
+        bad = copy.deepcopy(metrics)
+        bad["transparency_principles"]["zero_pii"] = False
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(bad, schema)
 
-    def test_schema_validation(self):
-        """Verify metrics payload matches schema requirements."""
-        schema = json.loads(self.schema_file.read_text(encoding="utf-8"))
-        metrics = json.loads(self.metrics_file.read_text(encoding="utf-8"))
 
-        errors = validate_analytics_schema(metrics, schema)
-        self.assertEqual(errors, [], f"Schema errors detected: {errors}")
+class TestZeroPIIEnforcement(unittest.TestCase):
+    def test_forbidden_key_raises(self):
+        agg = _load_aggregate_module()
+        with self.assertRaises(ValueError):
+            agg.assert_zero_pii({"release_metrics": {"user_id": "u123"}})
 
-    def test_aggregation_arithmetic_integrity(self):
-        """Verify arithmetic sums for root flavor and architecture distributions."""
-        metrics = json.loads(self.metrics_file.read_text(encoding="utf-8"))
-        errors = validate_aggregation_integrity(metrics)
-        self.assertEqual(errors, [], f"Integrity errors detected: {errors}")
+    def test_nested_pii_in_list_raises(self):
+        agg = _load_aggregate_module()
+        with self.assertRaises(ValueError):
+            agg.assert_zero_pii({"items": [{"email": "x@y.z"}]})
+
+    def test_clean_payload_accepted(self):
+        agg = _load_aggregate_module()
+        agg.assert_zero_pii(
+            {"release_metrics": {"total_releases": 48}, "items": [{"app": "a"}]}
+        )
+
+
+class TestAggregationIntegrity(unittest.TestCase):
+    def test_independent_recount_matches_metrics(self):
+        metrics = json.loads(METRICS.read_text(encoding="utf-8"))
+        counts = {"Working": 0, "Workaround Required": 0, "Broken": 0}
+        categories, play_integrity = set(), 0
+        files = [f for f in COMPAT_DATA.glob("*.json")]
+        for f in files:
+            d = json.loads(f.read_text(encoding="utf-8"))
+            counts[d.get("compatibility_status")] = (
+                counts.get(d.get("compatibility_status"), 0) + 1
+            )
+            categories.add(d.get("category"))
+            play_integrity += bool(d.get("play_integrity_required"))
+        cm = metrics["compatibility_metrics"]
+        self.assertEqual(cm["total_apps_tested"], len(files))
+        self.assertEqual(cm["compatible_count"], counts["Working"])
+        self.assertEqual(
+            cm["working_with_issues_count"], counts["Workaround Required"]
+        )
+        self.assertEqual(cm["unsupported_count"], counts["Broken"])
+        self.assertEqual(cm["play_integrity_required_count"], play_integrity)
+        self.assertEqual(cm["categories_count"], len(categories))
+
+
+class TestDashboardGeneration(unittest.TestCase):
+    def test_aggregate_regenerates_identical_metrics(self):
+        agg = _load_aggregate_module()
+        before = json.loads(METRICS.read_text(encoding="utf-8"))
+        payload = agg.generate_analytics_payload()
+        # Timestamp is expected to move; everything else must be identical.
+        before.pop("last_updated")
+        after = copy.deepcopy(payload)
+        after.pop("last_updated")
+        self.assertEqual(before, after)
 
 
 if __name__ == "__main__":
