@@ -262,6 +262,9 @@ jobs:
           }
           if ($failed) { exit 1 }
           Write-Host "[+] All publish assets re-verified against checksums manifest."
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.4.2
         with:
           tag_name: ${{ github.ref_name }}
           name: WSABuilds Manager ${{ github.ref_name }}
