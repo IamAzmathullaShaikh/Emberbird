@@ -12,7 +12,7 @@ Installers:
   - Architecture: x64
     InstallerType: nullsoft
     InstallerUrl: https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.0/WSABuildsManager-Setup-0.2.0-x64.exe
-    InstallerSha256: "0000000000000000000000000000000000000000000000000000000000000000"
+    InstallerSha256: "7005f7a7a6dfcd92825a8658ac4fa2cbc691f15983f3220933024db1cb8f5d68"
     Scope: user
   - Architecture: arm64
     InstallerType: nullsoft
