@@ -140,12 +140,11 @@ fn check_package_registration() -> (bool, Option<String>, Option<String>, Option
             "{}\\Packages\\MicrosoftCorporationII.WindowsSubsystemForAndroid_8wekyb3d8bbwe\\LocalCache",
             local_app_data
         );
-        let dir = if std::path::Path::new(&dir).exists() {
+        if std::path::Path::new(&dir).exists() {
             Some(dir)
         } else {
             None
-        };
-        dir
+        }
     } else {
         None
     };

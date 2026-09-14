@@ -1,0 +1,83 @@
+name: Manager Rust Diagnostics (temporary)
+
+# TEMPORARY — remove once the Cargo Clippy gate is green.
+# Exports full clippy/check output to the public step summary so failures are
+# diagnosable without admin log access (PAT was revoked).
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'apps/manager/src-tauri/**'
+      - '.github/workflows/manager-rust-diagnostics.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: rust-diag-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  diag:
+    name: Clippy Evidence (pinned toolchain)
+    runs-on: windows-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4 tag head 2026-09-14
+
+      - name: Setup Rust (pinned 1.98.1 — matches release pipeline)
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # 1.98.1 2026-09-03
+        with:
+          toolchain: '1.98.1'
+          components: clippy, rustfmt
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.8.1
+        with:
+          workspaces: 'apps/manager/src-tauri'
+
+      - name: Cargo Check (capture)
+        working-directory: apps/manager/src-tauri
+        shell: pwsh
+        run: |
+          cargo check 2>&1 | Tee-Object -FilePath $env:GITHUB_WORKSPACE/check.txt
+          "exit=$LASTEXITCODE" >> $env:GITHUB_OUTPUT
+
+      - name: Cargo Clippy (capture, no -D)
+        working-directory: apps/manager/src-tauri
+        shell: pwsh
+        run: |
+          cargo clippy 2>&1 | Tee-Object -FilePath $env:GITHUB_WORKSPACE/clippy.txt
+          "exit=$LASTEXITCODE" >> $env:GITHUB_OUTPUT
+
+      - name: Publish Evidence to Step Summary
+        if: always()
+        shell: pwsh
+        run: |
+          "## Cargo check (1.98.1)" | Out-File $env:GITHUB_STEP_SUMMARY -Append
+          if ((Test-Path check.txt) -and (Get-Item check.txt).Length -gt 0) {
+            '````text' | Out-File $env:GITHUB_STEP_SUMMARY -Append
+            Get-Content check.txt | Select-Object -First 120 | Out-File $env:GITHUB_STEP_SUMMARY -Append
+            '````' | Out-File $env:GITHUB_STEP_SUMMARY -Append
+          } else { "no check output" | Out-File $env:GITHUB_STEP_SUMMARY -Append }
+          "## Cargo clippy (1.98.1)" | Out-File $env:GITHUB_STEP_SUMMARY -Append
+          if ((Test-Path clippy.txt) -and (Get-Item clippy.txt).Length -gt 0) {
+            '````text' | Out-File $env:GITHUB_STEP_SUMMARY -Append
+            Get-Content clippy.txt | Select-Object -First 200 | Out-File $env:GITHUB_STEP_SUMMARY -Append
+            '````' | Out-File $env:GITHUB_STEP_SUMMARY -Append
+          } else { "no clippy output" | Out-File $env:GITHUB_STEP_SUMMARY -Append }
+
+      - name: Upload Evidence Artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: rust-diagnostics
+          path: |
+            check.txt
+            clippy.txt
+          retention-days: 7
+          if-no-files-found: ignore
