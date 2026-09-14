@@ -1,4 +1,4 @@
-import type { Architecture, RootFlavor, GAppsFlavor, ReleaseAsset, NormalizedAsset } from './types';
+import type { Architecture, RootFlavor, GAppsFlavor, ReleaseAsset, NormalizedAsset } from './types.ts';
 
 export function detectArchitecture(filename: string): Architecture {
   const lower = filename.toLowerCase();
@@ -12,6 +12,10 @@ export function detectRootFlavor(filename: string): RootFlavor {
   if (lower.includes('magisk')) return 'Magisk';
   if (lower.includes('kernelsu')) return 'KernelSU';
   if (lower.includes('none') || lower.includes('noroot') || lower.includes('vanilla')) return 'NoRoot';
+  // WSA Standard Edition archives have no root token in their filename at all
+  // (e.g. `WSA_2407.40000.4.0_x64.7z`) — absence of a GApps-pure marker means
+  // the rooted build. Only classify when the name plausibly refers to WSA.
+  if (lower.includes('wsa_') && lower.endsWith('.7z')) return 'Magisk';
   return 'unknown';
 }
 
@@ -20,6 +24,10 @@ export function detectGAppsFlavor(filename: string): GAppsFlavor {
   if (lower.includes('pico')) return 'GApps-Pico';
   if (lower.includes('mindthegapps')) return 'MindTheGapps';
   if (lower.includes('nogapps') || lower.includes('no-gapps')) return 'NoGApps';
+  // WSA release assets: both Standard and Banking editions ship OpenGApps Pico
+  // (release.yml build matrix), so any WSA_*.7z archive carries GApps unless a
+  // nogapps token says otherwise. The Banking Edition is the `vanilla` ramdisk.
+  if (lower.includes('wsa_') && lower.endsWith('.7z')) return 'GApps-Pico';
   return 'unknown';
 }
 

@@ -9,6 +9,10 @@
   <img src="https://img.shields.io/github/actions/workflow/status/IamAzmathullaShaikh/WSABuilds/build.yml?label=CI%20Build&style=for-the-badge" alt="CI Status"/>
 </p>
 
+<p align="center">
+  <a href="https://wsabuilds-website.pages.dev"><strong>🌐 Official Website & Downloads Portal</strong></a> — interactive documentation, compatibility hub, and diagnostic wizard
+</p>
+
 ---
 
 ## 1. Project Overview
@@ -52,20 +56,23 @@ WSABuilds provides two purpose-built Tier 1 configurations to serve different ap
 
 | Architecture & Edition | Package Contents | Verified Download Target | Build Channel |
 |---|---|---|---|
-| **x64 Standard Edition** | • Magisk Stable (v30.6+)<br/>• OpenGApps Pico (Play Store + Services)<br/>• Automated Root & Pixel 5 Spoofing | [Download Standard Edition (x64)](https://github.com/IamAzmathullaShaikh/WSABuilds/releases/latest) | **Tier 1 (Production)** |
-| **x64 Banking Edition** | • Vanilla (Clean Ramdisk, Zero Root)<br/>• OpenGApps Pico (Play Store + Services)<br/>• Pixel 5 Spoofing (Banking App Safe) | [Download Banking Edition (x64)](https://github.com/IamAzmathullaShaikh/WSABuilds/releases/latest) | **Tier 1 (Production)** |
+| **x64 Standard Edition** | • Magisk Stable (v30.6+)<br/>• OpenGApps Pico (Play Store + Services)<br/>• Automated Root & Pixel 5 Spoofing | [Download Standard Edition (x64)](https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/wsa-v2311.40000.5.0/WSA_2407.40000.4.0_x64.7z) | **Tier 1 (Production)** |
+| **x64 Banking Edition** | • Vanilla (Clean Ramdisk, Zero Root)<br/>• OpenGApps Pico (Play Store + Services)<br/>• Pixel 5 Spoofing (Banking App Safe) | [Download Banking Edition (x64)](https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/wsa-v2311.40000.5.0/WSA_2407.40000.4.0_x64_vanilla.7z) | **Tier 1 (Production)** |
 | **arm64 Standard Edition** | • Magisk Stable<br/>• OpenGApps Pico (arm64)<br/>• Native Qualcomm Snapdragon ABI | [View ARM64 Community Builds](https://github.com/IamAzmathullaShaikh/WSABuilds/releases) | **Tier 2 (On-Demand)** |
 
 > [!TIP]
 > **Architecture Guidance**:
 > * **Download x64** if your computer has an **Intel** (Core, Xeon, Celeron) or **AMD** (Ryzen, Athlon) processor. It includes automated 64-bit ARM translation (libhoudini) allowing ARM-only apps and games to run transparently.
-> * **Download arm64** only if your PC runs on a native **Qualcomm Snapdragon** processor (e.g. Surface Pro X, Surface Pro 11).
+> * **Download arm64** only if your PC runs on a native **Qualcomm Snapdragon** processor (e.g. Surface Pro X, Surface Pro 11) — these are Tier 2 community builds; see [all releases](https://github.com/IamAzmathullaShaikh/WSABuilds/releases).
 
-### WSABuilds Manager Desktop Application (v0.2.0 Preview)
+> [!NOTE]
+> **Both editions ship in the same release.** In the release assets, `WSA_2407.40000.4.0_x64.7z` is the **Standard (rooted) Edition** and `WSA_2407.40000.4.0_x64_vanilla.7z` is the **Banking (unrooted) Edition**. SHA-256 checksums for both are published in `checksums.txt` on the same release page.
+
+### WSABuilds Manager Desktop Application (v0.2.2)
 Native desktop lifecycle manager with cold VHDX backups, safe rollback restores, and guided updates:
-* **Portable Archive (.zip)**: [Download WSABuildsManager-Portable-0.2.0-x64.zip](https://github.com/IamAzmathullaShaikh/WSABuilds/releases) (Zero installation required)
-* **Setup Installer (.exe)**: [Download WSABuildsManager-Setup-0.2.0-x64.exe](https://github.com/IamAzmathullaShaikh/WSABuilds/releases) (NSIS installation with Start Menu integration)
-* **Windows Package Manager (Winget)**: Manifest staged and currently in review with Microsoft community repository (`winget install WSABuilds.WSABuildsManager`).
+* **Portable Archive (.zip)**: [Download WSABuildsManager-Portable-0.2.2-x64.zip](https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.2/WSABuildsManager-Portable-0.2.2-x64.zip) (Zero installation required)
+* **Setup Installer (.exe)**: [Download WSABuildsManager-Setup-0.2.2-x64.exe](https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.2/WSABuildsManager-Setup-0.2.2-x64.exe) (NSIS installation with Start Menu integration)
+* **Windows Package Manager (Winget)**: Not yet installable — the manifest is prepared and pending microsoft/winget-pkgs review. Download directly using the links above meanwhile.
 
 ### Checksum Verification
 Always verify your downloaded package integrity using Windows PowerShell before extraction:
@@ -131,14 +138,14 @@ WSABuilds maintains a community-curated database of Android application compatib
 | **Google Authenticator** | Security & 2FA | **Supported** | **Supported** | Verified on host container with active cloud backup sync. |
 | **Microsoft Authenticator** | Security & Enterprise | **Supported** | **Supported** | Fully compatible with Azure AD and personal accounts. |
 
-For detailed report specifications and PR moderation rules, refer to [compatibility/README.md](compatibility/README.md) or visit the web portal at [website/src/pages/compatibility/index.astro](website/src/pages/compatibility/index.astro).
+For detailed report specifications and PR moderation rules, refer to [compatibility/README.md](compatibility/README.md) or browse the live portal at [wsabuilds-website.pages.dev/compatibility](https://wsabuilds-website.pages.dev/compatibility).
 
 ---
 
 ## 7. Interactive Diagnostic Wizard
 
 If you encounter initialization errors, AppX deployment blocks, or connectivity issues, use our web-based troubleshooter:
-* **Online Wizard**: Access the interactive troubleshooter at [website/src/pages/troubleshoot/wizard.astro](website/src/pages/troubleshoot/wizard.astro) *(Web route: `/troubleshoot/wizard`)*.
+* **Online Wizard**: Use the interactive troubleshooter at [wsabuilds-website.pages.dev/troubleshoot/wizard](https://wsabuilds-website.pages.dev/troubleshoot/wizard) (live web route; source: `website/src/pages/troubleshoot/wizard.astro`).
 * **Key Features**: Step-by-step diagnostic decision tree with copyable PowerShell commands for automated error remediation.
 
 ### Common Error Codes & Rapid Fixes:
@@ -153,7 +160,7 @@ If you encounter initialization errors, AppX deployment blocks, or connectivity 
 
 ## 8. WSABuilds Manager (Desktop Application)
 
-**Status**: *Preview Release (v0.2.0)* &nbsp;|&nbsp; Architecture Guide: [apps/manager/README.md](apps/manager/README.md)
+**Status**: *Preview Release (v0.2.2)* &nbsp;|&nbsp; Architecture Guide: [apps/manager/README.md](apps/manager/README.md)
 
 WSABuilds Manager provides desktop lifecycle management for Windows Subsystem for Android:
 * **Cold VHDX Snapshots**: Create instant, compressed backups of your Android user data (`userdata.vhdx`) with SHA-256 cryptographic verification.
@@ -171,7 +178,7 @@ In strict adherence to the **WSABuilds Master Governance Framework v5.1**, all r
 
 | Reality Dimension | Governance Status | Empirical Verification Evidence |
 |---|---|---|
-| **Repository Qualification** | **PASS (VERIFIED)** | 81 automated tests pass across Python, Astro, and Tauri suites. 0 broken links, 0 secrets, 0 package identity drift. |
+| **Repository Qualification** | **PASS (VERIFIED)** | 89 automated tests pass across Python (46), Website (28), and Manager (15) suites; plus a 20-check clean-room E2E gate (`scripts/e2e_clean_room.py`). 0 broken links, 0 secrets, 0 package identity drift. |
 | **Build Reality Gate** | **PASS (VERIFIED)** | Build pipelines (`build.sh`, `build_local.py`) verified. Unpacked distribution and CPIO ramdisk structures verified. |
 | **Runtime Reality Gate (Host)** | **PASS (VERIFIED)** | Verified on Windows host: active AppX registration (`Status: Ok`, `Version: 2407.40000.4.0`), `userdata.2.vhdx` (3.8 GB), and live `logcat` execution. |
 | **Target Environment Gate** | **MANAGED** | Live Google Play Integrity attestation and physical locked VHDX file copy are actively observed in field validation. |
@@ -249,7 +256,7 @@ adb devices
 ```
 
 ### 4. Automated Diagnostic Wizard
-For guided, interactive troubleshooting, launch the web wizard at [website/src/pages/troubleshoot/wizard.astro](website/src/pages/troubleshoot/wizard.astro).
+For guided, interactive troubleshooting, launch the web wizard at [wsabuilds-website.pages.dev/troubleshoot/wizard](https://wsabuilds-website.pages.dev/troubleshoot/wizard).
 
 ---
 
@@ -282,7 +289,7 @@ WSABuilds/
 ├── manifests/                 # Staged Winget distribution manifests (schema 1.6.0)
 ├── scripts/                   # 10 CLI validation and security auditing tools
 ├── services/analytics/        # Privacy-first telemetry aggregation engine
-├── tests/                     # 81 automated unit tests (Python, Astro, Tauri)
+├── tests/                     # 89 automated tests (Python, Website, Manager)
 ├── website/                   # Official documentation portal, wizard, and downloads
 ├── WINDOWS11_BUILD_GUIDE.md   # WSL2 developer compilation guide
 ├── BUILD.md                   # Native Python Windows compilation guide

@@ -25,6 +25,7 @@
 - [ ] `winget validate manifests/w/WSABuilds/WSABuildsManager/<new-version>` (local winget CLI) → succeeded
 - [ ] Target tag does not exist locally or on remote (`git tag -l`, `git ls-remote --tags`)
 - [ ] Working tree clean; all hardening commits pushed to `main`
+- [ ] **WSA cuts only:** `deployment/version.json` `subsystem_baseline.wsa_version` + `subsystem_baseline.release_tag` updated together; tag named `wsa-v<shipped-version>` per §3.1
 
 ## 3. Release Checklist (the automated pipeline — verify, never hand-execute)
 
@@ -40,6 +41,33 @@ Tag push (`v*`) triggers `winget-release.yml`:
 - [ ] Public download of Setup EXE re-hashes to the manifest value
 - [ ] Installer manifest hash patched from bootstrap placeholder to the real published hash (commit to `main`; see §9 rule 6)
 - [ ] `winget validate` re-run on the finalized manifest
+
+### 3.1 WSA Release Tag Convention & Notes Template
+
+**Tag naming:** WSA releases are tagged `wsa-v<shipped-version>` where `<shipped-version>` is the version **inside the produced archives** (the `WSA_*` MSIX package version), not an external counter. The tag and the asset filenames must agree — a tag quoting a different version than the assets ship is a documentation defect (this exact mismatch, `wsa-v2311.40000.5.0` shipping `2407.40000.4.0` assets, is why the convention exists). `deployment/version.json` → `subsystem_baseline.release_tag` is the authoritative pointer consumed by the website downloads page.
+
+**Release notes template (enrich, never ship bare changelogs):**
+
+```markdown
+## WSABuilds <shipped-version> — <Standard/Banking> Edition
+
+### Downloads
+| Edition | Root | GApps | Asset | Size |
+|---|---|---|---|---|
+| Standard | Magisk Stable | OpenGApps Pico | `WSA_<ver>_x64.7z` | <size> |
+| Banking (Enterprise) | None (vanilla ramdisk) | OpenGApps Pico | `WSA_<ver>_x64_vanilla.7z` | <size> |
+
+### Verify before install (PowerShell)
+`Get-FileHash -Algorithm SHA256 .\WSA_<ver>_x64.7z` — must match `checksums.txt` in this release.
+
+### Install
+Extract the `.7z`, then run `Install.ps1` as administrator. Full guide: https://wsabuilds-website.pages.dev/docs/getting-started/quick-start
+
+### Reports shipped with this release
+package-identity-report.json · package-integrity-report.json · magisk-validation-report.json · gapps-validation-report.json · release-metadata.json
+```
+
+**Editions table rule:** both Tier 1 editions build with Pico GApps (`release.yml` matrix). Standard = Magisk-rooted ramdisk; Banking = vanilla (unrooted) ramdisk. The website downloads page classifies on this basis — asset names without a root token are Standard (rooted), `_vanilla` assets are Banking.
 
 ## 4. Hash Verification Checklist
 
@@ -151,7 +179,7 @@ Tag push (`v*`) triggers `winget-release.yml`:
 
 | Area | Status |
 |---|---|
-| PAT incident | **BLOCKED** — exposed token still ACTIVE (HTTP 200, all 21 scopes); owner must revoke (§6). Zero misuse evidence: 0 deploy keys, 0 webhooks, owner-only collaborator, event actors = owner + Actions bot. |
+| PAT incident | **RESOLVED (2026-09-14)** — exposed classic PAT revoked by the owner; API calls with the token now return `Bad credentials` (401). Pre-revocation sweep found zero misuse: 0 deploy keys, 0 webhooks, owner-only collaborator, event actors = owner + Actions bot. |
 | Website deploy | **WORKING — PRODUCTION LIVE** at https://wsabuilds-website.pages.dev (2026-09-14). Enablement record: Pages project `wsabuilds-website` created via API (action's 401 on missing project was misleading); `production_branch` aligned to `main`; token IP-filter (error 9109) had to be lifted in the Cloudflare dashboard — CI runners are not fixed-IP. Credentials pasted into chat must be rotated (§10). |
 | Reproducibility | **PASS** — Cargo.lock + package-lock committed, `npm ci` enforced, Rust toolchain pinned 1.98.1 |
 | Supply chain | **PASS** — all actions SHA-pinned across every workflow; zero `@v` tags |

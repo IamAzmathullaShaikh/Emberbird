@@ -14,6 +14,7 @@
   },
   "subsystem_baseline": {
     "wsa_version": "2311.40000.5.0",
-    "android_version": "13"
+    "android_version": "13",
+    "release_tag": "wsa-v2311.40000.5.0"
   }
 }
