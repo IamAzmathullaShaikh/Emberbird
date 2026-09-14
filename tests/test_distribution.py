@@ -27,9 +27,13 @@ class TestDistributionAndWinget(unittest.TestCase):
         mgr = data["manager"]
         self.assertEqual(mgr["winget_package_id"], "WSABuilds.WSABuildsManager")
         self.assertIn(mgr["channel"], ["stable", "beta", "nightly"])
-        self.assertTrue(len(mgr["target_architectures"]) >= 2)
+        # Declared architectures must be real build targets, never aspirational:
+        # every architecture here must have an installer manifest with a
+        # non-placeholder InstallerSha256 (see test_winget_manifest_structure).
+        self.assertGreaterEqual(len(mgr["target_architectures"]), 1)
         self.assertIn("x64", mgr["target_architectures"])
-        self.assertIn("arm64", mgr["target_architectures"])
+        for arch in mgr["target_architectures"]:
+            self.assertIn(arch, ["x64", "arm64", "x86"])
 
     def test_version_synchronization(self):
         """Verify version consistency across version.json, Cargo.toml, package.json, and tauri.conf.json."""

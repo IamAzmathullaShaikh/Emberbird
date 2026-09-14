@@ -10,7 +10,7 @@ interface RestoreViewProps {
 export const RestoreView: React.FC<RestoreViewProps> = ({ status, onRestoreComplete }) => {
   const [candidates, setCandidates] = useState<RestoreCandidate[]>([]);
   const [selectedId, setSelectedId] = useState<string>('');
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [resultMessage, setResultMessage] = useState<{

@@ -1,14 +1,13 @@
 {
   "$schema": "./schema.json",
   "manager": {
-    "version": "0.2.0",
+    "version": "0.2.2",
     "channel": "stable",
     "release_date": "2026-09-14",
     "winget_package_id": "WSABuilds.WSABuildsManager",
     "min_windows_build": "10.0.19045.0",
     "target_architectures": [
-      "x64",
-      "arm64"
+      "x64"
     ],
     "publisher": "WSABuilds",
     "license": "Apache-2.0"

@@ -53,6 +53,35 @@ export function validateEnvironment(envSource?: Record<string, string | undefine
   return { valid: true, missing: [] };
 }
 
+/**
+ * Build-time environment configuration.
+ *
+ * Values resolve in strict priority order: process.env first (CI sets
+ * explicit env vars in the workflow build step), then import.meta.env
+ * (Vite-injected PUBLIC_* variables). No silent fallbacks are permitted
+ * per Configuration Governance — invalid/missing values fail the build
+ * via astro.config.mjs.
+ */
+export function getEnvironmentConfig(): AppEnvironment {
+  const get = (key: keyof AppEnvironment): string => {
+    const value = process.env[key] || (import.meta as any).env?.[key];
+    if (!value || typeof value !== 'string' || value.trim().length === 0) {
+      throw new Error(
+        `CONFIGURATION ERROR: required environment variable '${key}' is not set. ` +
+        'Set it in the CI workflow env block or website/.env (see .env.example).'
+      );
+    }
+    return value;
+  };
+
+  return {
+    SITE_URL: get('SITE_URL'),
+    PUBLIC_GITHUB_REPO: get('PUBLIC_GITHUB_REPO'),
+    PUBLIC_GITHUB_REPO_URL: get('PUBLIC_GITHUB_REPO_URL'),
+    PUBLIC_RELEASES_URL: get('PUBLIC_RELEASES_URL'),
+  };
+}
+
 export function assertValidEnvironment(envSource?: Record<string, string | undefined>): void {
   const result = validateEnvironment(envSource);
   if (!result.valid && result.errorMessage) {

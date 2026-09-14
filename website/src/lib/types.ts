@@ -21,6 +21,17 @@ export type Architecture = 'x64' | 'arm64' | 'unknown';
 export type RootFlavor = 'Magisk' | 'KernelSU' | 'NoRoot' | 'unknown';
 export type GAppsFlavor = 'GApps-Pico' | 'MindTheGapps' | 'NoGApps' | 'unknown';
 
+/** A release asset parsed into its WSABuilds identity components. */
+export interface ParsedPackage {
+  assetId: number;
+  fileName: string;
+  fileSize: number;
+  downloadUrl: string;
+  arch: Architecture;
+  root: RootFlavor;
+  gapps: GAppsFlavor;
+}
+
 export interface NormalizedAsset {
   assetId: number;
   fileName: string;
