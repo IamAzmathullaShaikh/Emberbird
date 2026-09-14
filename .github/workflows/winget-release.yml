@@ -84,6 +84,19 @@ jobs:
         with:
           workspaces: 'apps/manager/src-tauri'
 
+      - name: Verify Tag Matches Declared Version
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: |
+          $ver = (Get-Content deployment/version.json | ConvertFrom-Json).manager.version
+          $tag = "${{ github.ref_name }}".TrimStart('v')
+          if ($ver -ne $tag) {
+            Write-Host "[!] FATAL: Tag v$tag does not match declared manager version $ver in deployment/version.json."
+            Write-Host "    Update deployment/version.json (and package.json / Cargo.toml / tauri.conf.json) before tagging."
+            exit 1
+          }
+          Write-Host "[+] Tag v$tag matches declared manager version."
+
       - name: Install Frontend Dependencies
         working-directory: apps/manager
         shell: bash
@@ -195,8 +208,36 @@ jobs:
           name: manager-release-artifacts
           path: release_assets
 
-      - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v2
+      - name: Verify Artifact Integrity (re-hash published assets)
+        shell: pwsh
+        run: |
+          # Runtime Reality Gate: independently re-hash downloaded artifacts and
+          # compare against the checksums manifest before publishing.
+          $expected = @{}
+          Get-Content release_assets/WSABuildsManager-*-checksums.txt | ForEach-Object {
+            if ($_ -match '^([a-f0-9]{64}) \*(.+)$') { $expected[$Matches[2]] = $Matches[1] }
+          }
+          if ($expected.Count -lt 2) {
+            Write-Host "[!] FATAL: checksums manifest incomplete ($($expected.Count) entries)."
+            exit 1
+          }
+          $failed = $false
+          foreach ($name in $expected.Keys) {
+            $path = Join-Path "release_assets" $name
+            if (-not (Test-Path $path)) {
+              Write-Host "[!] REALITY GATE FAILURE: $name listed in checksums but missing from artifacts."
+              $failed = $true; continue
+            }
+            $actual = (Get-FileHash $path -Algorithm SHA256).Hash.ToLower()
+            if ($actual -ne $expected[$name]) {
+              Write-Host "[!] REALITY GATE FAILURE: $name hash mismatch (expected $($expected[$name]), got $actual)."
+              $failed = $true
+            } else {
+              Write-Host "[+] $name: hash verified."
+            }
+          }
+          if ($failed) { exit 1 }
+          Write-Host "[+] All publish assets re-verified against checksums manifest."
         with:
           tag_name: ${{ github.ref_name }}
           name: WSABuilds Manager ${{ github.ref_name }}
@@ -207,6 +248,7 @@ jobs:
             release_assets/*.sha256
           token: ${{ secrets.GITHUB_TOKEN }}
           generate_release_notes: true
+          overwrite_files: true
 
   prepare-winget:
     name: Prepare Winget Release Manifests
