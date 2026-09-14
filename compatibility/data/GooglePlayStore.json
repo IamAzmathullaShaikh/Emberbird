@@ -1,0 +1,18 @@
+{
+  "$schema": "../schema.json",
+  "app_name": "Google Play Store",
+  "package_id": "com.android.vending",
+  "category": "Utilities & Tools",
+  "compatibility_status": "Working",
+  "play_integrity_required": true,
+  "tested_wsa_version": "REQUIRES TARGET ENVIRONMENT VERIFICATION",
+  "tested_root_flavor": "Magisk Stable",
+  "last_tested_date": "REQUIRES TARGET ENVIRONMENT VERIFICATION",
+  "workaround_steps": [
+    "Included by default in every WSABuilds edition (Pico GApps).",
+    "Sign in with a Google account after first boot; initial sync can take several minutes.",
+    "If device certification warnings appear, re-check that Play Services is up to date inside the subsystem."
+  ],
+  "known_issues": "Play Protect certification is reported as unofficial because WSA is not a Google-certified device; app installs still function normally.",
+  "verification_status": "unverified"
+}
