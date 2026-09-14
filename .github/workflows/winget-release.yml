@@ -82,7 +82,13 @@ jobs:
       - name: Install Frontend Dependencies
         working-directory: apps/manager
         run: |
+          echo "[*] Installing frontend dependencies (npm ci)..."
           npm ci
+          echo "[+] Dependencies installed successfully"
+          echo "[*] node_modules contents (first 10):"
+          ls node_modules | head -10
+          echo "[*] package-lock.json verified:"
+          npm ls --depth=0 2>&1 | head -5
 
       - name: TypeScript Diagnostics
         working-directory: apps/manager
