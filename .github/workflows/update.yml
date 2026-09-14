@@ -62,10 +62,10 @@ jobs:
 
     steps:
       - name: Checkout ♻️
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4 tag head 2026-09-14
 
       - name: Setup Python 🐍
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.x'
 
@@ -134,12 +134,12 @@ jobs:
 
     steps:
       - name: Checkout 🔄
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4 tag head 2026-09-14
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Python 🐍
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
 
@@ -185,7 +185,7 @@ jobs:
 
     steps:
       - name: Checkout 🔄
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4 tag head 2026-09-14
         with:
           fetch-depth: 0
 
@@ -264,7 +264,7 @@ jobs:
           print("Release notes updated.")
 
       - name: Upload Release Notes 📤
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: release-notes
           path: Windows11x64.md
