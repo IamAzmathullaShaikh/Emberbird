@@ -82,24 +82,6 @@ jobs:
         if: always()
         shell: pwsh
         run: |
-          if (Test-Path clippy.txt) { Copy-Item clippy.txt rust-clippy-evidence.txt }
-          if (Test-Path check.txt) { Copy-Item check.txt rust-check-evidence.txt }
-          if (Test-Path test.txt) { Copy-Item test.txt rust-test-evidence.txt }
-          git config user.name "ci-evidence-bot"
-          git config user.email "actions@github.com"
-          git fetch origin ci/rust-evidence 2>$null
-          if ($LASTEXITCODE -eq 0) { git checkout -b ci/rust-evidence origin/ci/rust-evidence }
-          else { git checkout --orphan ci/rust-evidence; if (Test-Path .gitignore) { Remove-Item .gitignore } }
-          git add rust-clippy-evidence.txt rust-check-evidence.txt rust-test-evidence.txt 2>$null
-          git commit -m "rust diagnostics evidence: $env:GITHUB_SHA" 2>$null
-          git push origin ci/rust-evidence
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Commit Evidence to Public Branch (admin-log-free diagnosis)
-        if: always()
-        shell: pwsh
-        run: |
           # Checkout the evidence branch BEFORE writing files, otherwise the
           # tracked evidence files collide with untracked local copies.
           git config user.name "ci-evidence-bot"
