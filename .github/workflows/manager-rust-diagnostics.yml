@@ -96,6 +96,30 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Commit Evidence to Public Branch (admin-log-free diagnosis)
+        if: always()
+        shell: pwsh
+        run: |
+          # Checkout the evidence branch BEFORE writing files, otherwise the
+          # tracked evidence files collide with untracked local copies.
+          git config user.name "ci-evidence-bot"
+          git config user.email "actions@github.com"
+          git fetch origin ci/rust-evidence
+          if ($LASTEXITCODE -eq 0) {
+            git checkout -b ci/rust-evidence origin/ci/rust-evidence
+          } else {
+            git checkout --orphan ci/rust-evidence
+            if (Test-Path .gitignore) { Remove-Item .gitignore }
+          }
+          if (Test-Path clippy.txt) { Copy-Item clippy.txt rust-clippy-evidence.txt -Force }
+          if (Test-Path check.txt) { Copy-Item check.txt rust-check-evidence.txt -Force }
+          if (Test-Path test.txt) { Copy-Item test.txt rust-test-evidence.txt -Force }
+          git add rust-clippy-evidence.txt rust-check-evidence.txt rust-test-evidence.txt 2>$null
+          git commit -m "rust diagnostics evidence: $env:GITHUB_SHA"
+          git push origin ci/rust-evidence
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Upload Evidence Artifact
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -104,5 +128,6 @@ jobs:
           path: |
             check.txt
             clippy.txt
+            test.txt
           retention-days: 7
           if-no-files-found: ignore
