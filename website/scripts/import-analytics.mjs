@@ -7,8 +7,8 @@ const __dirname = path.dirname(__filename);
 
 const repoRoot = path.resolve(__dirname, '../../');
 const sourceMetricsFile = path.join(repoRoot, 'services', 'analytics', 'metrics.json');
-const targetContentDir = path.join(__dirname, '../src/content/analytics');
-const targetFile = path.join(targetContentDir, 'metrics.json');
+const targetContentDir = path.join(__dirname, '../src/data');
+const targetFile = path.join(targetContentDir, 'analytics-metrics.json');
 
 const PII_FORBIDDEN_KEYS = new Set([
   'ip',
@@ -78,7 +78,7 @@ function validateAnalyticsPayload(raw) {
   return data;
 }
 
-console.log('[*] Importing analytics metrics from services/analytics/ into website/src/content/analytics/...');
+console.log('[*] Importing analytics metrics from services/analytics/ into website/src/data/...');
 ensureDir(targetContentDir);
 
 if (!fs.existsSync(sourceMetricsFile)) {

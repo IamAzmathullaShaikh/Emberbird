@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import metricsData from '../content/analytics/metrics.json';
+import metricsData from '../data/analytics-metrics.json';
 
 const releaseMetrics = metricsData.release_metrics;
 const compatMetrics = metricsData.compatibility_metrics;
@@ -32,6 +32,12 @@ const formatNumber = (num: number) => {
       <p class="mt-4 text-slate-400 leading-relaxed text-sm sm:text-base">
         WSABuilds operates under a strict privacy-first charter. We collect zero personally identifiable information (PII), no IP addresses, and no browser fingerprints. All metrics shown are computed from public GitHub release downloads and community compatibility submissions.
       </p>
+    </div>
+
+    {/* Data Provenance Notice: figures below are illustrative placeholders until the
+        aggregation pipeline runs against real release counters. Do not remove. */}
+    <div class="mb-10 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300/90 leading-relaxed">
+      <strong>Data notice:</strong> the figures on this page are <strong>ILLUSTRATIVE SAMPLE DATA</strong> generated during platform development — they are not live measurements. Real aggregate counters will replace them once the analytics pipeline completes its first production aggregation over the project's public GitHub release data.
     </div>
 
     {/* Primary Metric KPI Cards */}
