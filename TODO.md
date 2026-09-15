@@ -119,6 +119,16 @@ Maintain continuous field verification and community submission workflows.
   - **Gate**: Runtime Reality Gate.
 
 - [x] **Task 5.2: Automated Community Compatibility PR Ingestion**
+  - **Problem**: `compatibility/data/` records were duplicated into `website/src/content/compatibility/`, allowing the Compatibility Hub to drift from the validated source of record.
+  - **Action**: Compatibility Hub now loads the authoritative `compatibility/data/` directly via an Astro glob loader; duplicate copy removed; compatibility-validation workflow now covers PRs targeting `main`.
+  - **Files**: `website/src/content.config.ts`, `.github/workflows/compatibility-validation.yml`
+  - **Gate**: Website Test Suite & Build (`npm test`, `npm run build` in `website/`).
+
+- [ ] **Task 5.3: Website Docs Mirror Synchronization Guard** (identified during Task 5.2 execution)
+  - **Problem**: `website/src/content/docs/` is an enriched mirror of `docs/` (frontmatter added for the docs collection schema). A `docs/**` edit does not automatically propagate, so the repository documentation and the live portal can silently diverge (caught manually during Task 4.1).
+  - **Action**: Add a CI check that fails when a `docs/**` change is not reflected in the mirror (content equality ignoring frontmatter), plus a maintainer checklist entry.
+  - **Files**: `.github/workflows/` (new docs-sync guard), `docs/`, `website/src/content/docs/`
+  - **Gate**: Docs Mirror Guard (new CI check).
   - **Goal**: Validate inbound community submissions against `compatibility/schema.json` and sync verified records to the web portal.
   - **Files**: `.github/workflows/compatibility-validation.yml`, `compatibility/data/`
   - **Gate**: Compatibility Schema Tests (`test_compatibility_schema.py`).
