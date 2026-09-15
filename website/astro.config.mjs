@@ -1,12 +1,13 @@
 import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
+import { loadEnv } from 'vite';
 import { assertValidEnvironment } from './src/lib/env';
 
 // Run environment validation check during build/startup
-const siteUrl = process.env.SITE_URL;
-if (!siteUrl) {
-  throw new Error('Configuration error: SITE_URL environment variable is required.');
-}
+const env = loadEnv(process.env.NODE_ENV || '', process.cwd(), '');
+const combinedEnv = { ...env, ...process.env };
+assertValidEnvironment(combinedEnv);
+const siteUrl = combinedEnv.SITE_URL;
 
 export default defineConfig({
   site: siteUrl,
