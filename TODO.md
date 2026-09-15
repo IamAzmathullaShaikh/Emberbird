@@ -82,7 +82,7 @@ Harmonize git tags, versions, and public badges with actual build output reality
   - **Files**: `README.md`
   - **Gate**: Markdown Link Validator (`python scripts/check_doc_links.py`).
 
-- [ ] **Task 3.3: Canonical Dual-Edition Release Tagging**
+- [ ] **Task 3.3: Canonical Dual-Edition Release Tagging** (STATUS: BLOCKED — OWNER ACTION; requires an authenticated GitHub token to publish the `wsa-v2407.40000.4.0` release; after publication `version.json release_tag`, README download links and website fallback must be re-pointed in the same change to preserve user journeys)
   - **Problem**: The current dual-edition release is tagged under `wsa-v2311.40000.5.0`, creating semantic confusion with the enclosed `2407.40000.4.0` packages.
   - **Action**: Publish or tag a release matching the actual WSA version (`Windows_11_2407.40000.4.0` or `wsa-v2407.40000.4.0`) containing both verified `.7z` packages, and set `make_latest: true`.
   - **Files**: Release assets on GitHub
@@ -94,7 +94,7 @@ Harmonize git tags, versions, and public badges with actual build output reality
 
 Ensure hardware architecture claims in documentation match compilation and distribution capabilities.
 
-- [ ] **Task 4.1: Accurate ARM64 Documentation Transparency**
+- [x] **Task 4.1: Accurate ARM64 Documentation Transparency**
   - **Problem**: `README.md` badges and tables advertise ARM64 builds, but zero ARM64 binaries exist in GitHub release assets.
   - **Action**: Clarify in `README.md` Section 3 that ARM64 packages are not currently pre-built on GitHub Releases, and document the manual build command (`bash MagiskOnWSA/scripts/build.sh --arch arm64`) for users with Snapdragon devices.
   - **Files**: `README.md`, `docs/getting-started/quick-start.md`

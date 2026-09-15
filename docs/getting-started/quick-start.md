@@ -11,7 +11,7 @@ Before beginning installation, ensure your computer meets the minimum hardware a
 | Requirement | Minimum Specification | Recommended |
 |---|---|---|
 | **Operating System** | Windows 11 Build 22000+ or Windows 10 22H2 Build 19045+ | Windows 11 23H2 / 24H2 |
-| **Architecture** | 64-bit x86 (`x64`) or ARM64 | 64-bit x86 (`x64`) |
+| **Architecture** | 64-bit x86 (`x64`) — ARM64 packages not yet published | 64-bit x86 (`x64`) |
 | **System Memory (RAM)** | 8 GB | 16 GB or higher |
 | **Storage** | 10 GB free space on SSD | 20 GB free space on NVMe SSD |
 | **Hardware Virtualization** | Enabled in BIOS/UEFI | Enabled in BIOS/UEFI |
@@ -49,8 +49,8 @@ WSA requires the Windows **Virtual Machine Platform** feature:
 2. Download the recommended standard package for your computer:
    - **For Intel/AMD Processors**:  
      `WSA_[version]_x64_[root]_[gapps].7z` (or `.zip` - check repository releases for current build)
-   - **For Snapdragon Processors**:  
-     `WSA_[version]_arm64_[root]_[gapps].7z` (or `.zip` - check repository releases for current build)
+   - **For Snapdragon (ARM64) Processors**:  
+     **No ARM64 packages are currently pre-built or published** on this repository's Releases. Only x64 packages are available at this time; ARM64 enablement is tracked on the engineering roadmap. Do not attempt to install an x64 package on an ARM64 device.
 3. Once downloaded, extract the entire archive into a permanent folder on your drive (e.g. `C:\WSA` or `D:\Android\WSA`).
    > **Important**: Do **not** delete or move this folder after installation, as Windows runs the subsystem directly from this location.
 

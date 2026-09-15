@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/Android-13.0%20(API%2033)-green.svg?style=for-the-badge&logo=android" alt="Android 13"/>
   <img src="https://img.shields.io/badge/GApps-OpenGApps%20Pico-orange.svg?style=for-the-badge&logo=googleplay" alt="OpenGApps Pico"/>
   <img src="https://img.shields.io/badge/Root-Magisk%20Stable%20%7C%20Vanilla%20(No%20Root)-blue.svg?style=for-the-badge" alt="Magisk Stable | Vanilla"/>
-  <img src="https://img.shields.io/badge/Architecture-x64%20%7C%20arm64-purple.svg?style=for-the-badge" alt="x64 / arm64"/>
+  <img src="https://img.shields.io/badge/Architecture-x64%20(ARM64%20on%20roadmap)-purple.svg?style=for-the-badge" alt="x64 architecture"/>
   <img src="https://img.shields.io/github/actions/workflow/status/IamAzmathullaShaikh/WSABuilds/build.yml?label=CI%20Build&style=for-the-badge" alt="CI Status"/>
   <img src="https://img.shields.io/github/actions/workflow/status/IamAzmathullaShaikh/WSABuilds/release.yml?label=WSA%20Release&style=for-the-badge" alt="WSA Release Pipeline"/>
   <img src="https://img.shields.io/github/actions/workflow/status/IamAzmathullaShaikh/WSABuilds/winget-release.yml?label=Manager%20Release&style=for-the-badge" alt="Manager Release Pipeline"/>
@@ -60,12 +60,12 @@ WSABuilds provides two purpose-built Tier 1 configurations to serve different ap
 |---|---|---|---|
 | **x64 Standard Edition** | • Magisk Stable (v30.6+)<br/>• OpenGApps Pico (Play Store + Services)<br/>• Automated Root & Pixel 5 Spoofing | [Download Standard Edition (x64)](https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/wsa-v2311.40000.5.0/WSA_2407.40000.4.0_x64.7z) | **Tier 1 (Production)** |
 | **x64 Banking Edition** | • Vanilla (Clean Ramdisk, Zero Root)<br/>• OpenGApps Pico (Play Store + Services)<br/>• Pixel 5 Spoofing (Banking App Safe) | [Download Banking Edition (x64)](https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/wsa-v2311.40000.5.0/WSA_2407.40000.4.0_x64_vanilla.7z) | **Tier 1 (Production)** |
-| **arm64 Standard Edition** | • Magisk Stable<br/>• OpenGApps Pico (arm64)<br/>• Native Qualcomm Snapdragon ABI | [View ARM64 Community Builds](https://github.com/IamAzmathullaShaikh/WSABuilds/releases) | **Tier 2 (On-Demand)** |
+| **arm64 Standard Edition** | • Magisk Stable<br/>• OpenGApps Pico (arm64)<br/>• Native Qualcomm Snapdragon ABI | **Not currently pre-built** — no ARM64 assets are published on GitHub Releases yet; ARM64 CI enablement is tracked on the engineering roadmap (see `TODO.md`, Task 4.2) | **Tier 2 (Planned)** |
 
 > [!TIP]
 > **Architecture Guidance**:
 > * **Download x64** if your computer has an **Intel** (Core, Xeon, Celeron) or **AMD** (Ryzen, Athlon) processor. It includes automated 64-bit ARM translation (libhoudini) allowing ARM-only apps and games to run transparently.
-> * **Download arm64** only if your PC runs on a native **Qualcomm Snapdragon** processor (e.g. Surface Pro X, Surface Pro 11) — these are Tier 2 community builds; see [all releases](https://github.com/IamAzmathullaShaikh/WSABuilds/releases).
+> * **ARM64 (Snapdragon) users**: pre-built ARM64 packages are **not currently published** on GitHub Releases, and the build pipeline currently targets x64 only (`build.sh --arch` accepts `x64`). Monitor the releases portal and the engineering roadmap for ARM64 enablement progress.
 
 > [!NOTE]
 > **Both editions ship in the same release.** In the release assets, `WSA_2407.40000.4.0_x64.7z` is the **Standard (rooted) Edition** and `WSA_2407.40000.4.0_x64_vanilla.7z` is the **Banking (unrooted) Edition**. SHA-256 checksums for both are published in `checksums.txt` on the same release page.
@@ -196,7 +196,7 @@ To prevent user confusion, WSABuilds maintains total transparency regarding supp
 | **WSA x64 Standard (Magisk + Pico)** | **SUPPORTED** | **Tier 1 Primary Production**. Automated builds, official Magisk Stable, OpenGApps Pico ext4 overlay. |
 | **WSA x64 Banking (Vanilla + Pico)** | **SUPPORTED** | **Tier 1 Enterprise Production**. Clean unrooted ramdisk, zero Magisk hooks, OpenGApps Pico ext4 overlay. |
 | **WSABuilds Manager x64** | **SUPPORTED** | **Tier 1 Desktop Client**. Dual packaging (Portable ZIP + NSIS Setup), 15 passing unit tests. |
-| **WSA arm64 Standard (Magisk + Pico)** | **COMMUNITY SUPPORTED** | **Tier 2 On-Demand**. Compiled via community workflow runners on physical Snapdragon hardware. |
+| **WSA arm64 Standard (Magisk + Pico)** | **NOT YET AVAILABLE** | **Tier 2 (Planned)**. No ARM64 assets are currently published; CI cross-compilation enablement is tracked on the engineering roadmap (see `TODO.md`, Task 4.2). |
 | **Windows Insider Canary Channel** | **EXPERIMENTAL** | Subject to upstream Microsoft preview channel instability and internal API shifts. |
 | **KernelSU Variants** | **NOT SUPPORTED** | **Eliminated**. Requires custom kernel source builds outside retail WSA; breaks automated updates. |
 | **SuperSU Variants** | **NOT SUPPORTED** | **Eliminated**. Completely obsolete and incompatible with modern Android 13 (API 33). |
