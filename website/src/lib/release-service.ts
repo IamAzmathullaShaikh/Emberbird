@@ -9,19 +9,48 @@ import { parseNormalizedAsset, formatDate } from './parser.ts';
 
 export type ReleaseChannel = 'manager' | 'wsa';
 
-/** Classify a release by its tag: Manager releases are `v*`, WSA releases are `wsa-v*`. */
+/** Classify a release by its tag: Manager releases are `v*`, WSA releases are `wsa-v*` or `Windows_*`. */
 export function classifyReleaseTag(tag: string): ReleaseChannel {
-  return tag.startsWith('wsa-v') ? 'wsa' : 'manager';
+  return tag.startsWith('wsa-v') || tag.startsWith('Windows_') ? 'wsa' : 'manager';
 }
 
 export class GitHubReleaseProvider implements ReleaseProvider {
   name = 'GitHubReleases';
+  private customRepo?: string;
+
+  constructor(repo?: string) {
+    this.customRepo = repo;
+  }
 
   async getLatestRelease(): Promise<UnifiedRelease | null> {
     const repo = this.repo();
-    const endpoint = `https://api.github.com/repos/${repo}/releases/latest`;
-    const raw = await this.fetchRelease(endpoint);
-    return raw ? this.normalize(raw) : null;
+    const endpoint = `https://api.github.com/repos/${repo}/releases?per_page=20`;
+    const response = await fetch(endpoint, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'WSABuilds-ReleaseService'
+      }
+    });
+
+    if (!response.ok) {
+      console.error(`GitHub Releases API responded with status ${response.status}`);
+      return null;
+    }
+
+    const rawList = (await response.json()) as GitHubRelease[];
+    if (!Array.isArray(rawList)) {
+      console.error('GitHub Releases API returned an unexpected payload.');
+      return null;
+    }
+
+    const wsaRaw = rawList.find(
+      (r) => r.tag_name && (r.tag_name.startsWith('wsa-v') || r.tag_name.startsWith('Windows_'))
+    );
+    if (wsaRaw) {
+      return this.normalize(wsaRaw);
+    }
+
+    return rawList.length > 0 ? this.normalize(rawList[0]) : null;
   }
 
   async getReleaseByTag(tag: string): Promise<UnifiedRelease | null> {
@@ -59,6 +88,9 @@ export class GitHubReleaseProvider implements ReleaseProvider {
   }
 
   private repo(): string {
+    if (this.customRepo) {
+      return this.customRepo;
+    }
     const repo = import.meta.env.PUBLIC_GITHUB_REPO;
     if (!repo) {
       throw new Error('Configuration error: PUBLIC_GITHUB_REPO environment variable is required.');
@@ -131,6 +163,11 @@ export class PinnedReleaseService {
   constructor(provider?: ReleaseProvider, ttlMinutes: number = 5) {
     this.provider = provider || new GitHubReleaseProvider();
     this.ttlMs = ttlMinutes * 60 * 1000;
+  }
+
+  /** Fulfill ReleaseProvider interface: resolve the newest WSA release. */
+  async getLatestRelease(): Promise<UnifiedRelease | null> {
+    return this.getLatestForChannel('wsa');
   }
 
   /** Resolve the newest release for a product family by listing all releases. */

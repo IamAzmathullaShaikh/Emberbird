@@ -46,7 +46,7 @@ Align CI/CD workflows and GitHub Releases publication so artifacts, namespaces, 
 
 Fix API release resolution, package table filtering, and direct binary download URLs on the official web portal.
 
-- [ ] **Task 2.1: Targeted WSA Release Resolution in `release-service.ts`**
+- [x] **Task 2.1: Targeted WSA Release Resolution in `release-service.ts`**
   - **Problem**: `release-service.ts` queries `/releases/latest`, returning Manager `v0.2.2` instead of the WSA subsystem release, which leaves zero Android packages visible on `/downloads`.
   - **Action**: Update `GitHubReleaseProvider.getLatestRelease()` to fetch the releases list (`/repos/{repo}/releases?per_page=20`) and discover the latest release matching tag prefix `wsa-v` or `Windows_`.
   - **Files**: `website/src/lib/release-service.ts`
