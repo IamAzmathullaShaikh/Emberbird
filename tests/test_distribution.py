@@ -138,6 +138,22 @@ class TestDistributionAndWinget(unittest.TestCase):
         self.assertIn("package-integrity-report*.json", files)
         self.assertIn("magisk-validation-report*.json", files)
 
+    def test_release_workflow_aggregates_multi_package_metadata(self):
+        """Verify release.yml does not restrict to a single package via head -n 1 and passes multi-package flags."""
+        wf_path = self.repo_root / ".github" / "workflows" / "release.yml"
+        self.assertTrue(wf_path.exists(), "release.yml must exist")
+        wf = yaml.safe_load(wf_path.read_text(encoding="utf-8"))
+
+        steps = wf.get("jobs", {}).get("validate-and-publish", {}).get("steps", [])
+        meta_steps = [s for s in steps if "Generate Checksums and Release Metadata" in s.get("name", "")]
+        self.assertTrue(len(meta_steps) > 0, "Generate Checksums and Release Metadata step must exist")
+
+        run_script = meta_steps[0].get("run", "")
+        self.assertNotIn("head -n 1", run_script, "Step must not truncate package discovery to head -n 1")
+        self.assertIn("generate_release_metadata.py", run_script)
+        self.assertIn("--packages-dir MagiskOnWSA/output", run_script)
+        self.assertIn("--output-dir MagiskOnWSA/output", run_script)
+
 
 if __name__ == "__main__":
     unittest.main()
