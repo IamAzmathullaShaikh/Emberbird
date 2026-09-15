@@ -393,6 +393,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           generate_release_notes: true
           overwrite_files: true
+          make_latest: false
 
   prepare-winget:
     name: Prepare Winget Release Manifests
