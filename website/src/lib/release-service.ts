@@ -116,8 +116,16 @@ export class GitHubReleaseProvider implements ReleaseProvider {
 
   private normalize(raw: GitHubRelease): UnifiedRelease {
     const checksums = this.extractChecksums(raw);
+    // Metadata sidecars (hash files, checksums.txt, validation-report .json)
+    // are published on the release but must never surface as download rows in
+    // the main packages table — the UI links checksums separately.
+    const isPackageAsset = (name: string): boolean => {
+      const lower = name.toLowerCase();
+      return !(lower.endsWith('.sha256') || lower.endsWith('.md5') || lower.endsWith('.json') || lower.endsWith('.txt'));
+    };
+
     const normalizedAssets: NormalizedAsset[] = (raw.assets || [])
-      .filter((asset) => !asset.name.endsWith('.sha256') && !asset.name.endsWith('.md5'))
+      .filter((asset) => isPackageAsset(asset.name))
       .map((asset) => parseNormalizedAsset(asset, checksums));
 
     return {

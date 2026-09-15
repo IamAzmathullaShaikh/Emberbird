@@ -36,6 +36,74 @@ test('WSA classification does not leak into manager asset names', () => {
   assert.equal(detectRootFlavor('WSABuildsManager-Setup-0.2.2-x64.exe'), 'unknown');
 });
 
+test('normalize filters metadata sidecars out of the packages table', async () => {
+  // Task 2.2: .json validation reports and .txt checksums are published on the
+  // release but must never appear as download rows.
+  const mockPayload = [
+    {
+      id: 301,
+      tag_name: 'Windows_11_2407.40000.4.0',
+      name: 'WSA 2407.40000.4.0',
+      published_at: '2026-09-13T20:00:00Z',
+      body: '',
+      html_url: 'https://example.com/releases/Windows_11_2407.40000.4.0',
+      assets: [
+        {
+          id: 401,
+          name: 'WSA_2407.40000.4.0_x64.7z',
+          size: 1000,
+          browser_download_url: 'https://example.com/download/WSA_2407.40000.4.0_x64.7z'
+        },
+        {
+          id: 402,
+          name: 'WSA_2407.40000.4.0_x64_vanilla.7z',
+          size: 1000,
+          browser_download_url: 'https://example.com/download/WSA_2407.40000.4.0_x64_vanilla.7z'
+        },
+        {
+          id: 403,
+          name: 'checksums.txt',
+          size: 200,
+          browser_download_url: 'https://example.com/download/checksums.txt'
+        },
+        {
+          id: 404,
+          name: 'magisk-validation-report-standard.json',
+          size: 150,
+          browser_download_url: 'https://example.com/download/magisk-validation-report-standard.json'
+        },
+        {
+          id: 405,
+          name: 'WSA_2407.40000.4.0_x64.7z.sha256',
+          size: 100,
+          browser_download_url: 'https://example.com/download/WSA_2407.40000.4.0_x64.7z.sha256'
+        }
+      ]
+    }
+  ];
+
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => ({
+      ok: true,
+      status: 200,
+      json: async () => mockPayload
+    });
+
+    const provider = new GitHubReleaseProvider('test-owner/test-repo');
+    const release = await provider.getLatestRelease();
+
+    assert.ok(release, 'WSA release must resolve');
+    assert.deepEqual(
+      release.assets.map((a) => a.fileName),
+      ['WSA_2407.40000.4.0_x64.7z', 'WSA_2407.40000.4.0_x64_vanilla.7z'],
+      'Only the two real packages may appear as download rows'
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test('PinnedReleaseService resolves each channel to its own release', async () => {
   const managerRelease = {
     id: 1,

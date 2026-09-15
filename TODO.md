@@ -52,7 +52,7 @@ Fix API release resolution, package table filtering, and direct binary download 
   - **Files**: `website/src/lib/release-service.ts`
   - **Gate**: Website Test Suite (`npm test` in `website/`).
 
-- [ ] **Task 2.2: Package Filtering & Root Flavor Recognition in `parser.ts`**
+- [x] **Task 2.2: Package Filtering & Root Flavor Recognition in `parser.ts`**
   - **Problem**: `detectRootFlavor('WSA_2407.40000.4.0_x64.7z')` returns `'unknown'` because the filename lacks the word `magisk`, causing the row to disappear when filtering by Standard Edition. In addition, metadata `.json` and checksum `.txt` files appear as download rows.
   - **Action**: Update `detectRootFlavor` to treat `WSA_*_x64.7z` as `Magisk` when `vanilla` is absent, and update `release-service.ts` asset filtering to exclude `.json` and `.txt` files from the main packages table.
   - **Files**: `website/src/lib/parser.ts`, `website/src/lib/release-service.ts`
