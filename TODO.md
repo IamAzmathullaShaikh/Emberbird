@@ -28,7 +28,7 @@ Align CI/CD workflows and GitHub Releases publication so artifacts, namespaces, 
   - **Files**: `.github/workflows/winget-release.yml`
   - **Gate**: Build Reality Gate (CI workflow lint and dry-run).
 
-- [ ] **Task 1.2: Segregate Validation Reports in `release.yml`**
+- [x] **Task 1.2: Segregate Validation Reports in `release.yml`**
   - **Problem**: The `validate-and-publish` job loops over `MagiskOnWSA/output/WSA_*/` and outputs to static filenames (`magisk-validation-report.json`, `package-identity-report.json`, etc.), causing the second matrix edition to overwrite the first.
   - **Action**: Parameterize report filenames with edition key (`magisk-validation-report-standard.json`, `magisk-validation-report-vanilla.json`, etc.) and update the release upload pattern.
   - **Files**: `.github/workflows/release.yml`
