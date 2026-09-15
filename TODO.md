@@ -118,7 +118,7 @@ Maintain continuous field verification and community submission workflows.
   - **Files**: `docs/WINDOWS_VALIDATION_LAB.md`, `docs/UPGRADE_VALIDATION.md`
   - **Gate**: Runtime Reality Gate.
 
-- [ ] **Task 5.2: Automated Community Compatibility PR Ingestion**
+- [x] **Task 5.2: Automated Community Compatibility PR Ingestion**
   - **Goal**: Validate inbound community submissions against `compatibility/schema.json` and sync verified records to the web portal.
   - **Files**: `.github/workflows/compatibility-validation.yml`, `compatibility/data/`
   - **Gate**: Compatibility Schema Tests (`test_compatibility_schema.py`).

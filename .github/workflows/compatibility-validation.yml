@@ -2,7 +2,7 @@ name: Compatibility Data Validation
 
 on:
   pull_request:
-    branches: [master, experimental, feature/*]
+    branches: [main, master, experimental, feature/*]
     paths:
       - 'compatibility/**'
       - 'scripts/validate_compatibility.py'

@@ -1,4 +1,9 @@
 import { defineCollection, z } from 'astro:content';
+import { glob } from 'astro/loaders';
+
+// Task 5.2 (single source of truth): the compatibility collection loads the
+// authoritative repository records directly from compatibility/data/ so the
+// Compatibility Hub can never drift from the validated source of record.
 
 const docsCollection = defineCollection({
   type: 'content',
@@ -11,7 +16,10 @@ const docsCollection = defineCollection({
 });
 
 const compatibilityCollection = defineCollection({
-  type: 'data',
+  loader: glob({
+    pattern: '**/*.json',
+    base: new URL('../../compatibility/data', import.meta.url)
+  }),
   schema: z.object({
     app_name: z.string(),
     package_id: z.string(),
