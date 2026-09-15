@@ -58,7 +58,7 @@ Fix API release resolution, package table filtering, and direct binary download 
   - **Files**: `website/src/lib/parser.ts`, `website/src/lib/release-service.ts`
   - **Gate**: Website Test Suite (`npm test` in `website/`).
 
-- [ ] **Task 2.3: Direct Download URLs for Desktop Manager in `downloads.astro`**
+- [x] **Task 2.3: Direct Download URLs for Desktop Manager in `downloads.astro`**
   - **Problem**: The "Direct Installer (.exe)" and "Portable (.zip)" buttons link to the generic release tag page (`/tag/v0.2.2`) rather than directly downloading the binary assets.
   - **Action**: Construct direct asset download URLs pointing to `WSABuildsManager-Setup-{version}-x64.exe` and `WSABuildsManager-Portable-{version}-x64.zip`.
   - **Files**: `website/src/pages/downloads.astro`
