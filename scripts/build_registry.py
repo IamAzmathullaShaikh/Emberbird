@@ -38,6 +38,32 @@ WSA_VER_RE = re.compile(r"[0-9]+[.][0-9]{5}[.][0-9]+[.][0-9]+")
 MANAGER_VER_RE = re.compile(r"^v([0-9]+[.][0-9]+[.][0-9]+)$")
 PACKAGE_RE = re.compile(r"^(WSA_[0-9.]+_x64(_vanilla)?[.]7z)$")
 
+
+def _git_commit() -> str:
+    """Best-effort HEAD commit for provenance (empty outside a git repo)."""
+    try:
+        out = subprocess.run(
+            ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True
+        )
+        return out.stdout.strip()
+    except Exception:  # noqa: BLE001
+        return ""
+
+
+GIT_COMMIT = _git_commit()
+
+
+def make_provenance(now_iso: str) -> dict:
+    """Per-entry provenance (release-contract.md §4.3)."""
+    prov = {
+        "tool": "scripts/build_registry.py",
+        "mode": "reality-sync",
+        "generated_at": now_iso,
+    }
+    if GIT_COMMIT:
+        prov["commit"] = GIT_COMMIT
+    return prov
+
 TODAY = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
 
 
@@ -207,6 +233,7 @@ def classify_release(rel, prev_registry) -> list:
                 "architectures": ["x64"],
                 "status": "published",
                 "published_at": published,
+                "provenance": make_provenance(now_iso),
                 "assets": reg_assets,
             })
         return entries
@@ -271,6 +298,7 @@ def classify_release(rel, prev_registry) -> list:
                 "gapps_variant": "pico",
                 "status": "published",
                 "published_at": published,
+                "provenance": make_provenance(now_iso),
                 "assets": reg_assets,
                 "validation_reports": reports,
             })
@@ -315,8 +343,14 @@ def generate(releases_payload: list, prev_registry: dict) -> dict:
     entries.sort(key=lambda r: (r["kind"], r["published_at"], r["release_id"]))
     registry = {
         "schema_version": 1,
-        "migration_version": 1,
+        "migration_version": 2,
         "compatibility_level": "backward",
+        "generation": {
+            "tool": "scripts/build_registry.py",
+            "mode": "reality-sync",
+            "source": f"https://api.github.com/repos/{REPO_SLUG}/releases",
+            "generated_at": now_iso,
+        },
         "releases": entries,
         "vault": build_vault(entries, prev_registry, now_iso),
     }

@@ -62,11 +62,16 @@ jobs:
             scripts \
             config \
             tests \
+            platform \
             MagiskOnWSA/scripts \
             "MagiskOnWSA/Update Check" \
             "WSABuilds Utilities/Update Script" \
             "WSABuilds Utilities/Uninstall Script" \
             services
+
+      - name: Release Registry Reality Gate 🔒
+        run: |
+          python3 platform/release-engine/release_engine/__main__.py validate --schema
 
       - name: Install Test Dependencies 📦
         run: |

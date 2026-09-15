@@ -138,12 +138,23 @@ The platform's release intelligence lives in **one validated registry** — not 
 2. **Published Artifacts Are Truth**: A release exists in the registry only if its artifacts are published and their hashes were computed from the published bytes. If documentation and reality disagree, reality wins and the docs are corrected.
 3. **Artifact identity = (package_name + sha256)**, never filename alone. Different releases may ship identical filenames with different hashes; the vault tracks each cut separately (currently 9 package cuts across 6 release entries).
 4. **`recommended` is policy, `latest` is fact.** `latest` is chronological; `recommended` is set only by a designated policy system (Ember Observatory, Phase 5). Never assume they are equal. P0 ships with no recommendation; consumers fall back to `latest`.
+5. **Provenance on every entry.** Each release records how it entered the registry — `provenance` (tool, mode, commit, generated_at) per release-contract §4.3 — and the whole-registry `generation` block records the reality source. Provenance timestamps are excluded from drift detection.
 
 ### Validating the registry
 
 ```bash
-python platform/release-engine/release_engine/__main__.py validate
-# REGISTRY OK: 6 releases, 9 vault entries (schema_version=1, migration=1, compatibility=backward)
+# Integrity checks + schema contract (CI Truth Gate — build.yml runs this)
+python platform/release-engine/release_engine/__main__.py validate --schema
+# REGISTRY OK: 6 releases, 9 vault entries (schema_version=1, migration=2, compatibility=backward)
+# SCHEMA OK: registry conforms to releases.schema.json (draft-07 subset validator)
+```
+
+Detecting drift between registry states (added/removed releases, hash changes,
+asset changes, status changes — provenance timestamps excluded by design):
+
+```bash
+python platform/release-engine/release_engine/__main__.py diff previous-releases.json
+# add --fail-on-drift to enforce the no-drift policy (exit 2 on drift)
 ```
 
 Regenerating from reality (requires network access to the GitHub API):
@@ -151,6 +162,10 @@ Regenerating from reality (requires network access to the GitHub API):
 ```bash
 python scripts/build_registry.py
 ```
+
+Every registry entry carries a provenance record (tool, mode, commit, generated_at)
+mandated by the release contract; the whole-registry `generation` block records
+the reality source the generator read.
 
 ---
 
@@ -348,8 +363,8 @@ Every change is validated locally before push; CI ratifies independently.
 # Core Python test suite (140 tests: unit, schema contract, engine, consumer proof)
 python -m unittest discover -s tests -v
 
-# Release registry validation (must exit 0)
-python platform/release-engine/release_engine/__main__.py validate
+# Release registry validation — integrity + schema contract (must exit 0)
+python platform/release-engine/release_engine/__main__.py validate --schema
 
 # Byte-compilation of all Python sources
 python -m compileall -q scripts platform tests

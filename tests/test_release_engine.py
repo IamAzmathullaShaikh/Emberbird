@@ -30,7 +30,7 @@ def _asset(name, digest="a" * 64, role="package", arch="x64"):
 def _synthetic():
     return {
         "schema_version": 1,
-        "migration_version": 1,
+        "migration_version": 2,
         "compatibility_level": "backward",
         "policy": {
             "recommended_by": "test-policy-engine",
@@ -51,6 +51,7 @@ def _synthetic():
                 "status": "superseded",
                 "superseded_by": "wsa-200-standard",
                 "published_at": "2026-01-01T00:00:00Z",
+                "provenance": {"tool": "test", "mode": "synthetic", "generated_at": "2026-01-01T00:00:00Z"},
                 "assets": [_asset("WSA_100.00000.1.0_x64.7z")],
             },
             {
@@ -66,6 +67,7 @@ def _synthetic():
                 "status": "published",
                 "recommended": True,
                 "published_at": "2026-02-01T00:00:00Z",
+                "provenance": {"tool": "test", "mode": "synthetic", "generated_at": "2026-02-01T00:00:00Z"},
                 "assets": [_asset("WSA_200.00000.1.0_x64.7z")],
             },
             {
@@ -80,6 +82,7 @@ def _synthetic():
                 "gapps_variant": "pico",
                 "status": "published",
                 "published_at": "2026-02-01T00:00:00Z",
+                "provenance": {"tool": "test", "mode": "synthetic", "generated_at": "2026-02-01T00:00:00Z"},
                 "assets": [_asset("WSA_200.00000.1.0_x64_vanilla.7z")],
             },
             {
@@ -91,6 +94,7 @@ def _synthetic():
                 "architectures": ["x64"],
                 "status": "published",
                 "published_at": "2026-03-01T00:00:00Z",
+                "provenance": {"tool": "test", "mode": "synthetic", "generated_at": "2026-03-01T00:00:00Z"},
                 "assets": [_asset("Mgr-Setup-9.9.9-x64.exe"), _asset("Mgr-checksums.txt", role="checksum", arch="universal")],
             },
         ],

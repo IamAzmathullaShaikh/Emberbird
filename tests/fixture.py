@@ -3,8 +3,14 @@
 # a separate standard cut with a different hash. Registry entries are (tag x edition).
 FIXTURE = {
     "schema_version": 1,
-    "migration_version": 1,
+    "migration_version": 2,
     "compatibility_level": "backward",
+    "generation": {
+        "tool": "tests/fixture.py",
+        "mode": "test-fixture",
+        "source": "synthetic reality-mapped fixture",
+        "generated_at": "2026-09-15T00:00:00Z",
+    },
     "releases": [
         {
             "release_id": "wsa-2311-standard",
@@ -18,6 +24,11 @@ FIXTURE = {
             "gapps_variant": "pico",
             "status": "published",
             "published_at": "2026-09-13T23:06:31Z",
+            "provenance": {
+                "tool": "tests/fixture.py",
+                "mode": "test-fixture",
+                "generated_at": "2026-09-15T00:00:00Z",
+            },
             "recommended": True,
             "assets": [
                 {
@@ -48,6 +59,11 @@ FIXTURE = {
             "gapps_variant": "pico",
             "status": "published",
             "published_at": "2026-09-13T23:06:31Z",
+            "provenance": {
+                "tool": "tests/fixture.py",
+                "mode": "test-fixture",
+                "generated_at": "2026-09-15T00:00:00Z",
+            },
             "assets": [
                 {
                     "filename": "WSA_2407.40000.4.0_x64_vanilla.7z",
@@ -71,6 +87,11 @@ FIXTURE = {
             "architectures": ["x64"],
             "status": "published",
             "published_at": "2026-09-14T00:00:00Z",
+            "provenance": {
+                "tool": "tests/fixture.py",
+                "mode": "test-fixture",
+                "generated_at": "2026-09-15T00:00:00Z",
+            },
             "assets": [
                 {
                     "filename": "WSABuildsManager-Setup-0.2.2-x64.exe",

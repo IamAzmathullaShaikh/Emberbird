@@ -8,6 +8,7 @@
     "schema_version",
     "migration_version",
     "compatibility_level",
+    "generation",
     "releases"
   ],
   "additionalProperties": false,
@@ -17,9 +18,8 @@
       "description": "Registry schema version. Bumped ONLY per data/releases/GOVERNANCE.md (schema change review + migration plan + consumer compatibility review)."
     },
     "migration_version": {
-      "type": "integer",
-      "minimum": 1,
-      "description": "Monotonic counter of data migrations applied. Consumers use it to detect whether transformation steps must run before reading."
+      "const": 2,
+      "description": "Monotonic counter of data migrations applied. Consumers use it to detect whether transformation steps must run before reading. Version 2 = S2 provenance contract applied. Bumped ONLY per data/releases/GOVERNANCE.md."
     },
     "compatibility_level": {
       "$ref": "#/definitions/compatibility_level",
@@ -39,6 +39,36 @@
         "$ref": "#/definitions/vault_entry"
       },
       "description": "Ember Vault: provenance and mirror tracking for published package artifacts."
+    },
+    "generation": {
+      "type": "object",
+      "required": [
+        "tool",
+        "mode",
+        "source",
+        "generated_at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "tool": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mode": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Reality source the generation read (e.g. the GitHub releases API URL)."
+        },
+        "generated_at": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "description": "Whole-registry generation provenance (contract §4.3). Excluded from drift detection."
     },
     "policy": {
       "type": "object",
@@ -203,6 +233,37 @@
       },
       "description": "Lowercase 64-hex SHA-256 of the exact published bytes. Placeholder hashes are schema-invalid by construction."
     },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "tool",
+        "mode",
+        "generated_at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "tool": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Tooling that produced/registered this entry (contract §4.3)."
+        },
+        "mode": {
+          "type": "string",
+          "minLength": 1,
+          "description": "How the entry entered the registry (e.g. reality-sync)."
+        },
+        "commit": {
+          "type": "string",
+          "description": "Repository commit of the tooling, when applicable.",
+          "pattern": "^[a-f0-9]{7,40}$"
+        },
+        "generated_at": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "description": "Per-entry provenance: how this release entered the registry."
+    },
     "release_id": {
       "type": "string",
       "pattern": "^[a-z0-9][a-z0-9._-]{1,63}$",
@@ -327,7 +388,8 @@
         "architectures",
         "assets",
         "status",
-        "published_at"
+        "published_at",
+        "provenance"
       ],
       "additionalProperties": false,
       "properties": {
@@ -405,6 +467,10 @@
         "notes_url": {
           "type": "string",
           "format": "uri"
+        },
+        "provenance": {
+          "description": "Per-entry provenance: how this release entered the registry (contract 4.3).",
+          "$ref": "#/definitions/provenance"
         }
       },
       "allOf": [

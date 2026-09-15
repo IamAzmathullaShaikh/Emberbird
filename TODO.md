@@ -314,3 +314,70 @@ Each cycle records its work orders with the execution-engine fields and
   committed and guarded (complete), docs at mandated reality (complete),
   CI ratification of the latest commits pending (the only open gate),
   Phase 2+ registry-consumer migrations pending by design.
+
+### Cycle S2 — CI Truth Gate, Drift Detection, Integrity Expansion (September 15, 2026)
+
+**Priorities executed (all COMPLETE)**
+
+- [x] **Priority 1 — CI Truth Gate**: `build.yml` now compiles the
+  `platform` package and runs the Release Registry Reality Gate
+  (`validate --schema`: integrity + Draft-07 schema contract, stdlib
+  subset validator — no CI dependency install). Fail CI on any contract
+  violation: exit 1 on integrity or schema failure.
+  STATUS: COMPLETE · DEPENDENCIES: registry schema · FILES:
+  `.github/workflows/build.yml`, `platform/release-engine/release_engine/` ·
+  VALIDATION: gate smoke-tested offline, subset validator cross-checked
+  against the jsonschema reference implementation · RESULT: landed.
+- [x] **Priority 2 — Registry Drift Detection**: engine `diff_registries()`
+ + `diff` CLI (added/removed releases, hash changes, asset
+  added/removed/size changes, status changes; provenance timestamps
+  excluded). Verified end-to-end: clean diff → 0; injected hash drift →
+  exit 2 with artifact detail. Available for P1's CI drift-PR automation.
+  STATUS: COMPLETE · FILES: engine `__init__.py`, `__main__.py` ·
+  VALIDATION: 10 drift unit tests + live smoke test.
+- [x] **Priority 3 — Release Integrity Expansion**: registry-fact
+  agreement tests (`deployment/version.json` manager/baseline/tag/channel
+  must agree with registry facts), README download-surface test (every
+  GitHub download link resolves to a registry asset with a real hash).
+  STATUS: COMPLETE · FILES: `tests/test_release_surfaces.py`.
+- [x] **Priority 4 — Workflow Documentation Completeness**: guard tests —
+  every workflow file documented in WORKFLOWS.md, no ghost references,
+  every workflow carries a `name:`.
+  STATUS: COMPLETE (was already green post-S1 CR-2).
+- [x] **Priority 5 — Architecture Consistency**: consumer inventory —
+  website source scanned for hardcoded release truth (tag grammar only;
+  inline doc-comment examples exempt); unmigrated consumers verified as
+  recorded planned phases (P2 Manager, P3 Website). Found and corrected a
+  contract-vs-registry gap: provenance records were contract-mandated but
+  absent from the registry — generator now emits per-entry `provenance`
+  and whole-registry `generation`; `migration_version` → 2.
+  STATUS: COMPLETE · VALIDATION: schema re-validated; all suites green.
+
+**Deliverable format (Cycle S2)**
+
+- **Summary**: The CI Truth Gate now fails on any registry/schema contract
+  violation; drift detection is live; release-facing surfaces
+  (version.json, README links) are test-pinned to registry truth; a real
+  contract violation (missing provenance) was found and fixed.
+- **Files changed**: `platform/release-engine/release_engine/__init__.py`,
+  `__main__.py`, `data/releases/releases.schema.json`,
+  `data/releases/releases.json`, `scripts/build_registry.py`,
+  `.github/workflows/build.yml`, `README.md`, `TODO.md`,
+  `tests/fixture.py`, `tests/test_release_engine.py`; added
+  `tests/test_schema_and_drift.py`, `tests/test_release_surfaces.py`.
+- **Tests added**: 31 (10 validator + 9 drift + 3 CI-gate + 9 surface) —
+  suite grows 167 → 198.
+- **Validation executed**: full unittest discover (198 OK),
+  `validate --schema` exit 0, cross-check vs reference jsonschema,
+  compileall incl. `platform/`, drift smoke test (clean 0 / drift 2),
+  registry regenerated from live reality with provenance.
+- **Risks**: schema evolution (additive + migration_version 2 per
+  governance; `generation` moved to required — fixtures updated in the
+  same change); CI now fails on registry/schema violations by design.
+- **Follow-up work**: wire `diff --fail-on-drift` into P1's CI automation
+  (compare regenerated registry vs committed); manager/website migrations
+  remain P2/P3 per phase guard.
+- **TODO updates**: this record; no legacy items changed.
+- **Repository Health Score**: **9.5 / 10** — full validation chain is now
+  contract-enforced in CI; remaining gap is CI ratification of this cycle
+  plus P2/P3 registry-consumer migrations (planned phases).

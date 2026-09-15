@@ -194,8 +194,8 @@ def check_integrity(data: dict) -> list:
 
     if data.get("schema_version") != 1:
         problems.append(f"unsupported schema_version: {data.get('schema_version')}")
-    if not isinstance(data.get("migration_version"), int) or data["migration_version"] < 1:
-        problems.append("migration_version must be a positive integer")
+    if not isinstance(data.get("migration_version"), int) or data["migration_version"] < 2:
+        problems.append("migration_version must be >= 2 (S2: provenance contract applied)")
     if data.get("compatibility_level") not in ("backward", "forward", "breaking"):
         problems.append(f"bad compatibility_level: {data.get('compatibility_level')}")
 
@@ -219,6 +219,19 @@ def check_integrity(data: dict) -> list:
                 problems.append(f"{rid}: a superseded/yanked release cannot be recommended")
             key = (rel.get("channel"), rel.get("edition"))
             recommended_counter[key] = recommended_counter.get(key, 0) + 1
+
+        # Provenance contract (release-contract.md §4.3): every entry must
+        # record how it entered the registry.
+        prov = rel.get("provenance")
+        if not isinstance(prov, dict):
+            problems.append(f"{rid}: missing provenance record (contract-mandated)")
+        else:
+            if not str(prov.get("tool", "")).strip():
+                problems.append(f"{rid}: provenance.tool missing/empty")
+            if not str(prov.get("mode", "")).strip():
+                problems.append(f"{rid}: provenance.mode missing/empty")
+            if not str(prov.get("generated_at", "")).strip():
+                problems.append(f"{rid}: provenance.generated_at missing/empty")
 
         if rel.get("kind") == "subsystem":
             if rel.get("edition") == "standard" and rel.get("root_solution") != "magisk":
@@ -300,6 +313,247 @@ def load(path: Optional[Path] = None) -> Registry:
     if problems:
         raise RegistryError("registry integrity check failed:\n  - " + "\n  - ".join(problems))
     return Registry(data, path=p)
+
+
+# ---------------------------------------------------------------------------
+# Draft-07 subset schema validator (CI Truth Gate; stdlib-only so CI can
+# enforce the schema contract without a jsonschema install)
+# ---------------------------------------------------------------------------
+
+class SchemaError(RegistryError):
+    """Schema-contract violation (validation, not integrity)."""
+
+
+def validate_against_schema(data, schema: dict, path: str = "$") -> list:
+    """Validate `data` against the registry's Draft-07 schema using a
+    stdlib-only subset validator. Returns a list of violations ([] = valid).
+
+    Supports the keywords this contract actually uses: type, enum, const,
+    required, properties, additionalProperties, pattern, minLength,
+    minimum, maximum, minItems, uniqueItems, items, anyOf, allOf, not,
+    $ref (local #/definitions only), if/then/else.
+    """
+    errors: list = []
+
+    def fail(msg):
+        errors.append(f"{path}: {msg}")
+
+    def resolve_ref(ref: str):
+        if not ref.startswith("#/"):
+            raise SchemaError(f"unsupported $ref (not local): {ref}")
+        node = schema
+        for part in ref[2:].split("/"):
+            node = node[part]
+        return node
+
+    def is_type(value, expected) -> bool:
+        if expected == "object":
+            return isinstance(value, dict)
+        if expected == "array":
+            return isinstance(value, list)
+        if expected == "string":
+            return isinstance(value, str)
+        if expected == "integer":
+            return isinstance(value, int) and not isinstance(value, bool)
+        if expected == "number":
+            return isinstance(value, (int, float)) and not isinstance(value, bool)
+        if expected == "boolean":
+            return isinstance(value, bool)
+        if expected == "null":
+            return value is None
+        raise SchemaError(f"unsupported type keyword: {expected}")
+
+    def matches(value, sch, path) -> bool:
+        return not _check(value, sch, path)
+
+    def _check(value, sch, path):
+        local_errors = []
+        if "$ref" in sch:
+            sch = resolve_ref(sch["$ref"])
+
+        if "type" in sch:
+            expected = sch["type"]
+            if isinstance(expected, str):
+                if not is_type(value, expected):
+                    local_errors.append(f"{path}: expected type {expected}")
+                    return local_errors
+            else:
+                if not any(is_type(value, t) for t in expected):
+                    local_errors.append(f"{path}: expected one of types {expected}")
+                    return local_errors
+
+        if "const" in sch and value != sch["const"]:
+            local_errors.append(f"{path}: must equal {sch['const']!r}")
+        if "enum" in sch and value not in sch["enum"]:
+            local_errors.append(f"{path}: {value!r} not in enum {sch['enum']}")
+
+        if isinstance(value, str):
+            if "pattern" in sch:
+                try:
+                    if not re.search(sch["pattern"], value):
+                        local_errors.append(f"{path}: does not match pattern {sch['pattern']}")
+                except re.error as exc:
+                    raise SchemaError(f"schema pattern invalid ({exc}); CI validator must not silently pass")
+            if "minLength" in sch and len(value) < sch["minLength"]:
+                local_errors.append(f"{path}: shorter than minLength {sch['minLength']}")
+
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            if "minimum" in sch and value < sch["minimum"]:
+                local_errors.append(f"{path}: below minimum {sch['minimum']}")
+            if "maximum" in sch and value > sch["maximum"]:
+                local_errors.append(f"{path}: above maximum {sch['maximum']}")
+
+        if isinstance(value, list):
+            if "minItems" in sch and len(value) < sch["minItems"]:
+                local_errors.append(f"{path}: fewer than minItems {sch['minItems']}")
+            if sch.get("uniqueItems"):
+                seen = [json.dumps(item, sort_keys=True) for item in value]
+                if len(set(seen)) != len(seen):
+                    local_errors.append(f"{path}: array items are not unique")
+            if "items" in sch:
+                for i, item in enumerate(value):
+                    local_errors.extend(_check(item, sch["items"], f"{path}[{i}]"))
+
+        if isinstance(value, dict):
+            for req in sch.get("required", []):
+                if req not in value:
+                    local_errors.append(f"{path}: missing required property {req!r}")
+            props = sch.get("properties", {})
+            for key, sub in props.items():
+                if key in value:
+                    local_errors.extend(_check(value[key], sub, f"{path}.{key}"))
+            ap = sch.get("additionalProperties", True)
+            if ap is False:
+                extra = set(value) - set(props)
+                if extra:
+                    local_errors.append(f"{path}: unexpected properties {sorted(extra)}")
+            elif isinstance(ap, dict):
+                for key in set(value) - set(props):
+                    local_errors.extend(_check(value[key], ap, f"{path}.{key}"))
+
+        if "allOf" in sch:
+            for sub in sch["allOf"]:
+                local_errors.extend(_check(value, sub, path))
+        if "anyOf" in sch:
+            if not any(matches(value, sub, path) for sub in sch["anyOf"]):
+                local_errors.append(f"{path}: does not match any of the anyOf branches")
+        if "not" in sch and matches(value, sch["not"], path):
+            local_errors.append(f"{path}: matches a forbidden (not) schema")
+        if "if" in sch:
+            if matches(value, sch["if"], path):
+                if "then" in sch:
+                    local_errors.extend(_check(value, sch["then"], path))
+            elif "else" in sch:
+                local_errors.extend(_check(value, sch["else"], path))
+
+        return local_errors
+
+    try:
+        errors.extend(_check(data, schema, path))
+    except SchemaError:
+        # Validator defects (unsupported constructs) must never masquerade
+        # as "valid" - propagate to the caller.
+        raise
+    except (KeyError, TypeError, re.error) as exc:
+        errors.append(f"{path}: validator could not process schema: {exc}")
+    return errors
+
+
+def validate_schema_file(path: Optional[Path] = None) -> int:
+    """Schema-contract gate: 0 = registry conforms to releases.schema.json."""
+    p = path or REGISTRY_PATH
+    try:
+        if not p.is_file():
+            raise RegistryError(f"registry not found: {p}")
+        data = json.loads(p.read_text(encoding="utf-8"))
+        schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    except (RegistryError, json.JSONDecodeError, OSError) as err:
+        print(f"SCHEMA INVALID: {err}")
+        return 1
+    violations = validate_against_schema(data, schema)
+    if violations:
+        print(f"SCHEMA INVALID: {len(violations)} violation(s):")
+        for v in violations[:20]:
+            print(f"  - {v}")
+        return 1
+    print("SCHEMA OK: registry conforms to releases.schema.json (draft-07 subset validator)")
+    return 0
+
+
+# ---------------------------------------------------------------------------
+# Registry drift detection (S2 / Priority 2)
+# ---------------------------------------------------------------------------
+
+def diff_registries(previous: dict, current: dict) -> dict:
+    """Detect semantic drift between two registry states.
+
+    Categories: added_releases, removed_releases, hash_changes,
+    asset_changes (added/removed/size_changed per (filename, sha256) cut),
+    status_changes. Drift in hashes/status is contract-relevant;
+    provenance.generated_at differences are NOT drift.
+    """
+    prev_rels = {r.get("release_id"): r for r in previous.get("releases", [])}
+    curr_rels = {r.get("release_id"): r for r in current.get("releases", [])}
+
+    added = sorted(set(curr_rels) - set(prev_rels))
+    removed = sorted(set(prev_rels) - set(curr_rels))
+
+    hash_changes, status_changes = [], []
+    prev_assets, curr_assets = {}, {}
+    for rid, rel in curr_rels.items():
+        if rid not in prev_rels:
+            continue
+        old = prev_rels[rid]
+        if rel.get("status") != old.get("status"):
+            status_changes.append({"release_id": rid, "from": old.get("status"), "to": rel.get("status")})
+        for a in rel.get("assets", []):
+            key = (rid, a.get("filename"))
+            curr_assets.setdefault(key, []).append(a)
+        for a in old.get("assets", []):
+            key = (rid, a.get("filename"))
+            prev_assets.setdefault(key, []).append(a)
+
+    seen_cuts = set()
+    for (rid, fname), curr_list in curr_assets.items():
+        prev_list = prev_assets.get((rid, fname), [])
+        prev_hashes = {a.get("sha256") for a in prev_list}
+        for a in curr_list:
+            cut = (rid, fname, a.get("sha256"))
+            if cut in seen_cuts:
+                continue
+            seen_cuts.add(cut)
+            if a.get("sha256") not in prev_hashes:
+                hash_changes.append({"release_id": rid, "filename": fname, "new_sha256": a.get("sha256")})
+            elif a.get("size_bytes") != next(
+                (p.get("size_bytes") for p in prev_list if p.get("sha256") == a.get("sha256")), None
+            ):
+                hash_changes.append({"release_id": rid, "filename": fname, "size_changed": True})
+    for (rid, fname), prev_list in prev_assets.items():
+        if (rid, fname) not in curr_assets:
+            for a in prev_list:
+                removed_cut = {"release_id": rid, "filename": fname, "sha256": a.get("sha256")}
+                if removed_cut not in hash_changes:
+                    hash_changes.append(removed_cut)
+
+    return {
+        "added_releases": added,
+        "removed_releases": removed,
+        "hash_changes": hash_changes,
+        "asset_changes": [
+            c for c in hash_changes if c.get("sha256") or c.get("size_changed")
+        ],
+        "status_changes": status_changes,
+    }
+
+
+def has_drift(diff: dict) -> bool:
+    return bool(
+        diff.get("added_releases")
+        or diff.get("removed_releases")
+        or diff.get("hash_changes")
+        or diff.get("asset_changes")
+        or diff.get("status_changes")
+    )
 
 
 def validate_file(path: Optional[Path] = None) -> int:
