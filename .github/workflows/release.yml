@@ -251,9 +251,8 @@ jobs:
 
       - name: Generate Checksums and Release Metadata 📊
         run: |
-          PRIMARY_PKG=$(find MagiskOnWSA/output -maxdepth 1 -type d -name "WSA_*" | head -n 1)
           python3 scripts/generate_release_metadata.py \
-            --package-dir "$PRIMARY_PKG" \
+            --packages-dir MagiskOnWSA/output \
             --output-dir MagiskOnWSA/output \
             --version "${{ inputs.wsa_ver || '2407.40000.4.0' }}" \
             --variant "${{ inputs.variant || 'Tier1_MultiConfig_Retail_x64' }}"

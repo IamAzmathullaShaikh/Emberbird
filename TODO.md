@@ -34,7 +34,7 @@ Align CI/CD workflows and GitHub Releases publication so artifacts, namespaces, 
   - **Files**: `.github/workflows/release.yml`
   - **Gate**: Build Reality Gate (Syntax and workflow execution validation).
 
-- [ ] **Task 1.3: Multi-Package Metadata Aggregation in `release.yml`**
+- [x] **Task 1.3: Multi-Package Metadata Aggregation in `release.yml`**
   - **Problem**: `PRIMARY_PKG=$(find MagiskOnWSA/output -maxdepth 1 -type d -name "WSA_*" | head -n 1)` only documents a single package in `release-metadata.json`.
   - **Action**: Update `scripts/generate_release_metadata.py` to index all discovered release packages in `MagiskOnWSA/output` and include dual checksum entries in `release-metadata.json`.
   - **Files**: `scripts/generate_release_metadata.py`, `.github/workflows/release.yml`
