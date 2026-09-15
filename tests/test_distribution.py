@@ -110,6 +110,34 @@ class TestDistributionAndWinget(unittest.TestCase):
         self.assertIn("make_latest", with_block, "make_latest parameter must be explicitly configured")
         self.assertFalse(with_block["make_latest"], "make_latest must be false to preserve WSA latest pointer")
 
+    def test_release_workflow_segregates_validation_reports(self):
+        """Verify that release.yml parameterizes validation reports per edition and enforces make_latest: true."""
+        wf_path = self.repo_root / ".github" / "workflows" / "release.yml"
+        self.assertTrue(wf_path.exists(), "release.yml must exist")
+        wf = yaml.safe_load(wf_path.read_text(encoding="utf-8"))
+
+        jobs = wf.get("jobs", {})
+        self.assertIn("validate-and-publish", jobs, "validate-and-publish job must exist")
+        steps = jobs["validate-and-publish"].get("steps", [])
+
+        # Verify validation report parameterization
+        val_magisk = [s for s in steps if "Validate Magisk" in s.get("name", "")]
+        self.assertTrue(len(val_magisk) > 0, "Validate Magisk step must exist")
+        self.assertIn("magisk-validation-report-${EDITION}.json", val_magisk[0].get("run", ""))
+
+        val_integrity = [s for s in steps if "Validate Package Structural Integrity" in s.get("name", "")]
+        self.assertTrue(len(val_integrity) > 0, "Validate Package Structural Integrity step must exist")
+        self.assertIn("package-integrity-report-${EDITION}.json", val_integrity[0].get("run", ""))
+
+        # Verify GitHub release step configuration
+        gh_steps = [s for s in steps if "softprops/action-gh-release" in s.get("uses", "")]
+        self.assertTrue(len(gh_steps) > 0, "softprops/action-gh-release step must exist")
+        with_block = gh_steps[0].get("with", {})
+        self.assertTrue(with_block.get("make_latest"), "release.yml must explicitly set make_latest: true")
+        files = with_block.get("files", "")
+        self.assertIn("package-integrity-report*.json", files)
+        self.assertIn("magisk-validation-report*.json", files)
+
 
 if __name__ == "__main__":
     unittest.main()
