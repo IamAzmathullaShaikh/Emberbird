@@ -16,6 +16,7 @@ The `.github/` directory manages GitHub Actions workflows, community issue templ
 | **`winget-release.yml`** | Desktop manager packaging, portable ZIP archive bundling, and Winget manifest staging. | Push on `v*` tags | `windows-latest` |
 | **`release.yml`** | 3-stage WSA package compilation, validation, and release publishing. | Push on `Windows_*`, `wsa-v*` tags | `ubuntu-latest` |
 | **`validation.yml`** | Deep subsystem and package integrity testing suite. | Weekly cron / workflow_dispatch | `ubuntu-latest` & Windows |
+| **`runtime-compatibility.yml`** | Executable GOVERNANCE.md Appendix D: runtime compatibility harness against a live WSA instance, plus report/submission schema validation. | Push / PR (harness paths) / workflow_dispatch | `ubuntu-latest` (live probes need a self-hosted WSA runner) |
 | **`security.yml`** | Scheduled secret, credential, and path audit. | Weekly cron / workflow_dispatch | `ubuntu-latest` |
 | **`update.yml`** | Automated update discovery for Microsoft FE3, Magisk, and GApps. | Scheduled cron | `ubuntu-latest` |
 | **`upstream-sync.yml`** | Upstream repository tracking and synchronization. | Scheduled cron | `ubuntu-latest` |

@@ -244,6 +244,40 @@ def check_integrity(data: dict) -> list:
         if count > 1:
             problems.append(f"channel={channel} edition={edition}: {count} recommended releases (max 1)")
 
+    # Policy guard: `recommended` is a POLICY decision, never a chronological
+    # or generator default. Any recommendation must be backed by an explicit
+    # policy provenance record (who decided it and when).
+    if recommended_counter:
+        policy = data.get("policy") or {}
+        if not policy.get("recommended_by"):
+            problems.append(
+                "recommended release(s) present but policy.recommended_by is "
+                "missing - recommendations require policy provenance"
+            )
+        elif not policy.get("decided_at"):
+            problems.append("policy.recommended_by present but policy.decided_at is missing")
+
+    # Artifact identity guard: identity is (package_name + sha256), never
+    # filename alone. Exact (filename, sha256) duplicates are redundant;
+    # distinct cuts sharing a filename are expected and must stay distinct.
+    seen_assets = set()
+    for rel in data.get("releases", []):
+        for a in rel.get("assets", []):
+            key = (a.get("filename"), a.get("sha256"))
+            if key in seen_assets:
+                problems.append(
+                    f"duplicate artifact identity {key[0]} sha256:{key[1][:12]}... "
+                    "- (filename, sha256) pairs must be unique"
+                )
+            seen_assets.add(key)
+
+    seen_vault = set()
+    for v in data.get("vault", []):
+        key = (v.get("artifact"), v.get("sha256"))
+        if key in seen_vault:
+            problems.append(f"duplicate vault identity {key[0]} sha256:{key[1][:12]}...")
+        seen_vault.add(key)
+
     # vault agreement: every vault hash must exist on some asset with same name
     asset_hashes = {}
     for rel in data.get("releases", []):

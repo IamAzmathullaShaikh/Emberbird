@@ -69,7 +69,6 @@ body:
       description: Which build flavor was used?
       options:
         - "Magisk Stable"
-        - "KernelSU"
         - "No Root (Vanilla WSA)"
     validations:
       required: true

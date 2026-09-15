@@ -39,6 +39,27 @@
         "$ref": "#/definitions/vault_entry"
       },
       "description": "Ember Vault: provenance and mirror tracking for published package artifacts."
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "recommended_by": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Designated policy system that set the recommendation (e.g. ember-observatory). Never a generator default."
+        },
+        "decided_at": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Timestamp of the policy decision."
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Human-readable rationale for the recommendation."
+        }
+      },
+      "description": "Recommendation policy provenance. Required whenever any release carries recommended=true: latest is chronological fact, recommended is a policy decision, and the two must never be conflated."
     }
   },
   "definitions": {
