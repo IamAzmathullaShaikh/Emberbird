@@ -1,0 +1,354 @@
+{
+  "schema_version": 1,
+  "migration_version": 1,
+  "compatibility_level": "backward",
+  "releases": [
+    {
+      "release_id": "manager-0.2.0",
+      "tag": "v0.2.0",
+      "kind": "manager",
+      "channel": "stable",
+      "edition": "manager",
+      "architectures": [
+        "x64"
+      ],
+      "status": "published",
+      "published_at": "2026-09-13T23:34:52Z",
+      "assets": [
+        {
+          "filename": "WSABuildsManager-Portable-0.2.0-x64.zip",
+          "sha256": "fb3f6d2654392daf99576fade23df42280ecf089cbdc6f4e90f463571ac3de1f",
+          "arch": "x64",
+          "role": "package",
+          "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.0/WSABuildsManager-Portable-0.2.0-x64.zip",
+          "source_type": "generated",
+          "hash_source": "published-manifest",
+          "verified_at": "2026-09-15T11:14:55Z",
+          "size_bytes": 3678832
+        },
+        {
+          "filename": "WSABuildsManager-Setup-0.2.0-x64.exe",
+          "sha256": "7005f7a7a6dfcd92825a8658ac4fa2cbc691f15983f3220933024db1cb8f5d68",
+          "arch": "x64",
+          "role": "package",
+          "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.0/WSABuildsManager-Setup-0.2.0-x64.exe",
+          "source_type": "generated",
+          "hash_source": "published-manifest",
+          "verified_at": "2026-09-15T11:14:55Z",
+          "size_bytes": 2548184
+        }
+      ]
+    },
+    {
+      "release_id": "manager-0.2.1",
+      "tag": "v0.2.1",
+      "kind": "manager",
+      "channel": "stable",
+      "edition": "manager",
+      "architectures": [
+        "x64"
+      ],
+      "status": "published",
+      "published_at": "2026-09-14T08:56:27Z",
+      "assets": [
+        {
+          "filename": "WSABuildsManager-Portable-0.2.1-x64.zip",
+          "sha256": "32f8fd078e04882d3841beb470da6514018c2490862eba7799bdae59abd93354",
+          "arch": "x64",
+          "role": "package",
+          "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.1/WSABuildsManager-Portable-0.2.1-x64.zip",
+          "source_type": "generated",
+          "hash_source": "published-manifest",
+          "verified_at": "2026-09-15T11:14:55Z",
+          "size_bytes": 3679003
+        },
+        {
+          "filename": "WSABuildsManager-Setup-0.2.1-x64.exe",
+          "sha256": "28a4c9cfe39b3b3e05fd2b228cae145aeba2388fc3586c94db1459bdf34520a5",
+          "arch": "x64",
+          "role": "package",
+          "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.1/WSABuildsManager-Setup-0.2.1-x64.exe",
+          "source_type": "generated",
+          "hash_source": "published-manifest",
+          "verified_at": "2026-09-15T11:14:55Z",
+          "size_bytes": 2550128
+        }
+      ]
+    },
+    {
+      "release_id": "manager-0.2.2",
+      "tag": "v0.2.2",
+      "kind": "manager",
+      "channel": "stable",
+      "edition": "manager",
+      "architectures": [
+        "x64"
+      ],
+      "status": "published",
+      "published_at": "2026-09-14T09:30:25Z",
+      "assets": [
+        {
+          "filename": "WSABuildsManager-Portable-0.2.2-x64.zip",
+          "sha256": "d0bbb9d1f8a88e7a48c70776eba88fc1f83b85c87aaa24a66745fa78b25f7018",
+          "arch": "x64",
+          "role": "package",
+          "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.2/WSABuildsManager-Portable-0.2.2-x64.zip",
+          "source_type": "generated",
+          "hash_source": "published-manifest",
+          "verified_at": "2026-09-15T11:14:55Z",
+          "size_bytes": 3678974
+        },
+        {
+          "filename": "WSABuildsManager-Setup-0.2.2-x64.exe",
+          "sha256": "887443bad0aeb3eec04ff367b4768edad2cc0e1b2fcd6b9b255f5bfd3181466a",
+          "arch": "x64",
+          "role": "package",
+          "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.2/WSABuildsManager-Setup-0.2.2-x64.exe",
+          "source_type": "generated",
+          "hash_source": "published-manifest",
+          "verified_at": "2026-09-15T11:14:55Z",
+          "size_bytes": 2548160
+        }
+      ]
+    },
+    {
+      "release_id": "wsa-2407-standard-alt",
+      "tag": "Windows_11_2407.40000.4.0",
+      "kind": "subsystem",
+      "wsa_version": "2407.40000.4.0",
+      "channel": "retail",
+      "edition": "standard",
+      "architectures": [
+        "x64"
+      ],
+      "root_solution": "magisk",
+      "gapps_variant": "pico",
+      "status": "published",
+      "published_at": "2026-09-13T11:37:22Z",
+      "assets": [
+        {
+          "filename": "WSA_2407.40000.4.0_x64.7z",
+          "sha256": "5d99b345d631205bbc59dc7f4b28147275e0b3bdcc57d85b988695ce2befe3df",
+          "arch": "x64",
+          "role": "package",
+          "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/Windows_11_2407.40000.4.0/WSA_2407.40000.4.0_x64.7z",
+          "source_type": "derived",
+          "hash_source": "published-manifest",
+          "verified_at": "2026-09-15T11:14:55Z",
+          "size_bytes": 770223939
+        }
+      ],
+      "validation_reports": [
+        {
+          "report_type": "gapps",
+          "result": "VERIFIED",
+          "report_file": "gapps-validation-report.json"
+        },
+        {
+          "report_type": "magisk",
+          "result": "VERIFIED",
+          "report_file": "magisk-validation-report.json"
+        },
+        {
+          "report_type": "package-identity",
+          "result": "VERIFIED",
+          "report_file": "package-identity-report.json"
+        },
+        {
+          "report_type": "package-integrity",
+          "result": "VERIFIED",
+          "report_file": "package-integrity-report.json"
+        },
+        {
+          "report_type": "release-metadata",
+          "result": "VERIFIED",
+          "report_file": "release-metadata.json"
+        }
+      ]
+    },
+    {
+      "release_id": "wsa-2311-banking",
+      "tag": "wsa-v2311.40000.5.0",
+      "kind": "subsystem",
+      "wsa_version": "2407.40000.4.0",
+      "channel": "retail",
+      "edition": "banking",
+      "architectures": [
+        "x64"
+      ],
+      "root_solution": "none",
+      "gapps_variant": "pico",
+      "status": "published",
+      "published_at": "2026-09-13T23:06:31Z",
+      "assets": [
+        {
+          "filename": "WSA_2407.40000.4.0_x64_vanilla.7z",
+          "sha256": "fc671cdab4d486a0a830196957cf9614f320fe8936d5d6d22f25cf62298c0cac",
+          "arch": "x64",
+          "role": "package",
+          "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/wsa-v2311.40000.5.0/WSA_2407.40000.4.0_x64_vanilla.7z",
+          "source_type": "derived",
+          "hash_source": "published-manifest",
+          "verified_at": "2026-09-15T11:14:55Z",
+          "size_bytes": 755302772
+        }
+      ],
+      "validation_reports": [
+        {
+          "report_type": "gapps",
+          "result": "VERIFIED",
+          "report_file": "gapps-validation-report.json"
+        },
+        {
+          "report_type": "magisk",
+          "result": "VERIFIED",
+          "report_file": "magisk-validation-report.json"
+        },
+        {
+          "report_type": "package-identity",
+          "result": "VERIFIED",
+          "report_file": "package-identity-report.json"
+        },
+        {
+          "report_type": "package-integrity",
+          "result": "VERIFIED",
+          "report_file": "package-integrity-report.json"
+        },
+        {
+          "report_type": "release-metadata",
+          "result": "VERIFIED",
+          "report_file": "release-metadata.json"
+        }
+      ]
+    },
+    {
+      "release_id": "wsa-2311-standard",
+      "tag": "wsa-v2311.40000.5.0",
+      "kind": "subsystem",
+      "wsa_version": "2407.40000.4.0",
+      "channel": "retail",
+      "edition": "standard",
+      "architectures": [
+        "x64"
+      ],
+      "root_solution": "magisk",
+      "gapps_variant": "pico",
+      "status": "published",
+      "published_at": "2026-09-13T23:06:31Z",
+      "assets": [
+        {
+          "filename": "WSA_2407.40000.4.0_x64.7z",
+          "sha256": "ea95b7ed0c94bae65ef26bb403244a13540e47a7f78bf9f655ab65b13ff38c03",
+          "arch": "x64",
+          "role": "package",
+          "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/wsa-v2311.40000.5.0/WSA_2407.40000.4.0_x64.7z",
+          "source_type": "derived",
+          "hash_source": "published-manifest",
+          "verified_at": "2026-09-15T11:14:55Z",
+          "size_bytes": 770223955
+        }
+      ],
+      "validation_reports": [
+        {
+          "report_type": "gapps",
+          "result": "VERIFIED",
+          "report_file": "gapps-validation-report.json"
+        },
+        {
+          "report_type": "magisk",
+          "result": "VERIFIED",
+          "report_file": "magisk-validation-report.json"
+        },
+        {
+          "report_type": "package-identity",
+          "result": "VERIFIED",
+          "report_file": "package-identity-report.json"
+        },
+        {
+          "report_type": "package-integrity",
+          "result": "VERIFIED",
+          "report_file": "package-integrity-report.json"
+        },
+        {
+          "report_type": "release-metadata",
+          "result": "VERIFIED",
+          "report_file": "release-metadata.json"
+        }
+      ]
+    }
+  ],
+  "vault": [
+    {
+      "artifact": "WSABuildsManager-Portable-0.2.0-x64.zip",
+      "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.0/WSABuildsManager-Portable-0.2.0-x64.zip",
+      "sha256": "fb3f6d2654392daf99576fade23df42280ecf089cbdc6f4e90f463571ac3de1f",
+      "mirror_status": "unverified",
+      "last_verified_at": "2026-09-15T11:14:55Z",
+      "availability_score": 100
+    },
+    {
+      "artifact": "WSABuildsManager-Portable-0.2.1-x64.zip",
+      "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.1/WSABuildsManager-Portable-0.2.1-x64.zip",
+      "sha256": "32f8fd078e04882d3841beb470da6514018c2490862eba7799bdae59abd93354",
+      "mirror_status": "unverified",
+      "last_verified_at": "2026-09-15T11:14:55Z",
+      "availability_score": 100
+    },
+    {
+      "artifact": "WSABuildsManager-Portable-0.2.2-x64.zip",
+      "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.2/WSABuildsManager-Portable-0.2.2-x64.zip",
+      "sha256": "d0bbb9d1f8a88e7a48c70776eba88fc1f83b85c87aaa24a66745fa78b25f7018",
+      "mirror_status": "unverified",
+      "last_verified_at": "2026-09-15T11:14:55Z",
+      "availability_score": 100
+    },
+    {
+      "artifact": "WSABuildsManager-Setup-0.2.0-x64.exe",
+      "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.0/WSABuildsManager-Setup-0.2.0-x64.exe",
+      "sha256": "7005f7a7a6dfcd92825a8658ac4fa2cbc691f15983f3220933024db1cb8f5d68",
+      "mirror_status": "unverified",
+      "last_verified_at": "2026-09-15T11:14:55Z",
+      "availability_score": 100
+    },
+    {
+      "artifact": "WSABuildsManager-Setup-0.2.1-x64.exe",
+      "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.1/WSABuildsManager-Setup-0.2.1-x64.exe",
+      "sha256": "28a4c9cfe39b3b3e05fd2b228cae145aeba2388fc3586c94db1459bdf34520a5",
+      "mirror_status": "unverified",
+      "last_verified_at": "2026-09-15T11:14:55Z",
+      "availability_score": 100
+    },
+    {
+      "artifact": "WSABuildsManager-Setup-0.2.2-x64.exe",
+      "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.2/WSABuildsManager-Setup-0.2.2-x64.exe",
+      "sha256": "887443bad0aeb3eec04ff367b4768edad2cc0e1b2fcd6b9b255f5bfd3181466a",
+      "mirror_status": "unverified",
+      "last_verified_at": "2026-09-15T11:14:55Z",
+      "availability_score": 100
+    },
+    {
+      "artifact": "WSA_2407.40000.4.0_x64.7z",
+      "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/Windows_11_2407.40000.4.0/WSA_2407.40000.4.0_x64.7z",
+      "sha256": "5d99b345d631205bbc59dc7f4b28147275e0b3bdcc57d85b988695ce2befe3df",
+      "mirror_status": "unverified",
+      "last_verified_at": "2026-09-15T11:14:55Z",
+      "availability_score": 100
+    },
+    {
+      "artifact": "WSA_2407.40000.4.0_x64.7z",
+      "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/wsa-v2311.40000.5.0/WSA_2407.40000.4.0_x64.7z",
+      "sha256": "ea95b7ed0c94bae65ef26bb403244a13540e47a7f78bf9f655ab65b13ff38c03",
+      "mirror_status": "unverified",
+      "last_verified_at": "2026-09-15T11:14:55Z",
+      "availability_score": 100
+    },
+    {
+      "artifact": "WSA_2407.40000.4.0_x64_vanilla.7z",
+      "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/wsa-v2311.40000.5.0/WSA_2407.40000.4.0_x64_vanilla.7z",
+      "sha256": "fc671cdab4d486a0a830196957cf9614f320fe8936d5d6d22f25cf62298c0cac",
+      "mirror_status": "unverified",
+      "last_verified_at": "2026-09-15T11:14:55Z",
+      "availability_score": 100
+    }
+  ]
+}

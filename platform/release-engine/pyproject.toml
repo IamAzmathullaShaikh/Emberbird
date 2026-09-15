@@ -1,0 +1,9 @@
+[project]
+name = "ember-release-engine"
+version = "1.0.0"
+description = "Emberbird metadata service - registry-backed release lookups (stdlib only)"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+ember-registry = "release_engine.__main__:main"

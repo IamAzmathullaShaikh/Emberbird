@@ -1,0 +1,588 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://wsabuilds.azmathulla.dev/schemas/releases.schema.json",
+  "title": "Emberbird Release Registry",
+  "description": "Authoritative single-source-of-truth contract for release metadata. Published Artifacts Are Truth: the registry reflects reality, contracts define reality, consumers trust contracts, nothing trusts assumptions.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "migration_version",
+    "compatibility_level",
+    "releases"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "description": "Registry schema version. Bumped ONLY per data/releases/GOVERNANCE.md (schema change review + migration plan + consumer compatibility review)."
+    },
+    "migration_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Monotonic counter of data migrations applied. Consumers use it to detect whether transformation steps must run before reading."
+    },
+    "compatibility_level": {
+      "$ref": "#/definitions/compatibility_level",
+      "description": "Current promise of the registry to its consumers."
+    },
+    "releases": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/definitions/release"
+      }
+    },
+    "vault": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/vault_entry"
+      },
+      "description": "Ember Vault: provenance and mirror tracking for published package artifacts."
+    }
+  },
+  "definitions": {
+    "compatibility_level": {
+      "type": "string",
+      "enum": [
+        "backward",
+        "forward",
+        "breaking"
+      ]
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "subsystem",
+        "manager"
+      ],
+      "description": "subsystem = Windows Subsystem for Android packages; manager = desktop manager."
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "stable",
+        "retail",
+        "RP",
+        "WIS",
+        "WIF"
+      ],
+      "description": "Semantics are contract law, never inferred from names: see data/contracts/channel-contract.md."
+    },
+    "architecture": {
+      "type": "string",
+      "enum": [
+        "x64",
+        "arm64"
+      ]
+    },
+    "asset_arch": {
+      "type": "string",
+      "enum": [
+        "x64",
+        "arm64",
+        "universal"
+      ],
+      "description": "Checksum/metadata/report assets are universal."
+    },
+    "edition": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "banking",
+        "manager"
+      ],
+      "description": "standard = Magisk-rooted ramdisk; banking = vanilla unrooted ramdisk; manager = desktop manager."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "published",
+        "superseded",
+        "yanked"
+      ],
+      "description": "Lifecycle state, orthogonal to recommendation (recommended flag)."
+    },
+    "root_solution": {
+      "type": "string",
+      "enum": [
+        "magisk",
+        "none"
+      ]
+    },
+    "gapps_variant": {
+      "type": "string",
+      "enum": [
+        "pico",
+        "none"
+      ]
+    },
+    "asset_role": {
+      "type": "string",
+      "enum": [
+        "package",
+        "checksum",
+        "metadata",
+        "report"
+      ]
+    },
+    "report_type": {
+      "type": "string",
+      "enum": [
+        "package-identity",
+        "package-integrity",
+        "magisk",
+        "gapps",
+        "release-metadata"
+      ]
+    },
+    "report_result": {
+      "type": "string",
+      "enum": [
+        "VERIFIED",
+        "FAILED",
+        "SKIPPED",
+        "PARTIALLY VERIFIED",
+        "NOT VERIFIED"
+      ],
+      "description": "Result tokens exactly as emitted by the repository validators."
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "microsoft",
+        "generated",
+        "derived"
+      ],
+      "description": "microsoft = unmodified Microsoft payload; generated = produced by Emberbird tooling; derived = produced from Microsoft sources by Emberbird tooling."
+    },
+    "hash_source": {
+      "type": "string",
+      "enum": [
+        "published-manifest",
+        "sidecar",
+        "computed"
+      ],
+      "description": "Cryptographic lineage per the Reality Source Hierarchy (charter): L2 published checksums and sidecars outrank recomputation."
+    },
+    "mirror_status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "unverified",
+        "missing"
+      ]
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "not": {
+        "pattern": "^0{64}$"
+      },
+      "description": "Lowercase 64-hex SHA-256 of the exact published bytes. Placeholder hashes are schema-invalid by construction."
+    },
+    "release_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{1,63}$",
+      "description": "Stable registry slug, independent of mutable tag naming."
+    },
+    "asset": {
+      "type": "object",
+      "required": [
+        "filename",
+        "sha256",
+        "arch",
+        "role",
+        "source_url",
+        "source_type",
+        "hash_source",
+        "verified_at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "filename": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "$ref": "#/definitions/sha256"
+        },
+        "arch": {
+          "$ref": "#/definitions/asset_arch"
+        },
+        "role": {
+          "$ref": "#/definitions/asset_role"
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "source_type": {
+          "$ref": "#/definitions/source_type"
+        },
+        "hash_source": {
+          "$ref": "#/definitions/hash_source"
+        },
+        "verified_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "validation_report": {
+      "type": "object",
+      "required": [
+        "report_type",
+        "result"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "report_type": {
+          "$ref": "#/definitions/report_type"
+        },
+        "result": {
+          "$ref": "#/definitions/report_result"
+        },
+        "report_file": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "vault_entry": {
+      "type": "object",
+      "required": [
+        "artifact",
+        "source_url",
+        "sha256",
+        "mirror_status",
+        "last_verified_at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "artifact": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "sha256": {
+          "$ref": "#/definitions/sha256"
+        },
+        "mirror_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "mirror_status": {
+          "$ref": "#/definitions/mirror_status"
+        },
+        "last_verified_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "availability_score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Reserved for Ember Observatory: weighs availability, mirror health and hash verification."
+        }
+      }
+    },
+    "release": {
+      "type": "object",
+      "required": [
+        "release_id",
+        "tag",
+        "kind",
+        "channel",
+        "edition",
+        "architectures",
+        "assets",
+        "status",
+        "published_at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "release_id": {
+          "$ref": "#/definitions/release_id"
+        },
+        "tag": {
+          "type": "string",
+          "pattern": "^(wsa-v[0-9]+[.][0-9]{5}[.][0-9]+[.][0-9]+|Windows_11_[0-9]+[.][0-9]{5}[.][0-9]+[.][0-9]+|v[0-9]+[.][0-9]+[.][0-9]+)$"
+        },
+        "kind": {
+          "$ref": "#/definitions/kind"
+        },
+        "wsa_version": {
+          "type": "string",
+          "pattern": "^[0-9]+[.][0-9]{5}[.][0-9]+[.][0-9]+$"
+        },
+        "channel": {
+          "$ref": "#/definitions/channel"
+        },
+        "edition": {
+          "$ref": "#/definitions/edition"
+        },
+        "architectures": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/definitions/architecture"
+          }
+        },
+        "root_solution": {
+          "$ref": "#/definitions/root_solution"
+        },
+        "gapps_variant": {
+          "$ref": "#/definitions/gapps_variant"
+        },
+        "assets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/asset"
+          }
+        },
+        "validation_reports": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/validation_report"
+          }
+        },
+        "status": {
+          "$ref": "#/definitions/status"
+        },
+        "published_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "superseded_by": {
+          "$ref": "#/definitions/release_id"
+        },
+        "recommended": {
+          "type": "boolean"
+        },
+        "health_score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "registry_signature": {
+          "type": [
+            "null",
+            "object"
+          ]
+        },
+        "notes_url": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "status"
+            ],
+            "properties": {
+              "status": {
+                "const": "superseded"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "superseded_by"
+            ]
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "edition"
+            ],
+            "properties": {
+              "edition": {
+                "const": "banking"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "root_solution": {
+                "const": "none"
+              },
+              "assets": {
+                "contains": {
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/asset"
+                    },
+                    {
+                      "required": [
+                        "filename"
+                      ],
+                      "properties": {
+                        "filename": {
+                          "pattern": "^WSA_[0-9]+[.][0-9]{5}[.][0-9]+[.][0-9]+_x64_vanilla[.]7z$"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "edition"
+            ],
+            "properties": {
+              "edition": {
+                "const": "standard"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "root_solution": {
+                "const": "magisk"
+              },
+              "assets": {
+                "contains": {
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/asset"
+                    },
+                    {
+                      "required": [
+                        "filename"
+                      ],
+                      "properties": {
+                        "filename": {
+                          "pattern": "^WSA_[0-9]+[.][0-9]{5}[.][0-9]+[.][0-9]+_x64[.]7z$"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "subsystem"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "wsa_version",
+              "root_solution",
+              "gapps_variant"
+            ],
+            "properties": {
+              "edition": {
+                "enum": [
+                  "standard",
+                  "banking"
+                ]
+              },
+              "architectures": {
+                "contains": {
+                  "const": "x64"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "manager"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "edition": {
+                "const": "manager"
+              },
+              "architectures": {
+                "const": [
+                  "x64"
+                ]
+              }
+            },
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "wsa_version"
+                  ]
+                },
+                {
+                  "required": [
+                    "root_solution"
+                  ]
+                },
+                {
+                  "required": [
+                    "gapps_variant"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "status"
+            ],
+            "properties": {
+              "status": {
+                "enum": [
+                  "superseded",
+                  "yanked"
+                ]
+              }
+            }
+          },
+          "then": {
+            "not": {
+              "required": [
+                "recommended"
+              ],
+              "properties": {
+                "recommended": {
+                  "const": true
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

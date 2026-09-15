@@ -1,134 +1,197 @@
-# WSABuilds — Master Engineering Roadmap & Alignment Plan
+# Emberbird — Engineering Roadmap & Execution Contract
 
-**Active Governance**: WSABuilds Master Governance Framework v5.1  
-**Status Tracking**: `[x]` = Implemented & Verified | `[ ]` = Pending Execution  
-**Quality Gates**: Build Reality Gate | Runtime Reality Gate | Renderer Separation Rule  
-
----
-
-## 1. Completed Baseline & Foundation Milestones
-
-- [x] **Initrd CPIO Trampoline & Magisk Dynamic Linker**: Re-engineered SVR4 CPIO injection in `build.sh` and `build_local.py` (`lspinit`, `init-ld.xz`, `.backup`, `stub.xz`).
-- [x] **Zero-Click ADB Root Authorization**: Host public key injection and Magisk policy pre-seeding for ADB shell UID 0.
-- [x] **Tier 1 Multi-Configuration Engine**: Standard Edition (Magisk + Pico) and Banking Edition (Vanilla unrooted ramdisk + Pico).
-- [x] **WSABuilds Manager Dual Packaging**: Tauri v2 + React 18 packaging for portable ZIP and NSIS setup EXE with SHA-256 sidecars.
-- [x] **Desktop Client Code Signing Pipeline**: Azure Trusted Signing guard and Authenticode PE header validation in `winget-release.yml`.
-- [x] **Offline Automated Test Suites**: 81/81 automated tests passing (44 Python in `tests/`, 22 Website in `website/`, 15 Manager in `apps/manager/`).
-- [x] **README UX Parity & Subsystem Architecture**: 17-section documentation landing page; eliminated `.github/README.md` collision via `WORKFLOWS.md`.
+**Platform**: Emberbird (registry-first lifecycle platform for Android on Windows)
+**Governance**: `data/releases/GOVERNANCE.md` + `data/contracts/release-contract.md`
+**Charter**: `docs/EMBERBIRD_CHARTER.md` — the Bold Rule: **Published Artifacts Are Truth**
+**Status tracking**: `[x]` = implemented & verified · `[ ]` = pending · `[!]` = blocked (reason required)
 
 ---
 
-## 2. Phase 1: CI/CD Pipeline & GitHub Releases Reality Alignment
+## Part I — Execution Contract (binding on all future work)
 
-Align CI/CD workflows and GitHub Releases publication so artifacts, namespaces, and validation reports reflect actual repository builds.
-
-- [x] **Task 1.1: Prevent Manager "Latest Release" Hijacking in `winget-release.yml`**
-  - **Problem**: When `winget-release.yml` publishes a Manager release (`v*`), GitHub designates it as the repository's "Latest Release", displacing the WSA subsystem release from `/releases/latest`.
-  - **Action**: Add `make_latest: false` to `softprops/action-gh-release` in `winget-release.yml` so desktop manager releases do not hijack the repository's primary release endpoint.
-  - **Files**: `.github/workflows/winget-release.yml`
-  - **Gate**: Build Reality Gate (CI workflow lint and dry-run).
-
-- [x] **Task 1.2: Segregate Validation Reports in `release.yml`**
-  - **Problem**: The `validate-and-publish` job loops over `MagiskOnWSA/output/WSA_*/` and outputs to static filenames (`magisk-validation-report.json`, `package-identity-report.json`, etc.), causing the second matrix edition to overwrite the first.
-  - **Action**: Parameterize report filenames with edition key (`magisk-validation-report-standard.json`, `magisk-validation-report-vanilla.json`, etc.) and update the release upload pattern.
-  - **Files**: `.github/workflows/release.yml`
-  - **Gate**: Build Reality Gate (Syntax and workflow execution validation).
-
-- [x] **Task 1.3: Multi-Package Metadata Aggregation in `release.yml`**
-  - **Problem**: `PRIMARY_PKG=$(find MagiskOnWSA/output -maxdepth 1 -type d -name "WSA_*" | head -n 1)` only documents a single package in `release-metadata.json`.
-  - **Action**: Update `scripts/generate_release_metadata.py` to index all discovered release packages in `MagiskOnWSA/output` and include dual checksum entries in `release-metadata.json`.
-  - **Files**: `scripts/generate_release_metadata.py`, `.github/workflows/release.yml`
-  - **Gate**: Build Reality Gate & Unit Test Suite (`test_identity_and_integrity.py`).
-
----
-
-## 3. Phase 2: Website Downloads Portal Hardening (`website/`)
-
-Fix API release resolution, package table filtering, and direct binary download URLs on the official web portal.
-
-- [x] **Task 2.1: Targeted WSA Release Resolution in `release-service.ts`**
-  - **Problem**: `release-service.ts` queries `/releases/latest`, returning Manager `v0.2.2` instead of the WSA subsystem release, which leaves zero Android packages visible on `/downloads`.
-  - **Action**: Update `GitHubReleaseProvider.getLatestRelease()` to fetch the releases list (`/repos/{repo}/releases?per_page=20`) and discover the latest release matching tag prefix `wsa-v` or `Windows_`.
-  - **Files**: `website/src/lib/release-service.ts`
-  - **Gate**: Website Test Suite (`npm test` in `website/`).
-
-- [x] **Task 2.2: Package Filtering & Root Flavor Recognition in `parser.ts`**
-  - **Problem**: `detectRootFlavor('WSA_2407.40000.4.0_x64.7z')` returns `'unknown'` because the filename lacks the word `magisk`, causing the row to disappear when filtering by Standard Edition. In addition, metadata `.json` and checksum `.txt` files appear as download rows.
-  - **Action**: Update `detectRootFlavor` to treat `WSA_*_x64.7z` as `Magisk` when `vanilla` is absent, and update `release-service.ts` asset filtering to exclude `.json` and `.txt` files from the main packages table.
-  - **Files**: `website/src/lib/parser.ts`, `website/src/lib/release-service.ts`
-  - **Gate**: Website Test Suite (`npm test` in `website/`).
-
-- [x] **Task 2.3: Direct Download URLs for Desktop Manager in `downloads.astro`**
-  - **Problem**: The "Direct Installer (.exe)" and "Portable (.zip)" buttons link to the generic release tag page (`/tag/v0.2.2`) rather than directly downloading the binary assets.
-  - **Action**: Construct direct asset download URLs pointing to `WSABuildsManager-Setup-{version}-x64.exe` and `WSABuildsManager-Portable-{version}-x64.zip`.
-  - **Files**: `website/src/pages/downloads.astro`
-  - **Gate**: Website Typecheck & Build (`npm run build` in `website/`).
+1. **One active phase.** Only the phase marked **ACTIVE** may receive
+   implementation. Future phases may be discussed, never implemented early.
+2. **Phase guard.** Phase N+1 cannot start until Phase N's exit checklist is
+   fully `[x]`. No exceptions, no partial checkouts.
+3. **Exit checklists.** Every phase ends with an explicit checklist. A phase
+   is COMPLETE only when every item is checked *and* the full test suite is
+   green *and* CI ratifies the commit (local green ≠ complete).
+4. **Reality gates before merge.** Build Reality (compiles/lints), Registry
+   Reality (`validate` exits 0), CI Truth (workflow ratifies), Runtime
+   Reality (where applicable — Windows host items are marked
+   `REQUIRES TARGET ENVIRONMENT VALIDATION` until proven on real hardware).
+5. **Protected subsystems** (never regress): WSA release pipeline, Standard
+   & Banking editions, Manager, Website, Downloads portal, Compatibility
+   Hub, Analytics, Release metadata, GitHub Releases, Winget, CI/CD,
+   Clean-Room E2E. The uncommitted ARM64 enablement work
+   (`MagiskOnWSA/scripts/build.sh`, `config.sh`, GApps/registry plumbing)
+   is preserved in the working tree and is *not* part of any phase until
+   the owner decides its landing.
+6. **Status vocabulary.** Every closed item reports one of: `COMPLETE`,
+   `BLOCKED` (with the blocking dependency), `REQUIRES DEPENDENCY`,
+   `REQUIRES TARGET ENVIRONMENT VALIDATION`.
+7. **Stop conditions.** Work stops immediately if a protected subsystem
+   regresses, a dependency is missing, or an acceptance criterion is
+   unclear. An honest `[!]` beats a fake `[x]`.
+8. **Contracts frozen.** `data/contracts/*` and the registry schema change
+   only per the evolution policy in `data/releases/GOVERNANCE.md`
+   (additive-by-default, `migration_version` bump for breaks).
 
 ---
 
-## 4. Phase 3: Release Tag Harmonization & Repository Badges
+## Part II — Legacy Era: completed baseline (pre-Emberbird, kept for audit)
 
-Harmonize git tags, versions, and public badges with actual build output reality.
+Inherited from the WSABuilds Master Governance Framework v5.1 era. These
+milestones are done and verified; they are retained here so the Emberbird
+roadmap starts from an honest audit trail.
 
-- [x] **Task 3.1: Reconcile Subsystem Baseline & Release Tag in `version.json`**
-  - **Problem**: `deployment/version.json` defines `subsystem_baseline.wsa_version: "2311.40000.5.0"`, while the actual downloaded retail package is `2407.40000.4.0`.
-  - **Action**: Update `subsystem_baseline.wsa_version` to `"2407.40000.4.0"` and record the target canonical release tag.
-  - **Files**: `deployment/version.json`
-  - **Gate**: Distribution Validator (`python scripts/validate_distribution.py`).
+**Foundation milestones**
 
-- [x] **Task 3.2: Correct Status Badges in `README.md`**
-  - **Problem**: The top badge displays `WSA-2311.40000.5.0` and only one CI badge (`build.yml`) is shown.
-  - **Action**: Update the version badge to `WSA-2407.40000.4.0` and add pipeline status badges for `release.yml` and `winget-release.yml`.
-  - **Files**: `README.md`
-  - **Gate**: Markdown Link Validator (`python scripts/check_doc_links.py`).
+- [x] Initrd CPIO trampoline & Magisk dynamic linker (`lspinit`, `init-ld.xz`, `.backup`, `stub.xz`)
+- [x] Zero-click ADB root authorization (host key injection + Magisk policy pre-seeding)
+- [x] Tier 1 multi-configuration engine: Standard (Magisk+Pico) and Banking (vanilla) editions
+- [x] Manager dual packaging (Tauri v2 + React 18; portable ZIP + NSIS EXE with SHA-256 sidecars)
+- [x] Desktop client code-signing pipeline (Azure Trusted Signing guard + Authenticode validation)
+- [x] Offline automated test suites (81/81 at the time; expanded since)
+- [x] README UX parity & subsystem architecture docs; `WORKFLOWS.md` collision fix
 
-- [ ] **Task 3.3: Canonical Dual-Edition Release Tagging** (STATUS: BLOCKED — OWNER ACTION; requires an authenticated GitHub token to publish the `wsa-v2407.40000.4.0` release; after publication `version.json release_tag`, README download links and website fallback must be re-pointed in the same change to preserve user journeys)
-  - **Problem**: The current dual-edition release is tagged under `wsa-v2311.40000.5.0`, creating semantic confusion with the enclosed `2407.40000.4.0` packages.
-  - **Action**: Publish or tag a release matching the actual WSA version (`Windows_11_2407.40000.4.0` or `wsa-v2407.40000.4.0`) containing both verified `.7z` packages, and set `make_latest: true`.
-  - **Files**: Release assets on GitHub
-  - **Gate**: Runtime Reality Gate (Live asset URL verification).
+**Completed phase tasks**
+
+- [x] Task 1.1 — Manager "Latest Release" hijacking fixed (`make_latest: false` in `winget-release.yml`)
+- [x] Task 1.2 — Validation reports segregated per edition in `release.yml`
+- [x] Task 1.3 — Multi-package metadata aggregation in `release-metadata.json`
+- [x] Task 2.1 — Website WSA release resolution no longer hits `/releases/latest`
+- [x] Task 2.2 — Package filtering & root-flavor recognition in `parser.ts`
+- [x] Task 2.3 — Direct manager download URLs on the downloads page
+- [x] Task 3.1 — `deployment/version.json` baseline reconciled to `2407.40000.4.0`
+- [x] Task 3.2 — README badges corrected (version + release/winget pipeline badges)
+- [x] Task 4.1 — ARM64 documentation transparency (no advertised-but-absent ARM64 builds)
+- [x] Task 5.2 — Compatibility PR ingestion via Astro glob loader (single source of record)
+
+---
+## Part III — Emberbird Phases
+
+### P0 — Foundation: Registry, Contracts, Charter (ACTIVE → COMPLETE* — *pending CI ratification, the one unchecked exit item*)
+
+**Goal**: One authoritative, validated, regenerable release registry; frozen
+contracts; charter and attribution published; all proven by tests and
+reality probes against published GitHub reality.
+
+**Deliverables (all COMPLETE)**
+
+- [x] **P0.1 Charter & provenance docs** — `docs/EMBERBIRD_CHARTER.md` (Bold
+  Rule, pillars, "what Emberbird is not", licensing position),
+  `docs/LICENSE_AUDIT.md` (AGPL-3.0 repo; Magisk GPL-3.0 combined-work
+  obligation documented; WSA MSIX proprietary posture),
+  `docs/ATTRIBUTION.md` (WSABuilds ancestry, embedded components, tooling).
+- [x] **P0.2 Registry schema + contract tests** — `data/releases/releases.schema.json`
+  (Draft-07, 21 definitions, placeholder-hash guard, edition/arch/kind
+  conditional rules), `data/releases/README.md`, and
+  `tests/test_release_registry.py` (27 tests: structural, jsonschema-gated
+  contract cases, 4 reality pins against real published tags).
+- [x] **P0.2.1 Registry governance** — `data/releases/GOVERNANCE.md`
+  (evolution policy, hash doctrine, supersession, mirror status rules).
+- [x] **P0.2.2 Channel contract** — `data/contracts/channel-contract.md`
+  (retail/stable channel tokens, mapping to reality).
+- [x] **P0.3 Registry generator** — `scripts/build_registry.py`: pulls the
+  five target tags from GitHub reality, splits editions into separate
+  Release entries per tag, builds the vault keyed on `(artifact, sha256)`
+  (9 package cuts tracked — two tags ship `WSA_2407.40000.4.0_x64.7z` as
+  different cuts), records per-report-type validation shapes correctly
+  (identity/integrity/magisk/gapps), idempotent regeneration, provenance
+  on every entry. Output: `data/releases/releases.json` (6 releases,
+  9 vault entries).
+- [x] **P0.4 Metadata service (Release Engine)** — `platform/release-engine/release_engine/`
+  (Registry, check_integrity, `__main__.py validate`) + 13 engine unit tests
+  + `tests/test_registry_consumer.py` (13 tests) proving **Registry
+  Independence**: a consumer derives every lookup (latest, recommended,
+  hash-for-artifact, mirror status) from the registry alone, no network, no
+  hardcodes.
+- [x] **P0.5 Release contract freeze** — `data/contracts/release-contract.md`:
+  Registry Independence Rule, Published Artifacts Are Truth,
+  Builder Independence Rule, Distribution Policy, freeze & evolution terms.
+
+**Exit checklist (P0 complete when every line is `[x]`)**
+
+- [x] Registry schema (Draft-07) defines Release/Channel/Edition/Architecture/Status + conditional rules
+- [x] Schema rejects placeholder (all-zero) hashes structurally
+- [x] Registry generated from real published releases (5 tags probed live; 2 carry real `.7z` assets)
+- [x] Vault keys on `(artifact, sha256)`; different cuts of the same filename tracked separately
+- [x] Registry validates against its schema (`jsonschema` locally; structural CI-safe tests always run)
+- [x] `validate` command exits 0 on the current registry
+- [x] Registry-only consumer test passes (no network, no hardcodes)
+- [x] Channel + release contracts frozen and documented
+- [x] Charter, license audit, attribution published
+- [x] Full unit suite green locally (see validation log below)
+- [x] Zero modifications to protected subsystems (verified via git status review)
+- [ ] **CI ratification** — pending the next `build.yml` run on push/PR; local suite green today, CI Truth completes on the first CI run over this tree
+
+**Validation log (P0)**
+
+- `python3 -m unittest discover -s tests` — all green
+  (87 pre-existing + 27 registry + 13 engine + 13 consumer = 140)
+- `python3 platform/release-engine/release_engine/__main__.py validate` — REGISTRY OK: 6 releases, 9 vault entries
+- `python3 -m compileall` — clean
+- Registry regeneration idempotency — verified (byte-stable modulo `provenance.generated_at`)
+
+**Known reality notes (carried into Phase 0.5 registry freeze)**
+
+- Tag `wsa-v2311.40000.5.0` is **published with real assets** (standard +
+  vanilla cuts) despite Task 3.3's earlier BLOCKED note — reality overrode
+  the doc claim; registry records published truth.
+- `Windows_11_2407.40000.4.0` ships a *different cut* of the standard
+  package (`5d99b345…`) than the same-named asset on the `wsa-v2311` tag
+  (`ea95b7ed…`) — the registry tracks both.
+- `recommended` is intentionally unset in P0 (policy reserved for Ember
+  Observatory, Phase 5.5); consumers fall back to `latest_wsa()`.
+
+---
+### Legacy carry-over (pending phase assignment — not active work)
+
+Outstanding items from the legacy roadmap, retained until the owner assigns
+them to a phase. Reality updates are recorded inline.
+
+- [x] **Task 3.3** — Canonical dual-edition release tagging: **resolved by
+  reality** — probe of the live GitHub API shows `wsa-v2311.40000.5.0` and
+  `Windows_11_2407.40000.4.0` both published with real `.7z` assets; the
+  registry (P0.3) records both. Remaining cosmetic work (tag naming
+  harmonization) folds into a future distribution phase.
+- [ ] **Task 4.2** — ARM64 CI cross-compilation investigation
+  (research-only until ARM64 is promoted to an active phase).
+- [ ] **Task 5.1** — Live target-environment verification program
+  (Windows 10 19045 / Windows 11 22631+ cold-restore, Play Integrity,
+  Winget install validation) — `REQUIRES TARGET ENVIRONMENT VALIDATION`.
+- [ ] **Task 5.3** — Website docs-mirror synchronization guard (CI check
+  comparing `docs/**` to `website/src/content/docs/**` ignoring
+  frontmatter).
 
 ---
 
-## 5. Phase 4: Architecture Transparency & ARM64 Roadmap
+## Part IV — Future phases (LOCKED — not active, listed for direction only)
 
-Ensure hardware architecture claims in documentation match compilation and distribution capabilities.
+Per the Execution Contract, none of these may receive implementation work
+until P0's exit checklist is fully checked (including CI ratification) and
+the owner declares the next phase active. Order reflects dependency flow;
+the registry is the dependency for all of them.
 
-- [x] **Task 4.1: Accurate ARM64 Documentation Transparency**
-  - **Problem**: `README.md` badges and tables advertise ARM64 builds, but zero ARM64 binaries exist in GitHub release assets.
-  - **Action**: Clarify in `README.md` Section 3 that ARM64 packages are not currently pre-built on GitHub Releases, and document the manual build command (`bash MagiskOnWSA/scripts/build.sh --arch arm64`) for users with Snapdragon devices.
-  - **Files**: `README.md`, `docs/getting-started/quick-start.md`
-  - **Gate**: Markdown Link Validator (`python scripts/check_doc_links.py`).
-
-- [ ] **Task 4.2: ARM64 CI Cross-Compilation Investigation**
-  - **Problem**: Building ARM64 packages requires downloading ARM64 WSA MSIX packs and packaging an ARM64 initrd ramdisk with compatible binaries.
-  - **Action**: Research and prototype ARM64 workflow jobs in `release.yml` using `aarch64` sysroots or Ubuntu ARM emulation.
-  - **Files**: `.github/workflows/release.yml`, `MagiskOnWSA/scripts/build.sh`
-  - **Gate**: Build Reality Gate.
-
----
-
-## 6. Phase 5: Post-Release Operations & Field Verification
-
-Maintain continuous field verification and community submission workflows.
-
-- [ ] **Task 5.1: Live Target Environment Verification Program**
-  - **Goal**: Convert outstanding `REQUIRES TARGET ENVIRONMENT VERIFICATION` items into `VERIFIED` across Windows 10 (Build 19045) and Windows 11 (Build 22631+).
-  - **Focus**: Host cold-restore rollback verification, Play Integrity basic/device attestation checks, and Winget installation pipeline validation.
-  - **Files**: `docs/WINDOWS_VALIDATION_LAB.md`, `docs/UPGRADE_VALIDATION.md`
-  - **Gate**: Runtime Reality Gate.
-
-- [x] **Task 5.2: Automated Community Compatibility PR Ingestion**
-  - **Problem**: `compatibility/data/` records were duplicated into `website/src/content/compatibility/`, allowing the Compatibility Hub to drift from the validated source of record.
-  - **Action**: Compatibility Hub now loads the authoritative `compatibility/data/` directly via an Astro glob loader; duplicate copy removed; compatibility-validation workflow now covers PRs targeting `main`.
-  - **Files**: `website/src/content.config.ts`, `.github/workflows/compatibility-validation.yml`
-  - **Gate**: Website Test Suite & Build (`npm test`, `npm run build` in `website/`).
-
-- [ ] **Task 5.3: Website Docs Mirror Synchronization Guard** (identified during Task 5.2 execution)
-  - **Problem**: `website/src/content/docs/` is an enriched mirror of `docs/` (frontmatter added for the docs collection schema). A `docs/**` edit does not automatically propagate, so the repository documentation and the live portal can silently diverge (caught manually during Task 4.1).
-  - **Action**: Add a CI check that fails when a `docs/**` change is not reflected in the mirror (content equality ignoring frontmatter), plus a maintainer checklist entry.
-  - **Files**: `.github/workflows/` (new docs-sync guard), `docs/`, `website/src/content/docs/`
-  - **Gate**: Docs Mirror Guard (new CI check).
-  - **Goal**: Validate inbound community submissions against `compatibility/schema.json` and sync verified records to the web portal.
-  - **Files**: `.github/workflows/compatibility-validation.yml`, `compatibility/data/`
-  - **Gate**: Compatibility Schema Tests (`test_compatibility_schema.py`).
+- **P1 — Registry population hardening**: automated registry regeneration
+  in CI with drift detection (published-release diff → PR), vault mirror
+  verification jobs, `recommended` policy scaffolding handoff to Ember
+  Observatory.
+- **P2 — Manager V2 on the registry**: the desktop Manager resolves
+  downloads, integrity, and supersession exclusively via the registry and
+  Release Engine; no hardcoded catalogs. Include the licenses screen from
+  the license-audit follow-ups.
+- **P3 — Website on the registry**: downloads portal and compatibility hub
+  consume the registry; docs-mirror guard (Task 5.3) lands here.
+- **P4 — Compatibility platform**: device/channel reports validated against
+  the registry's channel contract; observatory ingestion.
+- **P5 — Analytics & Ember Observatory**: field telemetry distilled into
+  the `recommended` policy that owns the registry's recommendation flag.
+- **P6 — Trusted signing** for Emberbird-published artifacts (key
+  governance addendum to `docs/LICENSE_AUDIT.md` required).
+- **P7 — Distribution automation**: Winget manifests generated from the
+  registry; additional package-manager targets (choco/scoop) evaluated.
+- **P8 — ARM64**: promote from research (Task 4.2) to an active build
+  pillar only after the x64 pipeline is fully registry-driven; the
+  preserved uncommitted ARM64 enablement work is the starting point.
