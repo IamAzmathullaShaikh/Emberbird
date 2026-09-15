@@ -2,6 +2,7 @@ import json
 import re
 import unittest
 from pathlib import Path
+import yaml
 
 from scripts.validate_distribution import (
     REPO_ROOT,
@@ -92,6 +93,22 @@ class TestDistributionAndWinget(unittest.TestCase):
         # Invalid variants
         self.assertFalse(wsa_pattern.match("WSA_2311.40000.5.0_x64_Release.7z"))
         self.assertFalse(wsa_pattern.match("WSA_2311.40000.5.0_x64_Release-with-magisk-canary.7z"))
+
+    def test_winget_release_prevents_latest_hijacking(self):
+        """Verify that winget-release.yml explicitly sets make_latest: false to prevent displacing WSA releases."""
+        wf_path = self.repo_root / ".github" / "workflows" / "winget-release.yml"
+        self.assertTrue(wf_path.exists(), "winget-release.yml must exist")
+        wf = yaml.safe_load(wf_path.read_text(encoding="utf-8"))
+
+        jobs = wf.get("jobs", {})
+        self.assertIn("publish-manager-release", jobs, "publish-manager-release job must exist")
+        steps = jobs["publish-manager-release"].get("steps", [])
+        gh_steps = [s for s in steps if "softprops/action-gh-release" in s.get("uses", "")]
+        self.assertTrue(len(gh_steps) > 0, "softprops/action-gh-release step must exist")
+
+        with_block = gh_steps[0].get("with", {})
+        self.assertIn("make_latest", with_block, "make_latest parameter must be explicitly configured")
+        self.assertFalse(with_block["make_latest"], "make_latest must be false to preserve WSA latest pointer")
 
 
 if __name__ == "__main__":
