@@ -70,13 +70,13 @@ Fix API release resolution, package table filtering, and direct binary download 
 
 Harmonize git tags, versions, and public badges with actual build output reality.
 
-- [ ] **Task 3.1: Reconcile Subsystem Baseline & Release Tag in `version.json`**
+- [x] **Task 3.1: Reconcile Subsystem Baseline & Release Tag in `version.json`**
   - **Problem**: `deployment/version.json` defines `subsystem_baseline.wsa_version: "2311.40000.5.0"`, while the actual downloaded retail package is `2407.40000.4.0`.
   - **Action**: Update `subsystem_baseline.wsa_version` to `"2407.40000.4.0"` and record the target canonical release tag.
   - **Files**: `deployment/version.json`
   - **Gate**: Distribution Validator (`python scripts/validate_distribution.py`).
 
-- [ ] **Task 3.2: Correct Status Badges in `README.md`**
+- [x] **Task 3.2: Correct Status Badges in `README.md`**
   - **Problem**: The top badge displays `WSA-2311.40000.5.0` and only one CI badge (`build.yml`) is shown.
   - **Action**: Update the version badge to `WSA-2407.40000.4.0` and add pipeline status badges for `release.yml` and `winget-release.yml`.
   - **Files**: `README.md`

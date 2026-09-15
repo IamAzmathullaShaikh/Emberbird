@@ -13,7 +13,7 @@
     "license": "Apache-2.0"
   },
   "subsystem_baseline": {
-    "wsa_version": "2311.40000.5.0",
+    "wsa_version": "2407.40000.4.0",
     "android_version": "13",
     "release_tag": "wsa-v2311.40000.5.0"
   }

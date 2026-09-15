@@ -1,12 +1,14 @@
 # WSABuilds — Windows Subsystem for Android™ Automation Platform
 
 <p align="center">
-  <img src="https://img.shields.io/badge/WSA-2311.40000.5.0-blue.svg?style=for-the-badge&logo=android" alt="WSA Version"/>
+  <img src="https://img.shields.io/badge/WSA-2407.40000.4.0-blue.svg?style=for-the-badge&logo=android" alt="WSA Version"/>
   <img src="https://img.shields.io/badge/Android-13.0%20(API%2033)-green.svg?style=for-the-badge&logo=android" alt="Android 13"/>
   <img src="https://img.shields.io/badge/GApps-OpenGApps%20Pico-orange.svg?style=for-the-badge&logo=googleplay" alt="OpenGApps Pico"/>
   <img src="https://img.shields.io/badge/Root-Magisk%20Stable%20%7C%20Vanilla%20(No%20Root)-blue.svg?style=for-the-badge" alt="Magisk Stable | Vanilla"/>
   <img src="https://img.shields.io/badge/Architecture-x64%20%7C%20arm64-purple.svg?style=for-the-badge" alt="x64 / arm64"/>
   <img src="https://img.shields.io/github/actions/workflow/status/IamAzmathullaShaikh/WSABuilds/build.yml?label=CI%20Build&style=for-the-badge" alt="CI Status"/>
+  <img src="https://img.shields.io/github/actions/workflow/status/IamAzmathullaShaikh/WSABuilds/release.yml?label=WSA%20Release&style=for-the-badge" alt="WSA Release Pipeline"/>
+  <img src="https://img.shields.io/github/actions/workflow/status/IamAzmathullaShaikh/WSABuilds/winget-release.yml?label=Manager%20Release&style=for-the-badge" alt="Manager Release Pipeline"/>
 </p>
 
 <p align="center">
