@@ -22,7 +22,7 @@
 
 Align CI/CD workflows and GitHub Releases publication so artifacts, namespaces, and validation reports reflect actual repository builds.
 
-- [ ] **Task 1.1: Prevent Manager "Latest Release" Hijacking in `winget-release.yml`**
+- [x] **Task 1.1: Prevent Manager "Latest Release" Hijacking in `winget-release.yml`**
   - **Problem**: When `winget-release.yml` publishes a Manager release (`v*`), GitHub designates it as the repository's "Latest Release", displacing the WSA subsystem release from `/releases/latest`.
   - **Action**: Add `make_latest: false` to `softprops/action-gh-release` in `winget-release.yml` so desktop manager releases do not hijack the repository's primary release endpoint.
   - **Files**: `.github/workflows/winget-release.yml`
