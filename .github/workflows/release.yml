@@ -201,8 +201,12 @@ jobs:
         run: |
           for PKG_DIR in MagiskOnWSA/output/WSA_*/; do
             if [ -d "$PKG_DIR" ]; then
-              echo "[*] Validating structural integrity for: $PKG_DIR"
-              python3 scripts/validate_package_integrity.py --package-dir "$PKG_DIR" --require-package
+              PKG_BASE=$(basename "$PKG_DIR")
+              EDITION="standard"
+              if [[ "$PKG_BASE" =~ [Vv]anilla ]]; then EDITION="vanilla"; fi
+              echo "[*] Validating structural integrity for $EDITION: $PKG_DIR"
+              python3 scripts/validate_package_integrity.py --package-dir "$PKG_DIR" --require-package --output-report "package-integrity-report-${EDITION}.json"
+              cp "package-integrity-report-${EDITION}.json" "package-integrity-report.json" || true
             fi
           done
 
@@ -210,8 +214,12 @@ jobs:
         run: |
           for PKG_DIR in MagiskOnWSA/output/WSA_*/; do
             if [ -d "$PKG_DIR" ]; then
-              echo "[*] Validating package identity for: $PKG_DIR"
-              python3 scripts/validate_package_identity.py --package-dir "$PKG_DIR" --require-manifest
+              PKG_BASE=$(basename "$PKG_DIR")
+              EDITION="standard"
+              if [[ "$PKG_BASE" =~ [Vv]anilla ]]; then EDITION="vanilla"; fi
+              echo "[*] Validating package identity for $EDITION: $PKG_DIR"
+              python3 scripts/validate_package_identity.py --package-dir "$PKG_DIR" --require-manifest --output-report "package-identity-report-${EDITION}.json"
+              cp "package-identity-report-${EDITION}.json" "package-identity-report.json" || true
             fi
           done
 
@@ -219,8 +227,12 @@ jobs:
         run: |
           for PKG_DIR in MagiskOnWSA/output/WSA_*/; do
             if [ -d "$PKG_DIR" ]; then
-              echo "[*] Validating ramdisk integration for: $PKG_DIR"
-              python3 scripts/validate_magisk.py --package-dir "$PKG_DIR"
+              PKG_BASE=$(basename "$PKG_DIR")
+              EDITION="standard"
+              if [[ "$PKG_BASE" =~ [Vv]anilla ]]; then EDITION="vanilla"; fi
+              echo "[*] Validating ramdisk integration for $EDITION: $PKG_DIR"
+              python3 scripts/validate_magisk.py --package-dir "$PKG_DIR" --output-report "magisk-validation-report-${EDITION}.json"
+              cp "magisk-validation-report-${EDITION}.json" "magisk-validation-report.json" || true
             fi
           done
 
@@ -228,8 +240,12 @@ jobs:
         run: |
           for PKG_DIR in MagiskOnWSA/output/WSA_*/; do
             if [ -d "$PKG_DIR" ]; then
-              echo "[*] Validating GApps integration for: $PKG_DIR"
-              python3 scripts/validate_gapps.py --package-dir "$PKG_DIR"
+              PKG_BASE=$(basename "$PKG_DIR")
+              EDITION="standard"
+              if [[ "$PKG_BASE" =~ [Vv]anilla ]]; then EDITION="vanilla"; fi
+              echo "[*] Validating GApps integration for $EDITION: $PKG_DIR"
+              python3 scripts/validate_gapps.py --package-dir "$PKG_DIR" --output-report "gapps-validation-report-${EDITION}.json"
+              cp "gapps-validation-report-${EDITION}.json" "gapps-validation-report.json" || true
             fi
           done
 
@@ -288,10 +304,11 @@ jobs:
             MagiskOnWSA/output/checksums.sha512
             MagiskOnWSA/output/checksums.txt
             MagiskOnWSA/output/release-metadata.json
-            package-identity-report.json
-            package-integrity-report.json
-            magisk-validation-report.json
-            gapps-validation-report.json
+            package-identity-report*.json
+            package-integrity-report*.json
+            magisk-validation-report*.json
+            gapps-validation-report*.json
           fail_on_unmatched_files: false
           generate_release_notes: true
+          make_latest: true
           token: ${{ secrets.GITHUB_TOKEN }}
