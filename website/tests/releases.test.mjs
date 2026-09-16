@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { classifyReleaseTag, PinnedReleaseService, GitHubReleaseProvider } from '../src/lib/release-service.ts';
+import { classifyReleaseTag, PinnedReleaseService } from '../src/lib/release-service.ts';
+import { GitHubReleaseProvider } from './lib/github-release-oracle.ts';
 import { detectRootFlavor, detectGAppsFlavor, detectArchitecture } from '../src/lib/parser.ts';
 
 test('classifyReleaseTag separates manager and wsa channels by tag prefix', () => {

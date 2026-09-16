@@ -16,10 +16,11 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # --- inventoried direct-discovery modules (the closed set) ---
-WEBSITE_DISCOVERY_MODULES = [
-    "website/src/lib/github.ts",
-    "website/src/lib/release-service.ts",
-]
+# E3B.4: production src is discovery-free. `website/src/lib/github.ts` was
+# deleted; `website/src/lib/release-service.ts` now consumes the Ember
+# Registry. The legacy provider survives ONLY as the test-tree parity oracle
+# (website/tests/lib/github-release-oracle.ts), which is not production code.
+WEBSITE_DISCOVERY_MODULES = []
 MANAGER_DERIVATION_MODULES = [
     "apps/manager/src/lib/env.ts",
     "apps/manager/src/lib/ipc.ts",
@@ -61,15 +62,37 @@ class TestClosedDiscoveryInventory(unittest.TestCase):
         self.assertEqual(offenders, [], f"NEW website GitHub-discovery paths are forbidden (matrix closed): {offenders}")
 
     def test_website_inventoried_modules_still_discover(self):
-        """Until E3B lands, the inventoried modules must still hold the
-        discovery code — proving the inventory tracks reality, not fiction."""
-        for rel in WEBSITE_DISCOVERY_MODULES:
-            p = REPO_ROOT / rel
-            if p.exists():
-                self.assertTrue(
-                    any(tok in read(p) for tok in DISCOVERY_TOKENS),
-                    f"{rel} left the discovery inventory without an E3B migration record",
-                )
+        """After E3B.4, no production website module may discover releases via
+        the GitHub API — the registry is the only source of release truth."""
+        website_src = REPO_ROOT / "website" / "src"
+        offenders = [
+            p.relative_to(REPO_ROOT).as_posix().replace("\\", "/")
+            for p in website_src.rglob("*.ts")
+            if any(tok in read(p) for tok in DISCOVERY_TOKENS)
+        ]
+        self.assertEqual(
+            offenders, [],
+            f"website production code still performs GitHub discovery (E3B.4 violated): {offenders}",
+        )
+
+    def test_parity_oracle_stays_out_of_production(self):
+        """The legacy provider exists only as the S2 parity oracle; production
+        code must never import it (mentions in comments are fine — imports are
+        the real leak)."""
+        oracle = REPO_ROOT / "website" / "tests" / "lib" / "github-release-oracle.ts"
+        self.assertTrue(oracle.is_file(), "parity oracle missing")
+        src = REPO_ROOT / "website" / "src"
+        leaked = [
+            p.relative_to(REPO_ROOT).as_posix().replace("\\", "/")
+            for p in src.rglob("*.ts")
+            if ("github-release-oracle" in read(p)
+                and any(
+                    line.strip().startswith(("import", "from", "export * from"))
+                    and "github-release-oracle" in line
+                    for line in read(p).splitlines()
+                ))
+        ]
+        self.assertEqual(leaked, [], f"oracle imported from production: {leaked}")
 
     def test_manager_derivation_inventory_holds(self):
         offenders = []

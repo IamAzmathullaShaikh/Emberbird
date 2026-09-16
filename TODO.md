@@ -408,22 +408,26 @@ logic (CONSUMER_MATRIX is the baseline), deliver the migration as a reviewable
 diff with a rollback path, and demonstrate registry/legacy parity (S2) before
 any legacy discovery is removed.
 
-- [ ] **E3B.1 — G2 inventory**: enumerate every release-discovery call site in
+- [x] **E3B.1 — G2 inventory**: enumerate every release-discovery call site in
   `website/src/lib/` (`github.ts`, `release-service.ts`, `types.ts`) and every
   metadata input (env vars, build-time config); classify each as
   registry-derivable or legacy-only.
-- [ ] **E3B.2 — Registry consumer**: build-time registry import
+- [x] **E3B.2 — Registry consumer**: build-time registry import
   (`data/releases/releases.json`) with schema-validated parsing; the Reality
   Gate runs before any release data reaches the site build.
-- [ ] **E3B.3 — S2 parity proof**: for the current release set, registry-driven
+- [x] **E3B.3 — S2 parity proof**: for the current release set, registry-driven
   output must equal legacy GitHub-discovery output (same tags, assets, hashes,
   download URLs) — demonstrated by test, not asserted.
-- [ ] **E3B.4 — Legacy discovery removal** (only after parity): switch the
+- [x] **E3B.4 — Legacy discovery removal** (only after parity): switch the
   download/analytics surfaces to the registry consumer; document the rollback
   path (revert restores legacy discovery; registry is additive until then).
 
-**Exit checklist**: E3B.1–E3B.4 checked, full battery green, CI ratification
-confirmed, cycle record appended.
+**Exit checklist**
+
+- [x] E3B.1–E3B.4 implemented; 39/39 website tests (incl. 5 new parity tests)
+- [x] Full Python battery green; M3 guard flipped to zero-discovery + oracle rule
+- [ ] CI ratification of the E3B commit — closes on the next build.yml run
+  over the pushed commit (probe via GitHub Actions API).
 
 ---
 
@@ -819,6 +823,44 @@ local reproduction was removed. Local website build + tests (34 pass) now reprod
 the CI step before push. The abort did not roll anything back: the defect was fully
 diagnosed, fixed, and re-validated in the working tree; the fix commit below is the
 ratification target.
+
+### Cycle E3B — Website Consumer Migration (September 17, 2026)
+
+**STATUS:** COMPLETE pending CI ratification · **DEPENDENCIES:** E3A
+CI-ratified (`e4f21ad`) · **G2/S2 executed in order; G1 still in effect.**
+
+- [x] **E3B.1 (G2 inventory)**: all release-discovery call sites enumerated
+      (`github.ts` x1, `release-service.ts` x3 API surfaces); consumed
+      `UnifiedRelease` fields identified (tag, formattedDate, assets —
+      releaseUrl/notes/id never read by any page); `fetchLatestRelease`
+      proven dead. Recorded in CONSUMER_MATRIX before any code moved.
+- [x] **E3B.2 (registry consumer)**: `RegistryReleaseProvider` — build-time
+      import of `data/releases/releases.json` (`with { type: 'json' }`),
+      zero network, published-status filter, tag grouping (multi-edition
+      rows merge into one release per published tag, mirroring GitHub
+      reality), sha256 from registry truth.
+- [x] **E3B.3 (S2 parity)**: `website/tests/registry-parity.test.mjs` —
+      legacy provider vs registry provider over the full release set with a
+      GitHub-reality fixture (one release per tag, merged assets,
+      newest-first), deterministic fetch stubbing with restore. Empirical
+      finding encoded: published release bodies carry no hash lines
+      (verified against the live v0.2.2 body), so the registry's
+      manifest-sourced hashes are a documented enrichment, agreed wherever
+      legacy can derive them.
+- [x] **E3B.4 (legacy removal)**: `website/src/lib/github.ts` deleted (zero
+      importers); legacy provider excised from production and preserved as
+      the test-tree parity oracle (`website/tests/lib/
+      github-release-oracle.ts`); `PinnedReleaseService` default flipped to
+      the registry; M3 guard now pins ZERO production discovery + oracle
+      non-import. Rollback path: revert restores legacy discovery — the
+      registry consumer was additive until this commit, and the parity
+      suite keeps both sides comparable afterwards.
+  STATUS: COMPLETE (pending CI) · FILES: release-service.ts, github.ts
+  (deleted), 2 test files + 1 oracle + registry-parity suite,
+  CONSUMER_MATRIX, guard test · RISKS: low — display output proven
+  equivalent; pages consume tag/date/assets only · VALIDATION: 39/39
+  website tests, build green, consumer-compliance guards OK · RESULT:
+  E3B commit pending push; CI ratification to close.
 
 ### Cycle E3A — Brand Metamorphosis (September 16, 2026)
 

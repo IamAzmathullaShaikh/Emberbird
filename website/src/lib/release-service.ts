@@ -1,11 +1,10 @@
 import type {
   ReleaseProvider,
   UnifiedRelease,
-  NormalizedAsset,
-  GitHubRelease,
-  ReleaseAsset
+  NormalizedAsset
 } from './types.ts';
-import { parseNormalizedAsset, formatDate } from './parser.ts';
+import { parseNormalizedAsset, formatDate, formatBytes, detectArchitecture, detectRootFlavor, detectGAppsFlavor } from './parser.ts';
+import registryData from '../../../data/releases/releases.json' with { type: 'json' };
 
 export type ReleaseChannel = 'manager' | 'wsa';
 
@@ -14,153 +13,11 @@ export function classifyReleaseTag(tag: string): ReleaseChannel {
   return tag.startsWith('wsa-v') || tag.startsWith('Windows_') ? 'wsa' : 'manager';
 }
 
-export class GitHubReleaseProvider implements ReleaseProvider {
-  name = 'GitHubReleases';
-  private customRepo?: string;
-
-  constructor(repo?: string) {
-    this.customRepo = repo;
-  }
-
-  async getLatestRelease(): Promise<UnifiedRelease | null> {
-    const repo = this.repo();
-    const endpoint = `https://api.github.com/repos/${repo}/releases?per_page=20`;
-    const response = await fetch(endpoint, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Emberbird-ReleaseService'
-      }
-    });
-
-    if (!response.ok) {
-      console.error(`GitHub Releases API responded with status ${response.status}`);
-      return null;
-    }
-
-    const rawList = (await response.json()) as GitHubRelease[];
-    if (!Array.isArray(rawList)) {
-      console.error('GitHub Releases API returned an unexpected payload.');
-      return null;
-    }
-
-    const wsaRaw = rawList.find(
-      (r) => r.tag_name && (r.tag_name.startsWith('wsa-v') || r.tag_name.startsWith('Windows_'))
-    );
-    if (wsaRaw) {
-      return this.normalize(wsaRaw);
-    }
-
-    return rawList.length > 0 ? this.normalize(rawList[0]) : null;
-  }
-
-  async getReleaseByTag(tag: string): Promise<UnifiedRelease | null> {
-    if (!tag || !tag.trim()) {
-      throw new Error('getReleaseByTag requires a non-empty release tag.');
-    }
-    const repo = this.repo();
-    const endpoint = `https://api.github.com/repos/${repo}/releases/tags/${encodeURIComponent(tag)}`;
-    const raw = await this.fetchRelease(endpoint);
-    return raw ? this.normalize(raw) : null;
-  }
-
-  async listReleases(): Promise<UnifiedRelease[]> {
-    const repo = this.repo();
-    const endpoint = `https://api.github.com/repos/${repo}/releases?per_page=30`;
-    const response = await fetch(endpoint, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Emberbird-ReleaseService'
-      }
-    });
-
-    if (!response.ok) {
-      console.error(`GitHub Releases API responded with status ${response.status}`);
-      return [];
-    }
-
-    const rawList = (await response.json()) as GitHubRelease[];
-    if (!Array.isArray(rawList)) {
-      console.error('GitHub Releases API returned an unexpected payload.');
-      return [];
-    }
-
-    return rawList.map((raw) => this.normalize(raw));
-  }
-
-  private repo(): string {
-    if (this.customRepo) {
-      return this.customRepo;
-    }
-    const repo = import.meta.env.PUBLIC_GITHUB_REPO;
-    if (!repo) {
-      throw new Error('Configuration error: PUBLIC_GITHUB_REPO environment variable is required.');
-    }
-    return repo;
-  }
-
-  private async fetchRelease(endpoint: string): Promise<GitHubRelease | null> {
-    const response = await fetch(endpoint, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Emberbird-ReleaseService'
-      }
-    });
-
-    if (!response.ok) {
-      console.error(`GitHub Releases API responded with status ${response.status}`);
-      return null;
-    }
-
-    return (await response.json()) as GitHubRelease;
-  }
-
-  private normalize(raw: GitHubRelease): UnifiedRelease {
-    const checksums = this.extractChecksums(raw);
-    // Metadata sidecars (hash files, checksums.txt, validation-report .json)
-    // are published on the release but must never surface as download rows in
-    // the main packages table — the UI links checksums separately.
-    const isPackageAsset = (name: string): boolean => {
-      const lower = name.toLowerCase();
-      return !(lower.endsWith('.sha256') || lower.endsWith('.md5') || lower.endsWith('.json') || lower.endsWith('.txt'));
-    };
-
-    const normalizedAssets: NormalizedAsset[] = (raw.assets || [])
-      .filter((asset) => isPackageAsset(asset.name))
-      .map((asset) => parseNormalizedAsset(asset, checksums));
-
-    return {
-      id: raw.id,
-      tag: raw.tag_name,
-      name: raw.name || raw.tag_name,
-      publishedAt: raw.published_at,
-      formattedDate: formatDate(raw.published_at),
-      notes: raw.body || '',
-      releaseUrl: raw.html_url,
-      assets: normalizedAssets,
-      channel: classifyReleaseTag(raw.tag_name)
-    };
-  }
-
-  private extractChecksums(raw: GitHubRelease): Record<string, string> {
-    const map: Record<string, string> = {};
-    if (!raw.body) return map;
-
-    // Parse SHA256 lines from release notes if present
-    const sha256Pattern = /([a-fA-F0-9]{64})\s+([a-zA-Z0-9_\-\.]+)/g;
-    let match: RegExpExecArray | null;
-    while ((match = sha256Pattern.exec(raw.body)) !== null) {
-      const hash = match[1];
-      const filename = match[2];
-      map[filename] = hash;
-    }
-    return map;
-  }
-}
-
 /**
- * Resolves the releases the website advertises, pinning each product family to
- * its exact release tag so the page content can never silently shift when an
- * unrelated release becomes `releases/latest`.
+ * Resolves the releases the website advertises from its release provider
+ * (the Ember Registry by default, E3B.4), pinning each product family to its
+ * newest advertised release so page content is deterministic and
+ * registry-driven.
  */
 export class PinnedReleaseService {
   private provider: ReleaseProvider;
@@ -169,7 +26,11 @@ export class PinnedReleaseService {
   private timestamps = new Map<string, number>();
 
   constructor(provider?: ReleaseProvider, ttlMinutes: number = 5) {
-    this.provider = provider || new GitHubReleaseProvider();
+    // E3B.4: default release discovery is the Ember Registry (offline,
+    // reality-validated). Legacy GitHub discovery was removed after S2 parity
+    // was proven (website/tests/registry-parity.test.mjs against the oracle
+    // in website/tests/lib/github-release-oracle.ts).
+    this.provider = provider || new RegistryReleaseProvider();
     this.ttlMs = ttlMinutes * 60 * 1000;
   }
 
@@ -231,4 +92,151 @@ export class PinnedReleaseService {
   }
 }
 
+
+/* -------------------------------------------------------------------------
+ * E3B.2 — Registry consumer (G2): release truth from the Ember Registry
+ * (`data/releases/releases.json`), the repository's single source of truth.
+ *
+ * This provider is ADDITIVE during the S2 parity phase: it implements the
+ * same `ReleaseProvider` interface as the legacy provider (kept as the test
+ * oracle in website/tests/lib/github-release-oracle.ts), so parity can
+ * be demonstrated by comparing outputs for the same release set before any
+ * legacy discovery is removed (E3B.4). It performs zero network I/O at
+ * runtime — the registry is validated by CI's Reality Gate before any build
+ * that embeds it.
+ * ------------------------------------------------------------------------- */
+
+/** Minimal structural view of the registry used by this module. */
+interface RegistryAsset {
+  filename: string;
+  sha256: string;
+  arch?: string;
+  role?: string;
+  source_url: string;
+  size_bytes?: number;
+}
+
+interface RegistryRelease {
+  release_id: string;
+  tag: string;
+  kind: string;
+  channel: string;
+  status: string;
+  published_at: string;
+  assets: RegistryAsset[];
+}
+
+interface RegistryFile {
+  schema_version: number;
+  releases: RegistryRelease[];
+}
+
+const REGISTRY = registryData as unknown as RegistryFile;
+
+/** Registry channels we advertise. Only published releases are surfaced. */
+const ADVERTISED_STATUSES = new Set(['published']);
+
+function registryKindToChannel(kind: string): ReleaseChannel | null {
+  if (kind === 'manager') return 'manager';
+  if (kind === 'subsystem') return 'wsa';
+  return null; // unknown kinds are not advertised
+}
+
+/**
+ * Release provider backed by the Ember Registry. Build-time, offline,
+ * reality-validated — no GitHub discovery.
+ */
+export class RegistryReleaseProvider implements ReleaseProvider {
+  name = 'EmberRegistry';
+  private registry: RegistryFile;
+
+  // NOTE: no parameter properties — Node's type-stripping test loader only
+  // supports erasable TypeScript syntax.
+  constructor(registry: RegistryFile = REGISTRY) {
+    this.registry = registry;
+  }
+
+  private all(): UnifiedRelease[] {
+    // Group registry rows by tag and merge their assets. Multiple editions
+    // (e.g. Standard + Banking) legitimately publish under ONE GitHub tag, so
+    // GitHub shows a single release with the union of assets. Grouping here
+    // keeps registry output user-equivalent to that published reality (S2).
+    const groups = new Map<string, RegistryRelease[]>();
+    for (const r of this.registry.releases) {
+      if (!ADVERTISED_STATUSES.has(r.status) || registryKindToChannel(r.kind) === null) continue;
+      const existing = groups.get(r.tag);
+      if (existing) existing.push(r);
+      else groups.set(r.tag, [r]);
+    }
+    return [...groups.values()].map((rows) => this.normalizeGroup(rows));
+  }
+
+  private normalizeGroup(rows: RegistryRelease[]): UnifiedRelease {
+    rows.sort((a, b) => a.release_id.localeCompare(b.release_id));
+    const merged: RegistryRelease = {
+      // Primary row identity (the `name` field is display-only and consumed
+      // by no page; assets and tag are the user-visible truth).
+      release_id: rows[0].release_id,
+      tag: rows[0].tag,
+      kind: rows[0].kind,
+      channel: rows[0].channel,
+      status: rows[0].status,
+      published_at: rows.map((r) => r.published_at).sort().at(-1) as string,
+      assets: rows.flatMap((r) => r.assets)
+    };
+    return this.normalize(merged);
+  }
+
+  async getLatestRelease(): Promise<UnifiedRelease | null> {
+    // Mirrors PinnedReleaseService semantics: newest release of the wsa channel.
+    const wsa = this.all()
+      .filter((r) => r.channel === 'wsa')
+      .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+    return wsa[0] ?? null;
+  }
+
+  async getReleaseByTag(tag: string): Promise<UnifiedRelease | null> {
+    const found = this.all().find((r) => r.tag === tag);
+    return found ?? null;
+  }
+
+  async listReleases(): Promise<UnifiedRelease[]> {
+    return this.all().sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+  }
+
+  private normalize(r: RegistryRelease): UnifiedRelease {
+    // Registry assets are already curated: every row is a real package
+    // (sidecars live in the vault), and every row carries its published
+    // sha256 — checksums come from registry truth, not release-notes regex.
+    const normalizedAssets: NormalizedAsset[] = r.assets.map((a) => ({
+      assetId: 0, // registry rows have no GitHub numeric id; pages never read it
+      fileName: a.filename,
+      fileSizeBytes: a.size_bytes ?? 0,
+      formattedSize: formatBytes(a.size_bytes ?? 0),
+      downloadUrl: a.source_url,
+      architecture: detectArchitecture(a.filename),
+      rootFlavor: detectRootFlavor(a.filename),
+      gappsFlavor: detectGAppsFlavor(a.filename),
+      sha256: a.sha256
+    }));
+
+    return {
+      id: 0,
+      tag: r.tag,
+      name: r.release_id,
+      publishedAt: r.published_at,
+      formattedDate: formatDate(r.published_at),
+      notes: '',
+      releaseUrl: '',
+      assets: normalizedAssets,
+      channel: registryKindToChannel(r.kind) as ReleaseChannel
+    };
+  }
+}
+
+/** Shared singleton for pages that want registry truth. */
+export const registryReleaseProvider = new RegistryReleaseProvider();
+
+/** Service singleton — constructed after RegistryReleaseProvider's declaration
+ * (E3B.4 default) to avoid a TDZ error at module-load time. */
 export const pinnedReleaseService = new PinnedReleaseService();
