@@ -149,12 +149,15 @@ def build_inventory() -> dict:
         except OSError:
             continue
         occurrences = []
-        for lineno, line in enumerate(text.splitlines(), start=1):
+        # NOTE: no line numbers by design. A file generated from the index can
+        # never be line-fresh against a commit that contains itself plus any
+        # line-shifting edit (the line-drift ratchet that broke CI). Token,
+        # class, and context are content-derived and shift-immune.
+        for line in text.splitlines():
             for match in TOKEN_RE.finditer(line):
                 token = match.group(0)
                 cls = classify(rp, line, match)
                 occurrences.append({
-                    "line": lineno,
                     "token": token,
                     "class": cls,
                     "context": line.strip()[:180],
