@@ -364,7 +364,7 @@ byte-identical and unstaged at its new path.
 
 ---
 
-### E3A — Brand Metamorphosis (ACTIVE — G1 freeze; identity only)
+### E3A — Brand Metamorphosis (COMPLETE — CI-ratified `e4f21ad`)
 
 Per BRAND.md §3 policy and the Cycle E3A S1 review. Platform-identity prose
 rebrands to Emberbird in living documents and website chrome; product names,
@@ -395,8 +395,35 @@ explicitly kept for their designated later phases.
 
 - [x] Transform dry-run + apply verified; leftover scan clean
 - [x] Mirror guard pair-comparison fixed (WIP on both sides compared at HEAD)
-- [ ] CI ratification of the E3A commit — closes on the next build.yml run
-  over the pushed commit (probe via GitHub Actions API).
+- [x] CI ratification of the E3A commit — **CONFIRMED**: all five workflows
+  `completed/success` on head `e4f21ad` (Build & CI, Documentation, Website
+  Deployment, Security, Compatibility Data — GitHub Actions API probe).
+
+---
+
+### E3B — Website Consumer Migration (ACTIVE — G2/S2 parity contract)
+
+Per G2: first inventory the website's metadata inputs and release-discovery
+logic (CONSUMER_MATRIX is the baseline), deliver the migration as a reviewable
+diff with a rollback path, and demonstrate registry/legacy parity (S2) before
+any legacy discovery is removed.
+
+- [ ] **E3B.1 — G2 inventory**: enumerate every release-discovery call site in
+  `website/src/lib/` (`github.ts`, `release-service.ts`, `types.ts`) and every
+  metadata input (env vars, build-time config); classify each as
+  registry-derivable or legacy-only.
+- [ ] **E3B.2 — Registry consumer**: build-time registry import
+  (`data/releases/releases.json`) with schema-validated parsing; the Reality
+  Gate runs before any release data reaches the site build.
+- [ ] **E3B.3 — S2 parity proof**: for the current release set, registry-driven
+  output must equal legacy GitHub-discovery output (same tags, assets, hashes,
+  download URLs) — demonstrated by test, not asserted.
+- [ ] **E3B.4 — Legacy discovery removal** (only after parity): switch the
+  download/analytics surfaces to the registry consumer; document the rollback
+  path (revert restores legacy discovery; registry is additive until then).
+
+**Exit checklist**: E3B.1–E3B.4 checked, full battery green, CI ratification
+confirmed, cycle record appended.
 
 ---
 
@@ -817,7 +844,8 @@ CI-ratified (`51b6810`) · **G1 freeze in effect (identity-only work).**
   STATUS: COMPLETE (pending CI) · FILES: 40 rebranded/aligned + 1 tool +
   importer + mirror guard · RISKS: low (identity strings only; no logic
   changed outside UA/header constants) · VALIDATION: 267/267 OK, website
-  build+34 tests, doc-links clean · RESULT: E3A commit pending push.
+  build+34 tests, doc-links clean · RESULT: COMPLETE — CI-ratified
+  (`e4f21ad`).
 
 ### Cycle E2 — Repository Restructure (September 16, 2026)
 
