@@ -5,21 +5,21 @@
     "m4": "Release History Is Immutable",
     "s1": "Historical Identity Preservation — Emberbird may replace branding; it may not erase history"
   },
-  "generated_at": "2026-09-16T13:16:52Z",
+  "generated_at": "2026-09-16T13:25:05Z",
   "totals": {
-    "files": 179,
-    "occurrences": 1055,
+    "files": 181,
+    "occurrences": 1061,
     "by_token": {
-      "MagiskOnWSA": 171,
-      "MagiskOnWSALocal": 64,
-      "WSABuilds": 820
+      "MagiskOnWSA": 173,
+      "MagiskOnWSALocal": 66,
+      "WSABuilds": 822
     },
     "by_class": {
       "doc-prose": 117,
       "historical-doc": 345,
-      "identifier": 199,
+      "identifier": 204,
       "package-name": 48,
-      "path-reference": 114,
+      "path-reference": 115,
       "upstream-attribution": 45,
       "url": 70,
       "user-facing": 35,
@@ -5651,6 +5651,32 @@
       ]
     },
     {
+      "path": "tests/test_attribution_preservation.py",
+      "count": 4,
+      "occurrences": [
+        {
+          "token": "MagiskOnWSA",
+          "class": "identifier",
+          "context": "self.assertIn(\"MagiskOnWSA\", attribution)"
+        },
+        {
+          "token": "MagiskOnWSALocal",
+          "class": "identifier",
+          "context": "self.assertTrue(visible, \"MagiskOnWSALocal lineage lost from tracked documentation\")"
+        },
+        {
+          "token": "MagiskOnWSALocal",
+          "class": "identifier",
+          "context": "visible = any(\"MagiskOnWSALocal\" in read(c) for c in candidates)"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "self.assertIn(\"WSABuilds\", attribution)"
+        }
+      ]
+    },
+    {
       "path": "tests/test_bootstrap_winget.py",
       "count": 27,
       "occurrences": [
@@ -5957,6 +5983,22 @@
           "token": "WSABuilds",
           "class": "identifier",
           "context": "sample_file.write_bytes(b\"Mock 7z compressed payload for WSABuilds testing.\")"
+        }
+      ]
+    },
+    {
+      "path": "tests/test_metamorphosis_contract.py",
+      "count": 2,
+      "occurrences": [
+        {
+          "token": "MagiskOnWSA",
+          "class": "path-reference",
+          "context": "\"MagiskOnWSA/scripts\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "\"WSABuilds Utilities\","
         }
       ]
     },

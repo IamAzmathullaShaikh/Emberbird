@@ -40,6 +40,7 @@ ALLOWLIST_UNMIRRORED = {
     "research/ARM64_CROSS_COMPILATION.md",  # Task 4.2 research artifact (E0)
     "BRAND.md",  # brand policy (E1)
     "PATH_MAP.md",  # repository mapping (E1)
+    "CONSUMER_MATRIX.md",  # S4 consumer purity matrix (E1.5)
 }
 
 FRONTMATTER_RE = re.compile(r"\A---\s*\n.*?\n---\s*\n", re.DOTALL)
