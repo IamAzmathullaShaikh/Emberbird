@@ -79,7 +79,14 @@ jobs:
 
       - name: Run Offline Unit Test Suite 🧪
         run: |
-          python3 -m unittest discover -s tests -v
+          status=0
+          python3 -m unittest discover -s tests -v > unittest-output.log 2>&1 || status=$?
+          # surface failing tests as ::error:: annotations (readable via API)
+          grep -E "^(FAIL|ERROR): " unittest-output.log | sed 's/^/::error::/' || true
+          grep -E "^(Ran|OK|FAILED)" unittest-output.log || true
+          echo "---- last 60 lines of test output ----"
+          tail -60 unittest-output.log
+          exit $status
 
   verify-package-identity:
     name: Package Identity Regression Check
