@@ -28,8 +28,9 @@ export interface ReleaseAsset {
   size: number;
   browser_download_url: string;
   architecture: 'x64' | 'arm64' | 'unknown';
-  root_flavor: 'Magisk' | 'KernelSU' | 'None';
-  gapps_flavor: 'Pico' | 'MindTheGapps' | 'None';
+  /** 'unknown' = not derivable from the filename (e.g. manager archives). */
+  root_flavor: 'Magisk' | 'KernelSU' | 'None' | 'unknown';
+  gapps_flavor: 'Pico' | 'MindTheGapps' | 'None' | 'unknown';
 }
 
 export interface ReleaseInfo {

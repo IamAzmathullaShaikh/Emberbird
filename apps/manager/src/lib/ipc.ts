@@ -178,9 +178,9 @@ export async function checkForUpdates(): Promise<UpdateStatus> {
   return invokeTauri<UpdateStatus>('check_for_updates');
 }
 
-export async function getLatestReleases(): Promise<ReleaseInfo[]> {
-  return invokeTauri<ReleaseInfo[]>('get_latest_releases');
-}
+// E3C.4: the legacy latest-releases IPC wrapper was removed — the Rust
+// command it wrapped was a stub returning `[]` (zero discovery), and release
+// truth now resolves from the bundled Ember Registry via `lib/registry.ts`.
 
 export async function validateEnvironment(): Promise<ManagerEnvConfig> {
   return invokeTauri<ManagerEnvConfig>('validate_manager_env');

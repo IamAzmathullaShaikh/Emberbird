@@ -16,8 +16,7 @@ forbidden pattern)? What is its migration status?
 | Website — downloads portal | ✅ `RegistryReleaseProvider` (build-time registry import, offline) | ✅ registry schema-validated by CI Reality Gate before every build | ❌ none since E3B.4 (legacy provider kept ONLY as the test-tree parity oracle) | **Migrated** (E3B) |
 | Website — compatibility hub | ❌ static compatibility data | partial | ❌ none | **E3B pending** (data-only; no discovery path) |
 | Website — docs mirror | n/a (content, not release truth) | ✅ mirror guard | ❌ none | **Migrated** (S1) |
-| Website — docs mirror | n/a (content, not release truth) | ✅ mirror guard | ❌ none | **Migrated** (S1) |
-| Manager | ❌ release URLs derived from repo config | partial | ⚠️ URL-derivation only (`src/lib/env.ts`, `src/lib/ipc.ts`, `src/lib/types.ts`) | **E3C pending** |
+| Manager | ✅ `src/lib/registry.ts` (bundled registry import, offline) | ✅ registry-mapped `ReleaseInfo`; flavors follow the documented WSA naming convention | ⚠️ URL-derivation is repo-config plumbing only (`env.ts`, `ipc.ts`, `types.ts`) — derives no release truth; dead `get_latest_releases` stub removed at E3C.4 | **Migrated** (E3C; Rust side inert — no discovery code exists) |
 | Winget workflow | ✅ manifest paths produced from the pipeline | ✅ identity checks | ❌ no release-catalog API | **Migrated** |
 | CI (build.yml) | ✅ registry reality gate | ✅ contract suite | ❌ none | **Migrated** (S2) |
 
@@ -30,8 +29,10 @@ forbidden pattern)? What is its migration status?
    discovery provider survives only as `website/tests/lib/
    github-release-oracle.ts` — the S2 parity oracle — and must never be
    imported by `website/src`.
-3. Manager release-URL derivation may exist only in the inventoried modules —
-   E3C replaces it with bundled-registry resolution.
+3. Manager release truth resolves from the bundled registry
+   (`src/lib/registry.ts`, E3C): the derivation modules are repo-config
+   plumbing that derives no release truth, and no Manager module may gain a
+   release-discovery path.
 4. No consumer may gain a *new* GitHub-discovery path: the inventoried set is
    closed.
 

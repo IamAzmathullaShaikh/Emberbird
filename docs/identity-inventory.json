@@ -5,14 +5,14 @@
     "m4": "Release History Is Immutable",
     "s1": "Historical Identity Preservation — Emberbird may replace branding; it may not erase history"
   },
-  "generated_at": "2026-09-16T19:10:54Z",
+  "generated_at": "2026-09-16T19:21:41Z",
   "totals": {
-    "files": 155,
-    "occurrences": 957,
+    "files": 156,
+    "occurrences": 958,
     "by_token": {
       "MagiskOnWSA": 109,
       "MagiskOnWSALocal": 67,
-      "WSABuilds": 781
+      "WSABuilds": 782
     },
     "by_class": {
       "doc-prose": 82,
@@ -21,7 +21,7 @@
       "package-name": 48,
       "path-reference": 101,
       "upstream-attribution": 55,
-      "url": 68,
+      "url": 69,
       "user-facing": 13,
       "workflow-name": 38
     },
@@ -1230,6 +1230,17 @@
           "token": "WSABuilds",
           "class": "path-reference",
           "context": "const versionYaml = path.join(manifestDir, 'WSABuilds.WSABuildsManager.yaml');"
+        }
+      ]
+    },
+    {
+      "path": "apps/manager/tests/registry.test.mjs",
+      "count": 1,
+      "occurrences": [
+        {
+          "token": "WSABuilds",
+          "class": "url",
+          "context": "const derived = `https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/${rel.tag_name}/${asset.name}`;"
         }
       ]
     },

@@ -26,6 +26,9 @@ MANAGER_DERIVATION_MODULES = [
     "apps/manager/src/lib/ipc.ts",
     "apps/manager/src/lib/types.ts",  # carries the releases_url type field
 ]
+# E3C: release truth resolves from the bundled registry; the legacy stub
+# wrapper must never return.
+MANAGER_FORBIDDEN_TOKENS = ("getLatestReleases",)
 
 DISCOVERY_TOKENS = ("api.github.com", "releases/latest", "/releases?per_page")
 ENGINE_NETWORK_TOKENS = ("urllib", "requests", "api.github.com", "http.client", "socket")
@@ -103,7 +106,19 @@ class TestClosedDiscoveryInventory(unittest.TestCase):
             if any(tok in text for tok in ("releases_url", "VITE_PUBLIC_RELEASES_URL")):
                 if rel not in MANAGER_DERIVATION_MODULES:
                     offenders.append(rel)
-        self.assertEqual(offenders, [], f"NEW manager release-URL derivation paths are forbidden (matrix closed): {offenders}")
+            if any(tok in text for tok in MANAGER_FORBIDDEN_TOKENS) and "lib/registry.ts" not in rel:
+                offenders.append(rel + " (forbidden legacy discovery token)")
+        self.assertEqual(offenders, [], f"manager derivation/compliance violations (matrix closed): {offenders}")
+
+    def test_manager_registry_resolution_exists(self):
+        """E3C: the Manager's release-truth module must exist and consume the
+        bundled registry (no network)."""
+        reg = REPO_ROOT / "apps" / "manager" / "src" / "lib" / "registry.ts"
+        self.assertTrue(reg.is_file(), "manager registry module missing")
+        text = read(reg)
+        self.assertIn("releases.json", text)
+        self.assertNotIn("api.github.com", text)
+        self.assertNotIn("releases/latest", text)
 
     def test_matrix_document_exists(self):
         matrix = REPO_ROOT / "docs" / "CONSUMER_MATRIX.md"
@@ -111,10 +126,14 @@ class TestClosedDiscoveryInventory(unittest.TestCase):
 
 
 class TestMatrixTruthfulness(unittest.TestCase):
-    def test_matrix_records_pending_consumers(self):
+    def test_matrix_records_migration_state(self):
+        """The matrix must always record the consumers' true state. After
+        E3B/E3C the website and manager rows are Migrated; the compatibility
+        hub remains a documented data-only pending row."""
         matrix = read(REPO_ROOT / "docs" / "CONSUMER_MATRIX.md")
-        self.assertIn("E3B pending", matrix)
-        self.assertIn("E3C pending", matrix)
+        self.assertIn("Migrated** (E3B)", matrix)
+        self.assertIn("Migrated** (E3C", matrix)
+        self.assertIn("E3B pending", matrix)  # compatibility hub (data-only)
         self.assertIn("Migrated", matrix)
 
 

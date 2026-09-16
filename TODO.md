@@ -438,19 +438,23 @@ Per G2: inventory the Manager's release-URL derivation, migrate it to
 registry resolution with a reviewable diff and rollback path, and prove S2
 parity before removing the legacy derivation path.
 
-- [ ] **E3C.1 — G2 inventory**: enumerate every release-URL derivation site in
+- [x] **E3C.1 — G2 inventory**: enumerate every release-URL derivation site in
   `apps/manager/src/lib/` (`env.ts`, `ipc.ts`, `types.ts`) and classify each
   as registry-derivable or legacy-only.
-- [ ] **E3C.2 — Registry resolution**: the Manager resolves release download
+- [x] **E3C.2 — Registry resolution**: the Manager resolves release download
   URLs and integrity data from the bundled Ember Registry (offline), keeping
   published artifact identities intact (E5 boundary respected).
-- [ ] **E3C.3 — S2 parity proof**: derivation output and registry output agree
+- [x] **E3C.3 — S2 parity proof**: derivation output and registry output agree
   for the current release set — demonstrated by test.
-- [ ] **E3C.4 — Legacy derivation removal** (only after parity): inventoried
+- [x] **E3C.4 — Legacy derivation removal** (only after parity): inventoried
   modules leave the derivation inventory; M3 guard flipped; rollback = revert.
 
-**Exit checklist**: E3C.1–E3C.4 checked, full battery green, CI ratification
-confirmed, cycle record appended.
+**Exit checklist**
+
+- [x] E3C.1–E3C.4 implemented; 30/30 Manager tests (incl. 6 new registry tests)
+- [x] Full Python battery green; M3 guard pins zero-discovery + registry module
+- [ ] CI ratification of the E3C commit — closes on the next build.yml run
+  over the pushed commit (probe via GitHub Actions API).
 
 ---
 
@@ -846,6 +850,38 @@ local reproduction was removed. Local website build + tests (34 pass) now reprod
 the CI step before push. The abort did not roll anything back: the defect was fully
 diagnosed, fixed, and re-validated in the working tree; the fix commit below is the
 ratification target.
+
+### Cycle E3C — Manager Consumer Migration (September 17, 2026)
+
+**STATUS:** COMPLETE pending CI ratification · **DEPENDENCIES:** E3B
+CI-ratified (`a5402c3`) · **G2/S2 executed in order; G1 still in effect.**
+
+- [x] **E3C.1 (G2 inventory)**: derivation surface enumerated — `env.ts`
+      (repo-config defaults), `ipc.ts` (mock + IPC wrappers), `types.ts`
+      (`releases_url` field); release truth was a stub (`get_latest_releases`
+      → `[]`, `check_for_updates` on hardcoded versions); zero component
+      consumers. No real discovery existed — the migration replaces the
+      documented derivation rule with registry truth.
+- [x] **E3C.2 (registry resolution)**: `apps/manager/src/lib/registry.ts` —
+      bundled registry import (`with { type: 'json' }`), published-status
+      filter, tag grouping, flavors per the documented WSA naming convention
+      (aligned with the website parser); flavor unions extended with
+      'unknown' (wire-compatible; Rust serializes `String`).
+- [x] **E3C.3 (S2 parity)**: `apps/manager/tests/registry.test.mjs` —
+      registry URLs equal the documented derivation rule for every published
+      asset; full published-tag coverage; Standard/Banking flavors proven;
+      family pinning; draft exclusion.
+- [x] **E3C.4 (legacy removal)**: dead `getLatestReleases` wrapper deleted
+      (zero importers; Rust command is an inert stub — Rust toolchain
+      unavailable locally, so no Rust changes shipped per S3 discipline);
+      M3 guard extended: forbidden-token check + registry-module pin;
+      matrix Manager row → Migrated (with the compatibility hub the only
+      remaining data-only pending row). Rollback = revert.
+  STATUS: COMPLETE (pending CI) · FILES: registry.ts (new), registry.test.mjs
+  (new), ipc.ts, types.ts, CONSUMER_MATRIX, guard test · RISKS: low —
+  additive module + dead-code removal; Rust untouched · VALIDATION: 30/30
+  Manager tests, 39/39 website, full Python battery OK · RESULT: E3C commit
+  pending push; CI ratification to close.
 
 ### Cycle E3B — Website Consumer Migration (September 17, 2026)
 
