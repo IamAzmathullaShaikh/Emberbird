@@ -4,7 +4,7 @@ import type { ManagerEnvConfig } from './types';
 export function validateManagerEnvironment(envSource?: Record<string, string | undefined>): ManagerEnvConfig {
   const source = envSource || (typeof (import.meta as any) !== 'undefined' && (import.meta as any).env ? (import.meta as any).env : process.env);
 
-  const github_repo = source.VITE_PUBLIC_GITHUB_REPO || 'IamAzmathullaShaikh/WSABuilds';
+  const github_repo = source.VITE_PUBLIC_GITHUB_REPO || 'IamAzmathullaShaikh/Emberbird';
   const repo_url = source.VITE_PUBLIC_GITHUB_REPO_URL || `https://github.com/${github_repo}`;
   const releases_url = source.VITE_PUBLIC_RELEASES_URL || `https://github.com/${github_repo}/releases`;
 

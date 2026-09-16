@@ -1,3 +1,5 @@
+// E4.3-FLIP: slug below stays on the historical repository
+// until IamAzmathullaShaikh/Emberbird exists (docs/BRAND.md §7).
 use serde::{Deserialize, Serialize};
 use std::env;
 

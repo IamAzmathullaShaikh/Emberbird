@@ -5,7 +5,7 @@ category: "community"
 order: 4
 ---
 
-This document outlines the operational structure, category definitions, posting rules, and moderation policies for GitHub Discussions in the IamAzmathullaShaikh/WSABuilds repository: https://github.com/IamAzmathullaShaikh/WSABuilds
+This document outlines the operational structure, category definitions, posting rules, and moderation policies for GitHub Discussions in the IamAzmathullaShaikh/Emberbird repository: https://github.com/IamAzmathullaShaikh/Emberbird
 
 ---
 

@@ -9,7 +9,7 @@ This document details the architectural design, security requirements, and autom
 ```text
 ┌─────────────────────────────────────────────────────────────┐
 │                      GitHub Repository                      │
-│                (IamAzmathullaShaikh/WSABuilds)              │
+│                (IamAzmathullaShaikh/Emberbird)              │
 └──────────────────────────────┬──────────────────────────────┘
                                │ GitHub Actions Runner Agent
                                ▼

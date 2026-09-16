@@ -90,9 +90,9 @@ npm run typecheck
 Copy `.env.example` to `.env` for local development:
 ```ini
 SITE_URL=http://localhost:4321
-PUBLIC_GITHUB_REPO=IamAzmathullaShaikh/WSABuilds
-PUBLIC_GITHUB_REPO_URL=https://github.com/IamAzmathullaShaikh/WSABuilds
-PUBLIC_RELEASES_URL=https://github.com/IamAzmathullaShaikh/WSABuilds/releases
+PUBLIC_GITHUB_REPO=IamAzmathullaShaikh/Emberbird
+PUBLIC_GITHUB_REPO_URL=https://github.com/IamAzmathullaShaikh/Emberbird
+PUBLIC_RELEASES_URL=https://github.com/IamAzmathullaShaikh/Emberbird/releases
 ```
 
 Missing environment variables trigger explicit startup exceptions in `src/lib/env.ts` to ensure fail-fast configuration governance.

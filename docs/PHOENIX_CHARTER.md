@@ -2,7 +2,7 @@
 
 **Project Codename**: Phoenix  
 **Platform Name**: Emberbird  
-**Repository**: https://github.com/IamAzmathullaShaikh/WSABuilds  
+**Repository**: https://github.com/IamAzmathullaShaikh/Emberbird  
 **Charter Version**: 1.0 (Phase P0 Foundation)
 
 ---

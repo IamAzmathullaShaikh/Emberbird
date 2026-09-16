@@ -41,7 +41,7 @@ ROOT = Path(__file__).resolve().parent.parent
 MANIFESTS_DIR = ROOT / "manifests" / "w" / "WSABuilds" / "WSABuildsManager"
 PACKAGE_ID = "WSABuilds.WSABuildsManager"
 PUBLISHER_DIR = "WSABuilds"
-REPO = "IamAzmathullaShaikh/WSABuilds"
+REPO = "IamAzmathullaShaikh/Emberbird"
 OUT_DIR = ROOT / "dist_winget_submission"
 
 # The documented bootstrap placeholder allowed ONLY before publication

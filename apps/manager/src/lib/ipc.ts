@@ -27,7 +27,7 @@ async function invokeTauri<T>(cmd: string, args?: Record<string, unknown>): Prom
 }
 
 function mockInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
-  const repo = 'IamAzmathullaShaikh/WSABuilds';
+  const repo = 'IamAzmathullaShaikh/Emberbird';
   const ghDomain = 'github.com';
   switch (cmd) {
     case 'detect_wsa_status':

@@ -38,7 +38,7 @@ import sys
 import tempfile
 import urllib.request
 
-DEFAULT_REPO = os.environ.get("WSABUILDS_REPO", "IamAzmathullaShaikh/WSABuilds")
+DEFAULT_REPO = os.environ.get("WSABUILDS_REPO", "IamAzmathullaShaikh/Emberbird")
 FALLBACK_REPO = "MustardChef/WSABuilds"
 PACKAGE_PREFIX = "MicrosoftCorporationII.WindowsSubsystemForAndroid"
 

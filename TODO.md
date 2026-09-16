@@ -469,14 +469,18 @@ Per the approved programme: the canonical repository becomes
 documented slug contract; the GitHub-side rename is a single owner action and
 every old URL keeps working through GitHub's redirect after it.
 
-- [ ] **E4.1 — Slug contract**: document the canonical repository identity,
+- [x] **E4.1 — Slug contract**: document the canonical repository identity,
   the redirect guarantee, and the S1 boundary (historical URLs inside
   attribution, archive docs, and published release records stay verbatim).
-- [ ] **E4.2 — URL rewrite**: living surfaces (badges, clone instructions,
+  → `docs/BRAND.md` §7 (rewrite / pin / keep table + E4.3 flip command).
+- [x] **E4.2 — URL rewrite**: living surfaces (badges, clone instructions,
   env defaults, website config, workflow env vars) move to the new slug;
   published registry `source_url`s are NOT hand-edited — they are observed
   reality at generation time and redirect after the rename; the next
   reality-sync regenerates them from the renamed repo.
+  → Mapping-driven rewrite: 20 living surfaces (34 occurrences), frozen
+  truth untouched, publication plumbing pinned with `E4.3-FLIP` markers
+  (`winget-release.yml`, Manager `env.rs`). Guard: `tests/test_e4_slug_contract.py`.
 - [ ] **E4.3 — Owner action recorded**: the GitHub rename itself is executed
   by the owner (requires credentials this environment does not have); the
   exit item stays honestly open until confirmed.

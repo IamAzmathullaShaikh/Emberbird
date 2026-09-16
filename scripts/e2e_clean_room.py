@@ -230,9 +230,9 @@ def phase_website(tools: dict, skip: bool) -> None:
         return
     env = dict(os.environ)
     env.setdefault("SITE_URL", "https://wsabuilds-website.pages.dev")
-    env.setdefault("PUBLIC_GITHUB_REPO", "IamAzmathullaShaikh/WSABuilds")
-    env.setdefault("PUBLIC_GITHUB_REPO_URL", "https://github.com/IamAzmathullaShaikh/WSABuilds")
-    env.setdefault("PUBLIC_RELEASES_URL", "https://github.com/IamAzmathullaShaikh/WSABuilds/releases")
+    env.setdefault("PUBLIC_GITHUB_REPO", "IamAzmathullaShaikh/Emberbird")
+    env.setdefault("PUBLIC_GITHUB_REPO_URL", "https://github.com/IamAzmathullaShaikh/Emberbird")
+    env.setdefault("PUBLIC_RELEASES_URL", "https://github.com/IamAzmathullaShaikh/Emberbird/releases")
 
     code, out = run(["node", "--test", "tests/"], cwd=WEBSITE_DIR, timeout=600)
     record("website/tests", "PASS" if code == 0 else "FAIL",

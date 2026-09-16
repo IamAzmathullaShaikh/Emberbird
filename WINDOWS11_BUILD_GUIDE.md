@@ -135,14 +135,14 @@ which aria2c 7z qemu-img python3
 cd ~
 
 # Clone the repository
-git clone https://github.com/IamAzmathullaShaikh/WSABuilds.git
+git clone https://github.com/IamAzmathullaShaikh/Emberbird.git
 cd WSABuilds
 ```
 
 ### In Native Windows PowerShell (For `build_local.py`):
 ```powershell
 cd C:\Projects
-git clone https://github.com/IamAzmathullaShaikh/WSABuilds.git
+git clone https://github.com/IamAzmathullaShaikh/Emberbird.git
 cd WSABuilds
 ```
 

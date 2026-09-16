@@ -83,3 +83,27 @@ Corporation; all third-party marks belong to their owners. The AGPL-3.0
 obligations (source availability, license text preservation, attribution) are
 preserved in full through the metamorphosis — verified by
 `tests/test_governance_guards.py` and the attribution tests (E1.5).
+
+## 7. Repository identity (E4.1 slug contract)
+
+**Canonical repository identity: `IamAzmathullaShaikh/Emberbird`.**
+
+**Slug boundary — what may and may not be rewritten:**
+
+| Class | Rule |
+|---|---|
+| **Rewrite (living identity pointers)** | Badges, canonical clone URLs, issue/discussion links in living docs, `.env.example` identity values, website README env examples, and the fork-parent reference in this document (§1). |
+| **Pin with E4.3 flip marker (publication plumbing)** | Anything that could poison a real publication before `IamAzmathullaShaikh/Emberbird` exists: `winget-release.yml` slug env, `apps/manager/src/lib/env.ts` embedded default. These carry an `<!-- E4.3-FLIP: ... -->` (or `# E4.3-FLIP:`) marker and a documented flip command. |
+| **Keep (frozen truth, S1)** | Registry `source_url` values, registry-sidecar URL strings, published winget manifests, `docs/archive/**`, all cycle/audit records (CLEANUP_REPORT, REMOVED_ROOT_SOLUTIONS, TODO cycle records), upstream sync target, attribution anchors. GitHub's forward redirect keeps every historical URL resolvable. |
+
+**Ordering guarantee:** the owner's rename (E4.3) happens via GitHub → Settings → General →
+"Rename repository". Git history, tags, releases, stars, issues, and web traffic follow the
+rename; GitHub 301-redirects all old URLs. Nothing in this contract requires breaking
+historical URL truth — frozen URLs keep working forever through the redirect.
+
+**E4.3 flip (owner action, single command):**
+`grep -rl "E4.3-FLIP" --include="*.yml" --include="*.ts" . | xargs sed -i 's/IamAzmathullaShaikh\/WSABuilds/IamAzmathullaShaikh\/Emberbird/g'`
+(then remove the markers, commit, push). Publication systems then build from the new slug.
+
+**Guard:** `tests/test_e4_slug_contract.py` pins this table: rewritten surfaces stay
+rewritten, pinned surfaces carry flip markers, frozen truth keeps the historical slug.

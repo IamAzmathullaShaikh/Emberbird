@@ -32,7 +32,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 REGISTRY_PATH = REPO_ROOT / "data" / "releases" / "releases.json"
 SCHEMA_PATH = REPO_ROOT / "data" / "releases" / "releases.schema.json"
-REPO_SLUG = "IamAzmathullaShaikh/WSABuilds"
+REPO_SLUG = "IamAzmathullaShaikh/Emberbird"
 
 WSA_VER_RE = re.compile(r"[0-9]+[.][0-9]{5}[.][0-9]+[.][0-9]+")
 MANAGER_VER_RE = re.compile(r"^v([0-9]+[.][0-9]+[.][0-9]+)$")

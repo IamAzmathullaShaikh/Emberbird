@@ -5,24 +5,24 @@
     "m4": "Release History Is Immutable",
     "s1": "Historical Identity Preservation — Emberbird may replace branding; it may not erase history"
   },
-  "generated_at": "2026-09-16T19:36:06Z",
+  "generated_at": "2026-09-16T20:26:49Z",
   "totals": {
-    "files": 156,
-    "occurrences": 958,
+    "files": 151,
+    "occurrences": 960,
     "by_token": {
       "MagiskOnWSA": 109,
       "MagiskOnWSALocal": 67,
-      "WSABuilds": 782
+      "WSABuilds": 784
     },
     "by_class": {
-      "doc-prose": 82,
+      "doc-prose": 81,
       "historical-doc": 345,
-      "identifier": 207,
+      "identifier": 211,
       "package-name": 48,
-      "path-reference": 101,
+      "path-reference": 122,
       "upstream-attribution": 55,
-      "url": 69,
-      "user-facing": 13,
+      "url": 48,
+      "user-facing": 12,
       "workflow-name": 38
     },
     "protected_occurrences": 400
@@ -30,7 +30,7 @@
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/bug_report.yml",
-      "count": 6,
+      "count": 3,
       "occurrences": [
         {
           "token": "WSABuilds",
@@ -46,33 +46,13 @@
           "token": "WSABuilds",
           "class": "url",
           "context": "1. Run the Interactive Diagnostic Wizard: https://iamazmathullashaikh.github.io/WSABuilds/troubleshoot/wizard for instant remediation of virtualization, graphics, and install error"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "url",
-          "context": "2. Check the Troubleshooting Guide: https://github.com/IamAzmathullaShaikh/WSABuilds/blob/master/TROUBLESHOOTING.md and Error Codes Guide: https://github.com/IamAzmathullaShaikh/WS"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "url",
-          "context": "2. Check the Troubleshooting Guide: https://github.com/IamAzmathullaShaikh/WSABuilds/blob/master/TROUBLESHOOTING.md and Error Codes Guide: https://github.com/IamAzmathullaShaikh/WS"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "url",
-          "context": "3. Search Existing Issues: https://github.com/IamAzmathullaShaikh/WSABuilds/issues to prevent duplicate reports."
         }
       ]
     },
     {
       "path": ".github/ISSUE_TEMPLATE/config.yml",
-      "count": 2,
+      "count": 1,
       "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "url",
-          "context": "url: https://github.com/IamAzmathullaShaikh/WSABuilds#--uninstallation"
-        },
         {
           "token": "WSABuilds",
           "class": "url",
@@ -514,7 +494,7 @@
     },
     {
       "path": "README.md",
-      "count": 17,
+      "count": 13,
       "occurrences": [
         {
           "token": "WSABuilds",
@@ -545,26 +525,6 @@
           "token": "WSABuilds",
           "class": "url",
           "context": "* **Setup Installer (.exe)**: [Download WSABuildsManager-Setup-0.2.2-x64.exe](https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.2/WSABuildsManager-Setup-0.2.2"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "url",
-          "context": "<img src=\"https://img.shields.io/github/actions/workflow/status/IamAzmathullaShaikh/WSABuilds/build.yml?label=CI%20Build&style=for-the-badge\" alt=\"CI Status\"/>"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "url",
-          "context": "<img src=\"https://img.shields.io/github/actions/workflow/status/IamAzmathullaShaikh/WSABuilds/release.yml?label=WSA%20Release&style=for-the-badge\" alt=\"WSA Release Pipeline\"/>"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "url",
-          "context": "<img src=\"https://img.shields.io/github/actions/workflow/status/IamAzmathullaShaikh/WSABuilds/winget-release.yml?label=Manager%20Release&style=for-the-badge\" alt=\"Manager Release P"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "url",
-          "context": "git clone https://github.com/IamAzmathullaShaikh/WSABuilds.git"
         },
         {
           "token": "WSABuilds",
@@ -978,7 +938,7 @@
     },
     {
       "path": "WINDOWS11_BUILD_GUIDE.md",
-      "count": 4,
+      "count": 2,
       "occurrences": [
         {
           "token": "WSABuilds",
@@ -989,16 +949,6 @@
           "token": "WSABuilds",
           "class": "doc-prose",
           "context": "cd WSABuilds"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "url",
-          "context": "git clone https://github.com/IamAzmathullaShaikh/WSABuilds.git"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "url",
-          "context": "git clone https://github.com/IamAzmathullaShaikh/WSABuilds.git"
         }
       ]
     },
@@ -1115,19 +1065,8 @@
       ]
     },
     {
-      "path": "apps/manager/src/lib/env.ts",
-      "count": 1,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "const github_repo = source.VITE_PUBLIC_GITHUB_REPO || 'IamAzmathullaShaikh/WSABuilds';"
-        }
-      ]
-    },
-    {
       "path": "apps/manager/src/lib/ipc.ts",
-      "count": 5,
+      "count": 4,
       "occurrences": [
         {
           "token": "WSABuilds",
@@ -1148,11 +1087,6 @@
           "token": "WSABuilds",
           "class": "identifier",
           "context": "backup_path: '%LOCALAPPDATA%\\\\WSABuilds\\\\backups\\\\mock\\\\userdata.vhdx',"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "const repo = 'IamAzmathullaShaikh/WSABuilds';"
         }
       ]
     },
@@ -1742,7 +1676,7 @@
     },
     {
       "path": "docs/BRAND.md",
-      "count": 4,
+      "count": 5,
       "occurrences": [
         {
           "token": "MagiskOnWSA",
@@ -1763,6 +1697,11 @@
           "token": "WSABuilds",
           "class": "doc-prose",
           "context": "4. **Published winget manifests** — `manifests/w/WSABuilds/**` are frozen"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "`grep -rl \"E4.3-FLIP\" --include=\"*.yml\" --include=\"*.ts\" . | xargs sed -i 's/IamAzmathullaShaikh\\/WSABuilds/IamAzmathullaShaikh\\/Emberbird/g'`"
         }
       ]
     },
@@ -1898,28 +1837,6 @@
           "token": "WSABuilds",
           "class": "doc-prose",
           "context": "| `WSABuilds Utilities/` | `utilities/` | 4 utility scripts (space-separated name, tracked) | ACTIVE |"
-        }
-      ]
-    },
-    {
-      "path": "docs/PHOENIX_CHARTER.md",
-      "count": 1,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "url",
-          "context": "**Repository**: https://github.com/IamAzmathullaShaikh/WSABuilds"
-        }
-      ]
-    },
-    {
-      "path": "docs/WINDOWS_VALIDATION_LAB.md",
-      "count": 1,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "doc-prose",
-          "context": "│                (IamAzmathullaShaikh/WSABuilds)              │"
         }
       ]
     },
@@ -3937,22 +3854,6 @@
       ]
     },
     {
-      "path": "docs/community/discussions-governance.md",
-      "count": 2,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "url",
-          "context": "This document outlines the operational structure, category definitions, posting rules, and moderation policies for GitHub Discussions in the IamAzmathullaShaikh/WSABuilds repositor"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "url",
-          "context": "This document outlines the operational structure, category definitions, posting rules, and moderation policies for GitHub Discussions in the IamAzmathullaShaikh/WSABuilds repositor"
-        }
-      ]
-    },
-    {
       "path": "docs/community/privacy-and-analytics.md",
       "count": 1,
       "occurrences": [
@@ -3965,17 +3866,12 @@
     },
     {
       "path": "docs/getting-started/quick-start.md",
-      "count": 2,
+      "count": 1,
       "occurrences": [
         {
           "token": "WSABuilds",
           "class": "doc-prose",
           "context": "- **Subsystem Management**: Manage cold VHDX backups, safe restores, and guided updates with the **WSABuilds Manager** desktop client."
-        },
-        {
-          "token": "WSABuilds",
-          "class": "url",
-          "context": "1. Download the recommended release from the Emberbird Web Portal (`/downloads`) or the official GitHub Releases page: `https://github.com/IamAzmathullaShaikh/WSABuilds/releases`."
         }
       ]
     },
@@ -4275,7 +4171,7 @@
     },
     {
       "path": "scripts/bootstrap_winget.py",
-      "count": 9,
+      "count": 8,
       "occurrences": [
         {
           "token": "WSABuilds",
@@ -4305,11 +4201,6 @@
         {
           "token": "WSABuilds",
           "class": "identifier",
-          "context": "REPO = \"IamAzmathullaShaikh/WSABuilds\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
           "context": "bootstrap_winget.py — WSABuilds Winget Submission & Release Hash Bootstrap"
         },
         {
@@ -4326,13 +4217,8 @@
     },
     {
       "path": "scripts/build_registry.py",
-      "count": 3,
+      "count": 2,
       "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "REPO_SLUG = \"IamAzmathullaShaikh/WSABuilds\""
-        },
         {
           "token": "WSABuilds",
           "class": "identifier",
@@ -4358,17 +4244,12 @@
     },
     {
       "path": "scripts/e2e_clean_room.py",
-      "count": 6,
+      "count": 3,
       "occurrences": [
         {
           "token": "WSABuilds",
           "class": "identifier",
           "context": "e2e_clean_room.py — Clean-room end-to-end verification for WSABuilds."
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "env.setdefault(\"PUBLIC_GITHUB_REPO\", \"IamAzmathullaShaikh/WSABuilds\")"
         },
         {
           "token": "WSABuilds",
@@ -4379,16 +4260,6 @@
           "token": "WSABuilds",
           "class": "identifier",
           "context": "print(\" WSABuilds Clean-Room E2E Verification\")"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "url",
-          "context": "env.setdefault(\"PUBLIC_GITHUB_REPO_URL\", \"https://github.com/IamAzmathullaShaikh/WSABuilds\")"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "url",
-          "context": "env.setdefault(\"PUBLIC_RELEASES_URL\", \"https://github.com/IamAzmathullaShaikh/WSABuilds/releases\")"
         }
       ]
     },
@@ -4545,6 +4416,142 @@
           "token": "WSABuilds",
           "class": "path-reference",
           "context": "\"WSABuilds.WSABuildsManager\",      # E5: winget package identity"
+        }
+      ]
+    },
+    {
+      "path": "scripts/e4_slug_transform.py",
+      "count": 26,
+      "occurrences": [
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "\"docs/archive/Documentation/WSABuilds/Backup and Restore.md\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.0/WSABuilds.WSABuildsManager.installer.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.0/WSABuilds.WSABuildsManager.locale.en-US.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.1/WSABuilds.WSABuildsManager.installer.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.1/WSABuilds.WSABuildsManager.locale.en-US.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.2/WSABuilds.WSABuildsManager.installer.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.2/WSABuilds.WSABuildsManager.locale.en-US.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "OLD = \"IamAzmathullaShaikh/WSABuilds\""
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.0/WSABuilds.WSABuildsManager.installer.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.0/WSABuilds.WSABuildsManager.installer.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.0/WSABuilds.WSABuildsManager.installer.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.0/WSABuilds.WSABuildsManager.locale.en-US.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.0/WSABuilds.WSABuildsManager.locale.en-US.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.0/WSABuilds.WSABuildsManager.locale.en-US.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.1/WSABuilds.WSABuildsManager.installer.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.1/WSABuilds.WSABuildsManager.installer.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.1/WSABuilds.WSABuildsManager.installer.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.1/WSABuilds.WSABuildsManager.locale.en-US.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.1/WSABuilds.WSABuildsManager.locale.en-US.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.1/WSABuilds.WSABuildsManager.locale.en-US.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.2/WSABuilds.WSABuildsManager.installer.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.2/WSABuilds.WSABuildsManager.installer.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.2/WSABuilds.WSABuildsManager.installer.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.2/WSABuilds.WSABuildsManager.locale.en-US.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.2/WSABuilds.WSABuildsManager.locale.en-US.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.2/WSABuilds.WSABuildsManager.locale.en-US.yaml\","
         }
       ]
     },
@@ -5009,6 +5016,37 @@
           "token": "WSABuilds",
           "class": "path-reference",
           "context": "self.assertEqual(mgr[\"winget_package_id\"], \"WSABuilds.WSABuildsManager\")"
+        }
+      ]
+    },
+    {
+      "path": "tests/test_e4_slug_contract.py",
+      "count": 5,
+      "occurrences": [
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.2/WSABuilds.WSABuildsManager.installer.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "OLD = \"IamAzmathullaShaikh/WSABuilds\""
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.2/WSABuilds.WSABuildsManager.installer.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.2/WSABuilds.WSABuildsManager.installer.yaml\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.2/WSABuilds.WSABuildsManager.installer.yaml\","
         }
       ]
     },
@@ -5534,7 +5572,7 @@
     },
     {
       "path": "utilities/Update Script/WSAUpdater.py",
-      "count": 7,
+      "count": 6,
       "occurrences": [
         {
           "token": "WSABuilds",
@@ -5554,11 +5592,6 @@
         {
           "token": "WSABuilds",
           "class": "identifier",
-          "context": "DEFAULT_REPO = os.environ.get(\"WSABUILDS_REPO\", \"IamAzmathullaShaikh/WSABuilds\")"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
           "context": "FALLBACK_REPO = \"MustardChef/WSABuilds\""
         },
         {
@@ -5574,27 +5607,6 @@
       ]
     },
     {
-      "path": "website/README.md",
-      "count": 3,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "doc-prose",
-          "context": "PUBLIC_GITHUB_REPO=IamAzmathullaShaikh/WSABuilds"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "url",
-          "context": "PUBLIC_GITHUB_REPO_URL=https://github.com/IamAzmathullaShaikh/WSABuilds"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "url",
-          "context": "PUBLIC_RELEASES_URL=https://github.com/IamAzmathullaShaikh/WSABuilds/releases"
-        }
-      ]
-    },
-    {
       "path": "website/scripts/import-docs.mjs",
       "count": 1,
       "occurrences": [
@@ -5602,22 +5614,6 @@
           "token": "WSABuilds",
           "class": "identifier",
           "context": "let description = 'WSABuilds technical guide.';"
-        }
-      ]
-    },
-    {
-      "path": "website/src/content/docs/community/discussions-governance.md",
-      "count": 2,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "url",
-          "context": "This document outlines the operational structure, category definitions, posting rules, and moderation policies for GitHub Discussions in the IamAzmathullaShaikh/WSABuilds repositor"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "url",
-          "context": "This document outlines the operational structure, category definitions, posting rules, and moderation policies for GitHub Discussions in the IamAzmathullaShaikh/WSABuilds repositor"
         }
       ]
     },
@@ -5664,25 +5660,9 @@
       ]
     },
     {
-      "path": "website/src/content/docs/getting-started/WINDOWS_VALIDATION_LAB.md",
+      "path": "website/src/content/docs/getting-started/quick-start.md",
       "count": 1,
       "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "user-facing",
-          "context": "│                (IamAzmathullaShaikh/WSABuilds)              │"
-        }
-      ]
-    },
-    {
-      "path": "website/src/content/docs/getting-started/quick-start.md",
-      "count": 2,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "url",
-          "context": "1. Download the recommended release from the Emberbird Web Portal (`/downloads`) or the official GitHub Releases page: `https://github.com/IamAzmathullaShaikh/WSABuilds/releases`."
-        },
         {
           "token": "WSABuilds",
           "class": "user-facing",
