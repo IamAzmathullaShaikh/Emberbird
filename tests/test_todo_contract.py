@@ -71,7 +71,7 @@ class TestPhaseHonesty(unittest.TestCase):
         problems = []
         for i in range(1, len(sections) - 1, 2):
             title, body = sections[i], sections[i + 1]
-            unchecked = len(CHECKBOX_RE.findall(body))
+            unchecked = len([m for m in CHECKBOX_RE.findall(body) if m != "x"])
             if unchecked and "complete" in title.lower() and "pending" not in title.lower():
                 problems.append(f"phase '{title}' claims COMPLETE with {unchecked} unchecked item(s)")
         self.assertEqual(problems, [], "\n".join(problems))
