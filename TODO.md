@@ -325,7 +325,7 @@ The safety net, built before any restructure or rename per the frozen programme.
 
 ---
 
-### E2 — Repository Restructure (ACTIVE — G1 feature freeze in effect)
+### E2 — Repository Restructure (COMPLETE — CI-ratified `51b6810`)
 
 Per Metamorphosis Programme v3 and PATH_MAP v2 (`docs/PATH_MAP.md`). One
 surgical commit: every tracked file moves to its mapping target, every
@@ -358,8 +358,9 @@ byte-identical and unstaged at its new path.
 **Exit checklist**
 
 - [x] E2.4 + E2.5 checked
-- [ ] CI ratification of the E2 commit — closes on the next build.yml run over
-  the pushed commit (probe via GitHub Actions API).
+- [x] CI ratification of the E2 commit — **CONFIRMED**: all four workflows
+  `completed/success` on head `51b6810` (Build & CI, Documentation, Website
+  Deployment, Security — GitHub Actions API probe).
 
 ---
 
@@ -786,7 +787,8 @@ CI-ratified (`e30ecb1`) · **G1 feature freeze in effect.**
   STATUS: COMPLETE · FILES: 766 tracked paths touched · RISKS: upstream merges
   will conflict by design (conflict path opens a triage PR) · VALIDATION:
   267/267 OK, schema OK, compiles clean, actionlint clean, website build+tests
-  green · RESULT: E2 commit pending push; CI ratification to close.
+  green · RESULT: COMPLETE — CI-ratified (`51b6810`); G1 freeze remains in
+effect through E3.
 
 ### Cycle E1.5 — Metamorphosis Contract Tests (September 16, 2026)
 
