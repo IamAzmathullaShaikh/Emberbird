@@ -1,6 +1,6 @@
-# WSABuilds Engineering & Validation Tooling
+# Emberbird Engineering & Validation Tooling
 
-The `scripts/` directory contains standalone automation, security, validation, and release engineering tools for the **WSABuilds** platform. All tools are designed to operate deterministically across Linux, macOS, and Windows.
+The `scripts/` directory contains standalone automation, security, validation, and release engineering tools for the **Emberbird** platform. All tools are designed to operate deterministically across Linux, macOS, and Windows.
 
 ---
 

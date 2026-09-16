@@ -1,5 +1,5 @@
 # =============================================================================
-# update.yml — WSABuilds automated update & release dispatch
+# update.yml — Emberbird automated update & release dispatch
 #
 # Triggered manually (workflow_dispatch).
 # Checks for new WSA retail versions and component updates, then dispatches

@@ -1,11 +1,11 @@
 ---
 title: "WSA Upgrade Compatibility & Data Retention Framework"
-description: "This document specifies the validation procedure for ensuring seamless, data-preserving upgrades between successive WSABuilds releases."
+description: "This document specifies the validation procedure for ensuring seamless, data-preserving upgrades between successive Emberbird releases."
 category: "getting-started"
 order: 1
 ---
 
-This document specifies the validation procedure for ensuring seamless, data-preserving upgrades between successive WSABuilds releases.
+This document specifies the validation procedure for ensuring seamless, data-preserving upgrades between successive Emberbird releases.
 
 ---
 
@@ -15,12 +15,12 @@ In Windows Subsystem for Android, all user data, installed Android apps, setting
 - `%LocalAppData%\Packages\MicrosoftCorporationII.WindowsSubsystemForAndroid_8wekyb3d8bbwe\LocalCache\`
 - `%LocalAppData%\Packages\MicrosoftCorporationII.WindowsSubsystemForAndroid_8wekyb3d8bbwe\LocalState\userdata.vhdx`
 
-Because WSABuilds preserves the verified package identity:
+Because Emberbird preserves the verified package identity:
 - **Package Name**: `MicrosoftCorporationII.WindowsSubsystemForAndroid`
 - **Publisher**: `CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US`
 - **Package Family Name**: `MicrosoftCorporationII.WindowsSubsystemForAndroid_8wekyb3d8bbwe`
 
-Windows considers successive versions of WSABuilds to be **the exact same application family**.
+Windows considers successive versions of Emberbird to be **the exact same application family**.
 
 ---
 

@@ -1,15 +1,15 @@
 ---
 title: "Compatibility Moderation & Submission Governance"
-description: "This guide outlines the governance standards, verification lifecycles, and moderation criteria for the WSABuilds Application Compatibility Directory."
+description: "This guide outlines the governance standards, verification lifecycles, and moderation criteria for the Emberbird Application Compatibility Directory."
 category: "community"
 order: 4
 ---
 
-This guide outlines the governance standards, verification lifecycles, and moderation criteria for the WSABuilds Application Compatibility Directory.
+This guide outlines the governance standards, verification lifecycles, and moderation criteria for the Emberbird Application Compatibility Directory.
 
 ## 1. Overview
 
-The WSABuilds Compatibility Directory bridges the gap between Windows Subsystem for Android and popular mobile applications that require hardware attestation, root hiding, or Google Mobile Services.
+The Emberbird Compatibility Directory bridges the gap between Windows Subsystem for Android and popular mobile applications that require hardware attestation, root hiding, or Google Mobile Services.
 
 To guarantee that users find accurate, reliable, and actionable information, every compatibility report is subject to automated validation and community moderation.
 

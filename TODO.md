@@ -364,6 +364,42 @@ byte-identical and unstaged at its new path.
 
 ---
 
+### E3A — Brand Metamorphosis (ACTIVE — G1 freeze; identity only)
+
+Per BRAND.md §3 policy and the Cycle E3A S1 review. Platform-identity prose
+rebrands to Emberbird in living documents and website chrome; product names,
+published artifact identities, repository URLs, and upstream references are
+explicitly kept for their designated later phases.
+
+- [x] **E3A.1 — S1 per-file review**: all 117 doc-prose + 33 user-facing +
+  39 workflow-name occurrences triaged. KEEP classes: `WSABuildsManager`
+  artifacts/product (E5), `WSABuilds.WSABuildsManager` + `manifests/w/`
+  (E5), repo URLs + `cd WSABuilds` (E4), `MustardChef/WSABuilds` (S1),
+  audit reports (S1 historical records).
+- [x] **E3A.2 — Rebrand applied**: 40 files via `scripts/e3a_brand_transform.py`
+  (mapping-driven, dry-run-gated, keep-token protection, leftover scan):
+  living docs, workflows display text, User-Agent identities
+  (`Emberbird-WebClient`/`-ReleaseService`), website chrome titles/prose,
+  compatibility JSON content. Audit reports, charters, migration prose and
+  preserved ARM64-WIP files untouched (S1/deferred).
+- [x] **E3A.3 — License-truth fix**: website footer claimed Apache-2.0;
+  corrected to AGPL-3.0 (LICENSE_AUDIT reality).
+- [x] **E3A.4 — Importer fail-closed**: `import-docs.mjs` converted from a
+  skip-list to a public-IA allowlist — internal governance docs can never
+  leak into the public site; 8 orphan residues removed; UPGRADE_VALIDATION
+  mirror re-synced.
+- [x] **E3A.5 — Battery**: 267/267 OK, website build + 34 tests green,
+  doc-links clean, inventory regenerated and staged.
+
+**Exit checklist**
+
+- [x] Transform dry-run + apply verified; leftover scan clean
+- [x] Mirror guard pair-comparison fixed (WIP on both sides compared at HEAD)
+- [ ] CI ratification of the E3A commit — closes on the next build.yml run
+  over the pushed commit (probe via GitHub Actions API).
+
+---
+
 ## Part IV — Future phases (LOCKED — not active, listed for direction only)
 
 Per the Execution Contract, no phase may receive implementation work before
@@ -756,6 +792,32 @@ local reproduction was removed. Local website build + tests (34 pass) now reprod
 the CI step before push. The abort did not roll anything back: the defect was fully
 diagnosed, fixed, and re-validated in the working tree; the fix commit below is the
 ratification target.
+
+### Cycle E3A — Brand Metamorphosis (September 16, 2026)
+
+**STATUS:** COMPLETE pending CI ratification · **DEPENDENCIES:** E2
+CI-ratified (`51b6810`) · **G1 freeze in effect (identity-only work).**
+
+- [x] Transform tool: `scripts/e3a_brand_transform.py` — REBRAND/PATH-FIX/
+      KEEP rule sets with dry-run plan, exact postcondition leftovers scan,
+      and auditable no-op/skip/deferred manifests.
+- [x] E2 residue found and fixed by the same pass: build guides still
+      instructed `cd MagiskOnWSA` and referenced `MagiskOnWSA/scripts/...`
+      (broken instructions post-restructure); 9 path corrections across
+      BUILD.md + WINDOWS11_BUILD_GUIDE.md + TROUBLESHOOTING.md.
+- [x] Defects caught and fixed: docs-mirror pair-comparison compared WIP
+      source at HEAD against rebranded worktree mirror (false stale) —
+      mirror side now also HEAD-compared under unstaged WIP; website
+      importer skip-list leaked 5 governance docs into the public site —
+      replaced with fail-closed allowlist.
+- [x] Deferred by design: `WSABuilds Manager` product + `WSABuildsManager`
+      artifacts + winget identity (E5); repo URLs + clone dir (E4); 2
+      ARCHITECTURE.md files carry preserved ARM64 WIP — rebrand lands
+      there after the WIP commits (pre-E7).
+  STATUS: COMPLETE (pending CI) · FILES: 40 rebranded/aligned + 1 tool +
+  importer + mirror guard · RISKS: low (identity strings only; no logic
+  changed outside UA/header constants) · VALIDATION: 267/267 OK, website
+  build+34 tests, doc-links clean · RESULT: E3A commit pending push.
 
 ### Cycle E2 — Repository Restructure (September 16, 2026)
 

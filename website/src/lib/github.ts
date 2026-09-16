@@ -20,7 +20,7 @@ export async function fetchLatestRelease(
     const response = await fetch(endpoint, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'WSABuilds-WebClient'
+        'User-Agent': 'Emberbird-WebClient'
       }
     });
 

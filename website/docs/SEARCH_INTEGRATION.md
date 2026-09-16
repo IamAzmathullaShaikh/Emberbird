@@ -1,6 +1,6 @@
 # Client-Side Search Integration Plan (Pagefind)
 
-This document specifies the technical architecture, build pipeline, and client component implementation for full-text search across the WSABuilds documentation portal.
+This document specifies the technical architecture, build pipeline, and client component implementation for full-text search across the Emberbird documentation portal.
 
 ---
 

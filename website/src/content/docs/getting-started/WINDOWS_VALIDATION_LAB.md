@@ -1,11 +1,11 @@
 ---
 title: "Windows Validation Lab Design Specification"
-description: "This document details the architectural design, security requirements, and automated deployment of dedicated, self-hosted Windows validation runners for WSABuil"
+description: "This document details the architectural design, security requirements, and automated deployment of dedicated, self-hosted Windows validation runners for Emberbi"
 category: "getting-started"
 order: 1
 ---
 
-This document details the architectural design, security requirements, and automated deployment of dedicated, self-hosted Windows validation runners for WSABuilds.
+This document details the architectural design, security requirements, and automated deployment of dedicated, self-hosted Windows validation runners for Emberbird.
 
 ---
 

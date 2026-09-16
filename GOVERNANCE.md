@@ -1,6 +1,6 @@
-# WSABuilds Master Governance — Release & Security Policy
+# Emberbird Master Governance — Release & Security Policy
 
-**Framework:** WSABuilds Master Governance Framework v5.1 · **Status:** ACTIVE · **Applies to:** every release, workflow, and credential in this repository.
+**Framework:** Emberbird Master Governance Framework v5.1 · **Status:** ACTIVE · **Applies to:** every release, workflow, and credential in this repository.
 
 **Core doctrine:** every claim must match reality. No artifact is advertised that does not exist, no hash is published that was not computed from the published bytes, and no workflow step may substitute a placeholder for a real build product.
 
@@ -50,7 +50,7 @@ Tag push (`v*`) triggers `winget-release.yml`:
 **Release notes template (enrich, never ship bare changelogs):**
 
 ```markdown
-## WSABuilds <shipped-version> — <Standard/Banking> Edition
+## Emberbird <shipped-version> — <Standard/Banking> Edition
 
 ### Downloads
 | Edition | Root | GApps | Asset | Size |

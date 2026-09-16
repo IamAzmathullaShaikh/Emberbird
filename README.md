@@ -1,4 +1,4 @@
-# WSABuilds — Windows Subsystem for Android™ Automation Platform
+# Emberbird — Windows Subsystem for Android™ Automation Platform
 
 <p align="center">
   <img src="https://img.shields.io/badge/WSA-2407.40000.4.0-blue.svg?style=for-the-badge&logo=android" alt="WSA Version"/>
@@ -19,7 +19,7 @@
 
 ## 1. Current Project Overview
 
-**WSABuilds** is an automated engineering and packaging platform for the **Windows Subsystem for Android (WSA)** on Windows 11 and Windows 10. Microsoft ended WSA development in March 2025; this platform continues patched, verified builds of the subsystem. It automates update discovery directly from Microsoft's Windows Update Delivery Network (FE3), integrates minimal **Google Play Store and Services (OpenGApps Pico)**, provides automated ARM translation layers (libhoudini) for x86_64 PCs, spoofs device properties to Google Pixel 5 (`redfin`) for Google Play Protect certification, and packages production-ready release archives in two officially supported **Tier 1 Editions**:
+**Emberbird** is an automated engineering and packaging platform for the **Windows Subsystem for Android (WSA)** on Windows 11 and Windows 10. Microsoft ended WSA development in March 2025; this platform continues patched, verified builds of the subsystem. It automates update discovery directly from Microsoft's Windows Update Delivery Network (FE3), integrates minimal **Google Play Store and Services (OpenGApps Pico)**, provides automated ARM translation layers (libhoudini) for x86_64 PCs, spoofs device properties to Google Pixel 5 (`redfin`) for Google Play Protect certification, and packages production-ready release archives in two officially supported **Tier 1 Editions**:
 
 1. **Standard Edition (Rooted)**: Official Magisk Stable (v30.6+) and OpenGApps Pico for developers, modders, and power users.
 2. **Banking & Enterprise Edition (Unrooted)**: Clean, unrooted ramdisk with OpenGApps Pico for users requiring 100% compatibility with banking, UPI, streaming DRM, and enterprise applications.
@@ -36,7 +36,7 @@
 
 ## 2. Supported Build Types
 
-WSABuilds provides two purpose-built Tier 1 subsystem configurations plus a desktop manager:
+Emberbird provides two purpose-built Tier 1 subsystem configurations plus a desktop manager:
 
 | Edition Specification | Standard Edition (Rooted) | Banking & Enterprise Edition (Vanilla) |
 |---|---|---|
@@ -234,7 +234,7 @@ dism.exe /online /enable-feature /featurename:HypervisorPlatform /all /norestart
 
 **Step 2 — Extract the package**. Extract the downloaded `.7z` solid archive using **[7-Zip](https://www.7-zip.org/)** (v22.01 or later) or WinRAR:
 
-* Extract to a permanent, non-temporary directory on your fastest drive (e.g. `C:\WSA` or `D:\WSABuilds`).
+* Extract to a permanent, non-temporary directory on your fastest drive (e.g. `C:\WSA` or `D:\Emberbird`).
 * *Do not extract to a temporary folder or `Downloads\Temp`, as Windows requires these files to remain on disk to run the subsystem.*
 
 **Step 3 — Run the automated installer**:
@@ -462,7 +462,7 @@ We welcome community contributions, bug reports, and application compatibility r
 
 ### Application Compatibility Hub
 
-WSABuilds maintains a community-curated database of Android application compatibility records under [compatibility/data/](compatibility/data/):
+Emberbird maintains a community-curated database of Android application compatibility records under [compatibility/data/](compatibility/data/):
 
 | Application Name | Category | Standard Edition (Magisk) | Banking Edition (Vanilla) | Notes & Requirements |
 |---|---|---|---|---|

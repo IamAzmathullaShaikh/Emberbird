@@ -107,6 +107,14 @@ def read_doc_source(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
+def read_mirror_source(path: Path) -> str:
+    """Mirror-side counterpart of read_doc_source: a mirror carrying UNSTAGED
+    WIP must be compared at HEAD, so source WIP (compared at HEAD) and mirror
+    WIP (compared at HEAD) remain comparable. Staged mirror content is the
+    incoming truth and never triggers the fallback."""
+    return read_doc_source(path)
+
+
 def doc_files():
     # docs/archive/** is the frozen historical record (Documentation/ moved at
     # E2): archived docs are historical originals, not living site content -
@@ -152,7 +160,7 @@ class TestDocsMirrorSync(unittest.TestCase):
             m = mirror_path_for(r)
             if not m.is_file():
                 continue  # reported by the structural test above
-            if normalize(read_doc_source(p)) != normalize(m.read_text(encoding="utf-8")):
+            if normalize(read_doc_source(p)) != normalize(read_mirror_source(m)):
                 stale.append(r)
         self.assertEqual(
             stale, [], f"mirror copies diverged from docs/ source (update website/src/content/docs/): {stale}"

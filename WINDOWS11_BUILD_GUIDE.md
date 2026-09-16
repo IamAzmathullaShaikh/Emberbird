@@ -1,4 +1,4 @@
-# Windows 11 Build Guide for WSABuilds
+# Windows 11 Build Guide for Emberbird
 
 A complete, copy-paste-ready technical guide for compiling, packaging, and verifying customized Windows Subsystem for Android (WSA) packages featuring **Magisk Stable root** and **OpenGApps Pico** directly on Windows 11.
 
@@ -6,7 +6,7 @@ A complete, copy-paste-ready technical guide for compiling, packaging, and verif
 
 ## 1. Prerequisites
 
-Before building WSABuilds, verify that your host system meets the following specifications:
+Before building Emberbird, verify that your host system meets the following specifications:
 
 * **Operating System:** Windows 11 (Build 22000.526 or higher, 64-bit x86_64).
 * **Processor:** Intel Core 8th Gen+ / AMD Ryzen 3000+ / Qualcomm Snapdragon 8c+ with Hardware Virtualization support.
@@ -150,7 +150,7 @@ cd WSABuilds
 
 ## 9. Configuration
 
-WSABuilds defaults to a locked, battle-tested production target:
+Emberbird defaults to a locked, battle-tested production target:
 * **Architecture:** `x64`
 * **WSA Release Channel:** `retail` (stable)
 * **Root Solution:** `Magisk Stable` (v30.6+)
@@ -173,7 +173,7 @@ The Linux pipeline orchestrates upstream MSIX downloads, extracts VHDX images, i
 
 ```bash
 # Enter the build directory
-cd MagiskOnWSA
+cd tools
 
 # Install Python script dependencies into local venv
 python3 -m venv python3-env
@@ -186,7 +186,7 @@ pip install -r scripts/requirements.txt
 
 #### Available CLI Flags for `build.sh`:
 * `--compress-format <7z|zip|none>`: Output archive format (default: `7z`).
-* `--offline`: Skip all downloads and use pre-cached archives located in `MagiskOnWSA/download/`.
+* `--offline`: Skip all downloads and use pre-cached archives located in `download/`.
 * `--skip-download-wsa`: Skip WSA download and reuse an existing package in `download/`.
 * `--debug`: Enable verbose bash tracing (`set -x`).
 
@@ -194,11 +194,11 @@ pip install -r scripts/requirements.txt
 
 ### Method B: Building via Native Windows Standalone Builder
 
-WSABuilds includes a pure-Python Windows builder (`MagiskOnWSA/scripts/build_local.py`) that constructs the SVR4 CPIO `initrd.img` archive and XZ compression natively without requiring a Linux kernel or WSL VM.
+Emberbird includes a pure-Python Windows builder (`tools/build_local.py`) that constructs the SVR4 CPIO `initrd.img` archive and XZ compression natively without requiring a Linux kernel or WSL VM.
 
 ```powershell
 # In PowerShell (Run as Administrator)
-cd MagiskOnWSA\scripts
+cd tools\scripts
 
 # Install Python dependencies
 pip install -r requirements.txt
@@ -224,13 +224,13 @@ After the build completes, verify package integrity and compliance:
 python scripts/validate_package_identity.py --baseline config/baseline-identity.json
 
 # 2. Run offline subsystem structure validation
-python scripts/validate_package_integrity.py --package-dir MagiskOnWSA/output/WSA_2407.40000.4.0_x64
+python scripts/validate_package_integrity.py --package-dir output/WSA_2407.40000.4.0_x64
 
 # 3. Verify Magisk trampoline structure
-python scripts/validate_magisk.py --package-dir MagiskOnWSA/output/WSA_2407.40000.4.0_x64
+python scripts/validate_magisk.py --package-dir output/WSA_2407.40000.4.0_x64
 
 # 4. Verify OpenGApps Pico components
-python scripts/validate_gapps.py --package-dir MagiskOnWSA/output/WSA_2407.40000.4.0_x64
+python scripts/validate_gapps.py --package-dir output/WSA_2407.40000.4.0_x64
 
 # 5. Run repository unit test suite
 python -m unittest discover -s tests -v
@@ -240,7 +240,7 @@ python -m unittest discover -s tests -v
 
 ## 12. Output Artifacts
 
-The final output is saved to `MagiskOnWSA/output/`:
+The final output is saved to `output/`:
 
 * **Release Archive:**  
   `WSA_<version>_x64_Release-Nightly-with-magisk-<magisk_ver>-stable-GApps-13.0-pico.7z`
@@ -264,7 +264,7 @@ The final output is saved to `MagiskOnWSA/output/`:
 
 ### Issue 1: `SSLCertVerificationError: self-signed certificate in certificate chain`
 * **Cause:** Linux/WSL environment lacks Microsoft Root CA certificates when downloading from `fe3.delivery.mp.microsoft.com`.
-* **Solution:** WSABuilds bundles Microsoft Root CA 2011 and Intermediate CA 2.1 in `MagiskOnWSA/Update Check/env_helpers.py`. Ensure you are running the latest repository code.
+* **Solution:** Emberbird bundles Microsoft Root CA 2011 and Intermediate CA 2.1 in `tools/update-check/env_helpers.py`. Ensure you are running the latest repository code.
 
 ### Issue 2: `Path Too Long (MAX_PATH)`
 * **Cause:** Windows 260-character path limit during extraction.

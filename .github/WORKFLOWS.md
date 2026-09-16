@@ -1,6 +1,6 @@
-# WSABuilds CI/CD & GitHub Architecture
+# Emberbird CI/CD & GitHub Architecture
 
-The `.github/` directory manages GitHub Actions workflows, community issue templates, pull request standards, and automation pipelines for the **WSABuilds** platform.
+The `.github/` directory manages GitHub Actions workflows, community issue templates, pull request standards, and automation pipelines for the **Emberbird** platform.
 
 ---
 

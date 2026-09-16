@@ -9,7 +9,7 @@
   "tested_root_flavor": "Magisk Stable",
   "last_tested_date": "REQUIRES TARGET ENVIRONMENT VERIFICATION",
   "workaround_steps": [
-    "Included by default in every WSABuilds edition (Pico GApps).",
+    "Included by default in every Emberbird edition (Pico GApps).",
     "On Magisk builds, keep Play Services out of optimization by disabling battery restrictions for the app.",
     "Play Integrity attestation passes only in the MEETS_BASIC_INTEGRITY tier; apps requiring DEVICE or STRONG verdicts remain blocked.",
     "Do not manually update GMS Core from outside the Play Store; mismatched versions break push notifications."

@@ -28,7 +28,7 @@ export class GitHubReleaseProvider implements ReleaseProvider {
     const response = await fetch(endpoint, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'WSABuilds-ReleaseService'
+        'User-Agent': 'Emberbird-ReleaseService'
       }
     });
 
@@ -69,7 +69,7 @@ export class GitHubReleaseProvider implements ReleaseProvider {
     const response = await fetch(endpoint, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'WSABuilds-ReleaseService'
+        'User-Agent': 'Emberbird-ReleaseService'
       }
     });
 
@@ -102,7 +102,7 @@ export class GitHubReleaseProvider implements ReleaseProvider {
     const response = await fetch(endpoint, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'WSABuilds-ReleaseService'
+        'User-Agent': 'Emberbird-ReleaseService'
       }
     });
 

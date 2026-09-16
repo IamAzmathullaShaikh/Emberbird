@@ -1,11 +1,11 @@
 ---
 title: "Quick Start Guide: Windows Subsystem for Android (WSA)"
-description: "Welcome to **WSABuilds**! This beginner-friendly guide walks you through setting up Windows Subsystem for Android with Google Play Store and Magisk root on Wind"
+description: "Welcome to **Emberbird**! This beginner-friendly guide walks you through setting up Windows Subsystem for Android with Google Play Store and Magisk root on Wind"
 category: "getting-started"
 order: 1
 ---
 
-Welcome to **WSABuilds**! This beginner-friendly guide walks you through setting up Windows Subsystem for Android with Google Play Store and Magisk root on Windows 10 or Windows 11 in under 5 minutes.
+Welcome to **Emberbird**! This beginner-friendly guide walks you through setting up Windows Subsystem for Android with Google Play Store and Magisk root on Windows 10 or Windows 11 in under 5 minutes.
 
 ---
 
@@ -50,7 +50,7 @@ WSA requires the Windows **Virtual Machine Platform** feature:
 
 ## 4. Step 3: Download the Recommended Release
 
-1. Download the recommended release from the WSABuilds Web Portal (`/downloads`) or the official GitHub Releases page: `https://github.com/IamAzmathullaShaikh/WSABuilds/releases`.
+1. Download the recommended release from the Emberbird Web Portal (`/downloads`) or the official GitHub Releases page: `https://github.com/IamAzmathullaShaikh/WSABuilds/releases`.
 2. Download the recommended standard package for your computer:
    - **For Intel/AMD Processors**:  
      `WSA_[version]_x64_[root]_[gapps].7z` (or `.zip` - check repository releases for current build)

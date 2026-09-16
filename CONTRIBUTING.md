@@ -1,6 +1,6 @@
-# Contributing to WSABuilds
+# Contributing to Emberbird
 
-Thank you for your interest in contributing to **WSABuilds**!
+Thank you for your interest in contributing to **Emberbird**!
 
 Our mission is to provide the easiest, most reliable, and community-supported way to install, update, manage, and troubleshoot Windows Subsystem for Android (WSA) after Microsoft's official deprecation.
 

@@ -1,6 +1,6 @@
-# WSABuilds Backend Services & Telemetry Platform
+# Emberbird Backend Services & Telemetry Platform
 
-The `services/` directory contains background processing, data aggregation, and telemetry pipelines for the **WSABuilds** platform.
+The `services/` directory contains background processing, data aggregation, and telemetry pipelines for the **Emberbird** platform.
 
 ---
 
@@ -18,7 +18,7 @@ services/
 
 ## 2. Privacy Charter & Zero-PII Guarantee
 
-WSABuilds strictly adheres to a **Privacy-First, Zero-PII** standard:
+Emberbird strictly adheres to a **Privacy-First, Zero-PII** standard:
 
 - **No Personal Identifiers**: Zero collection of IP addresses, MAC addresses, machine GUIDs, usernames, or device hostnames.
 - **No Client Tracking**: Zero tracking cookies, tracking pixels, or third-party telemetry beacons.

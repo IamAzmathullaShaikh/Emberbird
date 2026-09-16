@@ -1,6 +1,6 @@
-# WSABuilds Documentation Tree
+# Emberbird Documentation Tree
 
-This directory contains tiered documentation for the WSABuilds platform.
+This directory contains tiered documentation for the Emberbird platform.
 
 ## Hierarchy
 - `getting-started/`: Quick start, beginner, and manual installation walkthroughs.

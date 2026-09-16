@@ -1,6 +1,6 @@
-# WSABuilds Web Portal & Documentation Platform
+# Emberbird Web Portal & Documentation Platform
 
-The `website/` directory contains the official web platform for **WSABuilds**, built with **Astro**, **Tailwind CSS**, and **Pagefind**. It delivers release discovery, interactive troubleshooting, an application compatibility database, and transparency metrics.
+The `website/` directory contains the official web platform for **Emberbird**, built with **Astro**, **Tailwind CSS**, and **Pagefind**. It delivers release discovery, interactive troubleshooting, an application compatibility database, and transparency metrics.
 
 ---
 

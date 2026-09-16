@@ -1,12 +1,12 @@
 # Release Engineering Specification
 
-This document defines the release lifecycle, versioning convention, tagging format, and asset generation standards for WSABuilds.
+This document defines the release lifecycle, versioning convention, tagging format, and asset generation standards for Emberbird.
 
 ---
 
 ## Release Channels & Tagging Conventions
 
-Release tags in WSABuilds follow the format:
+Release tags in Emberbird follow the format:
 
 ```text
 <OS>_<WSA_Version>[_<Modifier>]

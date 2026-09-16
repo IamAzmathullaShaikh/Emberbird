@@ -1,6 +1,6 @@
 # Troubleshooting & Known Issues
 
-This document serves as the master index for resolving common installation, update, and runtime issues in WSABuilds.
+This document serves as the master index for resolving common installation, update, and runtime issues in Emberbird.
 
 For detailed, step-by-step resolution guides, refer to the [Documentation/Fix Guides/](docs/archive/Documentation/Fix%20Guides/) directory.
 
@@ -40,7 +40,7 @@ To diagnose live runtime issues:
 1. Ensure **Developer Mode** is enabled in WSA Settings.
 2. Run the diagnostic monitor:
    ```cmd
-   python MagiskOnWSA\scripts\test_runtime.py
+   python tools\core\test_runtime.py
    ```
    This script validates:
    - WSA AppX package registration

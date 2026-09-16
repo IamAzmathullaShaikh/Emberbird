@@ -1,4 +1,4 @@
-# Building WSABuilds
+# Building Emberbird
 
 This guide documents the procedures for compiling and assembling customized Windows Subsystem for Android (WSA) packages.
 
@@ -6,9 +6,9 @@ This guide documents the procedures for compiling and assembling customized Wind
 
 ## Build System Architecture
 
-WSABuilds supports two distinct build pipelines:
-1. **Linux / WSL2 Pipeline (`MagiskOnWSA/scripts/build.sh`)**: Modular Bash build system that downloads upstream dependencies, converts and resizes VHDX images, injects Magisk/GApps via `magiskboot`, and applies Houdini ARM translation.
-2. **Native Windows Standalone Builder (`MagiskOnWSA/scripts/build_local.py`)**: Pure-Python Windows builder that directly parses and synthesizes SVR4 CPIO `initrd.img` archives and XZ compression without requiring WSL, Hyper-V, or root privileges.
+Emberbird supports two distinct build pipelines:
+1. **Linux / WSL2 Pipeline (`tools/build.sh`)**: Modular Bash build system that downloads upstream dependencies, converts and resizes VHDX images, injects Magisk/GApps via `magiskboot`, and applies Houdini ARM translation.
+2. **Native Windows Standalone Builder (`tools/build_local.py`)**: Pure-Python Windows builder that directly parses and synthesizes SVR4 CPIO `initrd.img` archives and XZ compression without requiring WSL, Hyper-V, or root privileges.
 
 ---
 
@@ -21,9 +21,9 @@ sudo apt-get update && sudo apt-get install -y \
 ```
 
 ### Build Execution
-Navigate to `MagiskOnWSA` and execute `build.sh`:
+Navigate to `tools` and execute `build.sh`:
 ```bash
-cd MagiskOnWSA
+cd tools
 
 # Standard build: Retail release, Magisk Stable, OpenGApps Pico, Redfin device model
 ./scripts/build.sh --compress-format 7z
@@ -50,7 +50,7 @@ The standalone builder operates directly on Windows using standard Python 3.10+.
 - Python 3.10+ installed and on `PATH`
 - 7-Zip installed (at `C:\Program Files\7-Zip\7z.exe` or on `PATH`)
 
-### Required Downloads in `MagiskOnWSA/download/`:
+### Required Downloads in `download/`:
 - `wsa-retail.zip`: Official stock WSA MSIX bundle
 - `magisk-stable.zip`: Official Magisk APK / ZIP release
 - `gapps-13.0-x86_64.img`: Minimal OpenGApps ext4 image
@@ -59,11 +59,11 @@ The standalone builder operates directly on Windows using standard Python 3.10+.
 
 ### Execution:
 ```cmd
-cd MagiskOnWSA\scripts
+cd tools\scripts
 python build_local.py
 ```
 
-The output package will be generated under `MagiskOnWSA\output\WSA_<version>_<arch>\`.
+The output package will be generated under `output\WSA_<version>_<arch>\`.
 
 ---
 

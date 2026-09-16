@@ -1,6 +1,6 @@
 # Compatibility Hub Data & Moderation Architecture
 
-This directory contains verified and community-submitted application compatibility records for Windows Subsystem for Android (WSA). It serves as the single source of truth for the WSABuilds compatibility portal.
+This directory contains verified and community-submitted application compatibility records for Windows Subsystem for Android (WSA). It serves as the single source of truth for the Emberbird compatibility portal.
 
 ## Directory Structure
 - `schema.json`: Strict JSON Schema (Draft-07) defining valid fields, package ID formatting, and category enums.

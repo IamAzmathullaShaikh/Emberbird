@@ -67,15 +67,14 @@ function extractMetadata(content, defaultCategory) {
   };
 }
 
-// Internal governance/programme docs are not part of the public
-// documentation information architecture (they would either break the
-// content schema or pollute end-user navigation).
-const GOVERNANCE_SKIP_DIRS = new Set(['research', 'archive']);
-const GOVERNANCE_SKIP_FILES = new Set([
-  'CLEANUP_REGISTER.md',
-  'METAMORPHOSIS.md',
-  'BRAND.md',
-  'PATH_MAP.md',
+// Only public-IA documentation is imported into the website content
+// collection. This allowlist is FAIL-CLOSED: internal governance/programme
+// docs (charters, attribution, matrices, registers, research, archive) can
+// never leak into the public site — new internal docs are skipped by default.
+const PUBLIC_IMPORT_DIRS = new Set(['community', 'getting-started']);
+const PUBLIC_IMPORT_FILES = new Set([
+  'UPGRADE_VALIDATION.md',
+  'WINDOWS_VALIDATION_LAB.md',
 ]);
 
 function processDirectory(dir, category) {
@@ -85,11 +84,11 @@ function processDirectory(dir, category) {
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      if (!GOVERNANCE_SKIP_DIRS.has(entry.name)) {
+      if (PUBLIC_IMPORT_DIRS.has(entry.name)) {
         processDirectory(fullPath, entry.name);
       }
     } else if (entry.isFile() && entry.name.endsWith('.md') && entry.name !== 'README.md'
-      && !GOVERNANCE_SKIP_FILES.has(entry.name)) {
+      && PUBLIC_IMPORT_FILES.has(entry.name)) {
       const content = fs.readFileSync(fullPath, 'utf-8');
       const meta = extractMetadata(content, category || 'getting-started');
 

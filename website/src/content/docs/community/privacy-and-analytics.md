@@ -1,15 +1,15 @@
 ---
 title: "Privacy Charter & Community Analytics Specification"
-description: "WSABuilds is committed to user privacy and software transparency. The platform operates under a strict Zero-Telemetry, Zero-PII (Personally Identifiable Informa"
+description: "Emberbird is committed to user privacy and software transparency. The platform operates under a strict Zero-Telemetry, Zero-PII (Personally Identifiable Informa"
 category: "community"
 order: 4
 ---
 
 ## 1. Executive Privacy Charter
 
-WSABuilds is committed to user privacy and software transparency. The platform operates under a strict Zero-Telemetry, Zero-PII (Personally Identifiable Information) mandate:
+Emberbird is committed to user privacy and software transparency. The platform operates under a strict Zero-Telemetry, Zero-PII (Personally Identifiable Information) mandate:
 
-- **No Remote Telemetry**: Neither the WSABuilds Manager desktop client nor the WSABuilds web portal transmits device identifiers, machine names, or user activities.
+- **No Remote Telemetry**: Neither the WSABuilds Manager desktop client nor the Emberbird web portal transmits device identifiers, machine names, or user activities.
 - **No IP Address Logging**: Server logs, visitor IP addresses, and geolocation data are neither collected nor retained.
 - **No Browser Fingerprinting or Cookies**: The web portal operates without tracking cookies, Google Analytics, third-party advertising SDKs, or session beacons.
 - **100% Public Aggregations**: All telemetry and transparency metrics published on our Transparency Dashboard are derived entirely from public open-source data streams.
