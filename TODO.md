@@ -254,7 +254,7 @@ policy gains its provenance-gated write path for Ember Observatory (P5).
 
 ---
 
-### E1 — Inventory & Contracts (ACTIVE — implementation complete, CI ratification pending)
+### E1 — Inventory & Contracts (COMPLETE — CI-ratified)
 
 Per Metamorphosis Programme v3. Phase E0 is COMPLETE (Cycle E0); the G1
 metamorphosis freeze takes effect when E2 begins.
@@ -289,7 +289,7 @@ metamorphosis freeze takes effect when E2 begins.
 - [x] Attribution + license audit amended; AGPL text untouched
 - [x] Inventory tests green; suite grows
 - [x] Zero protected-class modifications (attribution/historical docs)
-- [ ] CI ratification of the E1 commit (closes on the next workflow run over this commit)
+- [x] CI ratification of the E1 commit — **CONFIRMED**: all four workflows (Build & CI Verification Pipeline, Documentation Validation, Security Audit, Website Deployment & Validation) `completed/success` on head `d5b8256` (GitHub Actions API probe).
 
 ---
 
@@ -655,7 +655,21 @@ Each cycle records its work orders with the execution-engine fields and
   item honest-open until CI.
 - **Repository Health Score**: **9.9 / 10**.
 
-**S3 abort & resolution (E1, post-push)**: the first E1 push (`e22f6d1`) triggered
+**Ratification record (E1 complete at `d5b8256`)**: reaching green required five
+fix commits after the initial S3 abort — (1) `6462c6e` index-based inventory +
+website governance-doc skip (Website pipeline green from this commit onward);
+(2) `e5e96a9` CI observability (failing tests surfaced as readable annotations —
+the tool that made the rest diagnosable without authenticated log access);
+(3) `b9e79e0` precision-diff diagnostics; (4) `eed84cd` shift-immune inventory
+format (line numbers dropped — the line-drift ratchet); (5) `324a0ac` canonical
+occurrence ordering and `d5b8256` canonical file-list ordering, eliminating the
+last two platform-dependent orderings (Windows/POSIX walk and Path-sort
+differences). Standing lesson recorded: **generated artifacts committed to the
+repository must be byte-canonical across platforms and shift-immune to
+line-count changes, and inventory regeneration must read the git index** —
+all four rules are now embodied in `scripts/identity_map.py` and enforced by
+`tests/test_identity_inventory.py` on every future commit.
+: the first E1 push (`e22f6d1`) triggered
 **S3 — Phase Abort**: remote CI failed `Run Offline Unit Test Suite` (Build & CI) and
 `Build Static Site & Search Index` (Website Deployment; also red on the E0 commit).
 Root causes, both found by CI and both real: (1) `identity_map.py` scanned the
