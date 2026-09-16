@@ -5,7 +5,7 @@ e2e_clean_room.py — Clean-room end-to-end verification for WSABuilds.
 Executes, from a clean state and without trusting any pre-existing output:
   1. Tool inventory (records what is locally executable; missing CI-only
      tooling yields SKIP with a reason, never a fabricated PASS).
-  2. Fresh multi-edition WSA builds via MagiskOnWSA/scripts/build_local.py
+  2. Fresh multi-edition WSA builds via tools/build_local.py
      (Standard = Magisk root, Banking = vanilla/no-root; both with Pico GApps).
   3. Artifact reality gates on every built edition: structural integrity,
      package identity, Magisk ramdisk policy, and GApps integration.
@@ -33,8 +33,8 @@ from pathlib import Path
 from datetime import datetime, timezone
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-WSA_SCRIPTS = REPO_ROOT / "MagiskOnWSA" / "scripts"
-WSA_OUTPUT = REPO_ROOT / "MagiskOnWSA" / "output"
+WSA_SCRIPTS = REPO_ROOT / "tools"
+WSA_OUTPUT = REPO_ROOT / "output"
 MANAGER_DIR = REPO_ROOT / "apps" / "manager"
 WEBSITE_DIR = REPO_ROOT / "website"
 

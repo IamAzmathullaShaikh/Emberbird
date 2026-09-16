@@ -20,8 +20,8 @@ class TestIdentityAndIntegrity(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.baseline_path = CONFIG_DIR / "baseline-identity.json"
-        cls.sample_manifest = REPO_ROOT / "MagiskOnWSA" / "output" / "WSA_2407.40000.4.0_x64" / "AppxManifest.xml"
-        cls.package_dir = REPO_ROOT / "MagiskOnWSA" / "output" / "WSA_2407.40000.4.0_x64"
+        cls.sample_manifest = REPO_ROOT / "output" / "WSA_2407.40000.4.0_x64" / "AppxManifest.xml"
+        cls.package_dir = REPO_ROOT / "output" / "WSA_2407.40000.4.0_x64"
 
     def test_baseline_identity_file_exists(self):
         self.assertTrue(self.baseline_path.exists())

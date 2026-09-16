@@ -53,8 +53,8 @@ jobs:
       - name: Run ShellCheck
         run: |
           shellcheck -x -S warning --exclude=SC2034,SC2174 \
-            MagiskOnWSA/scripts/*.sh \
-            MagiskOnWSA/libhoudini/houdini_installer.sh
+            tools/*.sh \
+            upstream/libhoudini/houdini_installer.sh
 
       - name: Compile Python sources ⚙️
         run: |
@@ -63,10 +63,11 @@ jobs:
             config \
             tests \
             platform \
-            MagiskOnWSA/scripts \
-            "MagiskOnWSA/Update Check" \
-            "WSABuilds Utilities/Update Script" \
-            "WSABuilds Utilities/Uninstall Script" \
+            tools \
+            tools/update-check \
+            tools/core \
+            utilities \
+            upstream/installer \
             services
 
       - name: Release Registry Reality Gate 🔒
@@ -75,7 +76,7 @@ jobs:
 
       - name: Install Test Dependencies 📦
         run: |
-          pip3 install --quiet -r MagiskOnWSA/scripts/requirements.txt
+          pip3 install --quiet -r tools/core/requirements.txt
 
       - name: Run Offline Unit Test Suite 🧪
         run: |

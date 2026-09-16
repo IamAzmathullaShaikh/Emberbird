@@ -71,7 +71,7 @@ jobs:
         if: steps.sync-check.outputs.has_changes == 'true' && steps.merge-attempt.outputs.merge_success == 'true'
         run: |
           python -m pip install --upgrade pip
-          if [ -f "MagiskOnWSA/requirements.txt" ]; then pip install -r MagiskOnWSA/requirements.txt; fi
+          if [ -f "tools/requirements.txt" ]; then pip install -r tools/requirements.txt; fi
           python -m unittest discover -s tests -v
           python scripts/check_doc_links.py
           python scripts/security_scan.py

@@ -240,7 +240,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Generate release checksums and metadata JSON.")
     parser.add_argument("--package-dir", type=Path, nargs="*", default=[], help="Directory or directories containing built package(s)")
     parser.add_argument("--package-dirs", type=Path, nargs="*", default=[], help="Alias for --package-dir")
-    parser.add_argument("--packages-dir", type=Path, default=None, help="Parent directory containing multiple package subdirectories (e.g. MagiskOnWSA/output)")
+    parser.add_argument("--packages-dir", type=Path, default=None, help="Parent directory containing multiple package subdirectories (e.g. output)")
     parser.add_argument("--archives", type=Path, nargs="+", default=[], help="Release archive files (.7z, .zip)")
     parser.add_argument("--output-dir", type=Path, default=Path("output"), help="Directory to save checksums and metadata")
     parser.add_argument("--version", default="2407.40000.4.0", help="Release version string")

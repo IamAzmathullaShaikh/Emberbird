@@ -138,7 +138,7 @@ def main() -> int:
 
     package_dir = args.package_dir
     if not package_dir:
-        candidates = list(Path("MagiskOnWSA/output").glob("WSA_*")) + list(Path("output").glob("WSA_*"))
+        candidates = list(Path("output").glob("WSA_*"))
         candidates = [c for c in candidates if c.is_dir()]
         if candidates:
             package_dir = candidates[0]

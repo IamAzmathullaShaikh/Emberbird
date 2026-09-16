@@ -55,14 +55,12 @@ jobs:
             -- ":(exclude).github/workflows/security.yml" \
                ":(exclude)scripts/security_scan.py" \
                ":(exclude)tests/**" \
-               ":(exclude)docs/**" \
-               ":(exclude)Documentation/**" || true)
+               ":(exclude)docs/**" || true)
           USER_MATCHES=$(git grep -n "BangerSoul" \
             -- ":(exclude).github/workflows/security.yml" \
                ":(exclude)scripts/security_scan.py" \
                ":(exclude)tests/**" \
-               ":(exclude)docs/**" \
-               ":(exclude)Documentation/**" || true)
+               ":(exclude)docs/**" || true)
           if [ -n "$MATCHES" ] || [ -n "$USER_MATCHES" ]; then
             echo "::error::Machine-specific developer path detected!"
             [ -n "$MATCHES" ] && echo "$MATCHES"

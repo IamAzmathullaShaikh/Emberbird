@@ -57,7 +57,7 @@ ATTRIBUTION_FILES = {"docs/ATTRIBUTION.md", "docs/LICENSE_AUDIT.md"}
 LICENSE_FILES = {"LICENSE", "LICENSE-CC-BY-NC-ND"}
 ATTRIBUTION_TOKENS = ("MustardChef", "MagiskOnWSALocal", "GNU AFFERO", "upstream")
 
-HISTORICAL_DOC_ROOTS = ("Documentation/",)
+HISTORICAL_DOC_ROOTS = ("docs/archive/",)
 PACKAGE_CONTEXT_FILES = ("package.json", "package-lock.json")
 WORKFLOW_ROOT = ".github/workflows/"
 
@@ -116,6 +116,10 @@ def classify(path: str, line: str, match: re.Match) -> str:
         return "upstream-attribution"
     if path.startswith(HISTORICAL_DOC_ROOTS):
         return "historical-doc"
+    if path.startswith("upstream/"):
+        # Vendored upstream code (E2): its internal self-references are
+        # provenance, never rename targets.
+        return "upstream-attribution"
     if any(tok in line for tok in ATTRIBUTION_TOKENS) and path.endswith(".md"):
         return "upstream-attribution"
     if path.startswith(WORKFLOW_ROOT):

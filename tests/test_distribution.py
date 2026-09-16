@@ -151,8 +151,8 @@ class TestDistributionAndWinget(unittest.TestCase):
         run_script = meta_steps[0].get("run", "")
         self.assertNotIn("head -n 1", run_script, "Step must not truncate package discovery to head -n 1")
         self.assertIn("generate_release_metadata.py", run_script)
-        self.assertIn("--packages-dir MagiskOnWSA/output", run_script)
-        self.assertIn("--output-dir MagiskOnWSA/output", run_script)
+        self.assertIn("--packages-dir output", run_script)
+        self.assertIn("--output-dir output", run_script)
 
 
 if __name__ == "__main__":

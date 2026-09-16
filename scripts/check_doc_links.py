@@ -80,7 +80,7 @@ def main() -> int:
     repo_root = args.repo_root.resolve()
     print(f"[*] Scanning markdown files for broken local links in: {repo_root}")
 
-    md_files = list(repo_root.glob("*.md")) + list(repo_root.glob("docs/**/*.md")) + list(repo_root.glob("Documentation/**/*.md"))
+    md_files = list(repo_root.glob("*.md")) + list(repo_root.glob("docs/**/*.md"))
     # Filter out temp directories
     md_files = [f for f in md_files if not any(p in f.parts for p in [".git", "download", "output", "python3-env", ".venv", "venv"])]
 

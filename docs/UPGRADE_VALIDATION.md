@@ -42,7 +42,7 @@ The `-PreserveApplicationData` switch guarantees that `userdata.vhdx` and `%Loca
 To validate upgrade compatibility on a Windows test runner:
 
 ```powershell
-powershell.exe -ExecutionPolicy Bypass -File scripts/validate_upgrade.ps1 -TargetPackageDir "MagiskOnWSA/output/WSA_<new_version>_x64"
+powershell.exe -ExecutionPolicy Bypass -File scripts/validate_upgrade.ps1 -TargetPackageDir "output/WSA_<new_version>_x64"
 ```
 
 The script:

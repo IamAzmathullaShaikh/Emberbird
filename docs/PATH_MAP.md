@@ -1,7 +1,7 @@
 # Repository Path Map (v2)
 
 **Programme:** Project Emberbird — Metamorphosis Programme v3
-**Status key:** `PLANNED` (E2 will execute) · `ACTIVE` (already the live layout) · `MAPPED` (existing mirror mapping, unchanged)
+**Status key:** `ACTIVE` (live layout, executed by E2) · `MAPPED` (existing mirror mapping, unchanged)
 
 This document is the **authoritative** old→new mapping for the metamorphosis.
 The E2 restructure executes it as a single surgical `git mv` commit; history
@@ -11,17 +11,17 @@ doubles as the **legacy redirect map**: old paths remain traceable forever
 
 ---
 
-## 1. Root taxonomy (E2 — PLANNED)
+## 1. Root taxonomy (E2 — EXECUTED)
 
 | Legacy path | New path | Contents | Status |
 |---|---|---|---|
-| `Documentation/**` | `docs/archive/**` | 49 upstream-era user docs (historical record) | PLANNED |
-| `WSABuilds Utilities/` | `utilities/` | 4 utility scripts (space-separated name, tracked) | PLANNED |
-| `MagiskOnWSA/scripts/` toolchain | `tools/` | build.sh, build_local.py, config.sh, generateGappsLink.py, extractWSA.py, generateWSALinks.py + helpers | PLANNED |
-| `MagiskOnWSA/` (remainder, unmodified-from-upstream) | `upstream/` | vendored upstream files with provenance | PLANNED |
-| `releases/` (stray tracked file) | absorbed into `docs/archive/` | historical release note | PLANNED |
+| `Documentation/**` | `docs/archive/**` | 49 upstream-era user docs (historical record) | ACTIVE |
+| `WSABuilds Utilities/` | `utilities/` | 4 utility scripts (space-separated name, tracked) | ACTIVE |
+| `MagiskOnWSA/scripts/` toolchain | `tools/` | build.sh, build_local.py, config.sh, update-check/, core/ + helpers | ACTIVE |
+| `MagiskOnWSA/` (remainder, unmodified-from-upstream) | `upstream/` | vendored upstream files with provenance | ACTIVE |
+| `releases/` (stray tracked file) | — | verified absent from HEAD when E2 executed; map row was speculative | VERIFIED ABSENT |
 
-Untracked local residue (`MagiskOnWSAOld/`, `dist_clean/`, `dist_winget_submission/`, root report JSONs) is **not** part of the map — it never enters git (`.gitignore` at E2).
+Untracked local residue (`MagiskOnWSAOld/`, `dist_clean/`, `dist_winget_submission/`, root report JSONs) is **not** part of the map — it never enters git (`.gitignore` since E2).
 
 ## 2. Paths that do NOT move (stability anchors)
 
@@ -50,7 +50,9 @@ Untracked local residue (`MagiskOnWSAOld/`, `dist_clean/`, `dist_winget_submissi
 ## 4. Redirect policy
 
 - Moves are executed with `git mv` — file history follows the file.
-- After E2, any reference to a legacy path is a defect: the E1.5 contract
-  tests and the doc-link validator enforce the new taxonomy.
+- After E2 (executed), any functional reference to a legacy path is a defect:
+  the E1.5 contract tests, CI compile targets and the doc-link validator
+  enforce the new taxonomy. Attribution and historical docs intentionally keep
+  the legacy names (S1).
 - This file is the single source for what moved where; `git log --follow` is
   the single source for how a file got there.

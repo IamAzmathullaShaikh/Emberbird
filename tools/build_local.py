@@ -224,13 +224,14 @@ def main() -> int:
     args = parser.parse_args()
 
     script_dir = Path(__file__).resolve().parent
-    magisk_on_wsa = script_dir.parent
+    repo_root = script_dir.parent
+    upstream = repo_root / "upstream"
 
-    download_dir = magisk_on_wsa / "download"
-    output_base = magisk_on_wsa / "output"
-    bin_dir = magisk_on_wsa / "bin" / args.arch
-    installer_dir = magisk_on_wsa / "installer"
-    xml_dir = magisk_on_wsa / "xml"
+    download_dir = upstream / "download"
+    output_base = repo_root / "output"
+    bin_dir = upstream / "bin" / args.arch
+    installer_dir = upstream / "installer"
+    xml_dir = upstream / "xml"
 
     edition = "Banking/Enterprise Edition (Vanilla / No Root) + OpenGApps Pico" if args.root_sol == "none" else "Standard Edition (Magisk Stable + OpenGApps Pico)"
     print("====================================================")

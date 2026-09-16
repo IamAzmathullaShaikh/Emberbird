@@ -5,14 +5,12 @@ on:
     branches: [master, main, experimental, 'feature/*']
     paths:
       - 'docs/**'
-      - 'Documentation/**'
       - '*.md'
       - '.github/**/*.md'
   pull_request:
     branches: [master, main, experimental, 'feature/*']
     paths:
       - 'docs/**'
-      - 'Documentation/**'
       - '*.md'
       - '.github/**/*.md'
   workflow_dispatch:

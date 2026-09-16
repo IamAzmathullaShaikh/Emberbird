@@ -186,8 +186,8 @@ def main() -> int:
             if candidate.is_file():
                 manifest_path = candidate
         else:
-            # Look in MagiskOnWSA/output or output
-            candidates = list(Path("MagiskOnWSA/output").glob("WSA_*/AppxManifest.xml")) + list(Path("output").glob("WSA_*/AppxManifest.xml"))
+            # Look in root output/ (post-E2 build output location)
+            candidates = list(Path("output").glob("WSA_*/AppxManifest.xml"))
             candidates = [c for c in candidates if c.is_file()]
             if candidates:
                 manifest_path = candidates[0]

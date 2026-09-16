@@ -4,7 +4,7 @@ Microsoft's FE3 delivery service and update the retail.appversion file.
 
 The FE3 XML request templates are read from the directory given in the
 WSA_XML_DIR environment variable (GitHub runner layout independent), falling
-back to the repo's own MagiskOnWSA/xml directory.
+back to the repo's own tools/xml directory.
 """
 
 import os
@@ -65,7 +65,7 @@ git = (
 # Runner layout independent path to the FE3 XML request templates
 xml_dir = os.environ.get(
     "WSA_XML_DIR",
-    os.path.join(os.getcwd(), "MagiskOnWSA", "xml"),
+    os.path.join(os.getcwd(), "upstream", "xml"),
 )
 
 # Retail feed does not need an insider user code

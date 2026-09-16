@@ -6,8 +6,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-# Add MagiskOnWSA/scripts to sys.path
-SCRIPT_DIR = Path(__file__).resolve().parent.parent / "MagiskOnWSA" / "scripts"
+# Add tools/ to sys.path
+SCRIPT_DIR = Path(__file__).resolve().parent.parent / "tools"
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from build_local import CpioEntry, read_cpio_archive, write_cpio_archive, compress_xz

@@ -325,11 +325,50 @@ The safety net, built before any restructure or rename per the frozen programme.
 
 ---
 
+### E2 — Repository Restructure (ACTIVE — G1 feature freeze in effect)
+
+Per Metamorphosis Programme v3 and PATH_MAP v2 (`docs/PATH_MAP.md`). One
+surgical commit: every tracked file moves to its mapping target, every
+functional reference is repaired, and the preserved ARM64 work stays
+byte-identical and unstaged at its new path.
+
+- [x] **E2.1 — Moves executed per PATH_MAP**: 762 renames staged —
+  `MagiskOnWSA/scripts/` → `tools/` (4 protected files via index surgery:
+  staged blob = HEAD, ARM64 diff preserved unstaged), `Documentation/` →
+  `docs/archive/`, `WSABuilds Utilities/` → `utilities/`, upstream scripts →
+  `upstream/`.
+- [x] **E2.2 — Reference repair**: all four build/test workflows, release
+  pipeline output paths, 12 validation/engine scripts, toolchain sibling
+  paths (`tools/build_local.py`, `tools/update-check/`), 6 test files,
+  `.gitignore`, README structure tree, TROUBLESHOOTING archive links —
+  repaired mapping-driven, verified residual-free.
+- [x] **E2.3 — Guard alignment**: docs-mirror exempt `docs/archive/`,
+  website importer skips `docs/archive/`, identity_map classifies
+  `upstream/**` as protected provenance, PATH_MAP updated to executed
+  reality (stale `releases/` row removed — no such tracked file existed).
+- [x] **E2.4 — M1 tripwire flip verified**: post-E2 assertions green; residual
+  check hardened to git-tracked truth (local untracked build residue must not
+  fail the contract).
+- [x] **E2.5 — Full battery green on staged truth**: 267/267 OK (skipped=3),
+  registry `validate --schema` OK, compileall + py_compile + bash -n clean,
+  doc-links clean, actionlint clean, website build + 34 tests green,
+  staged-truth residual scan clean (E3A product-identity strings excepted by
+  design).
+
+**Exit checklist**
+
+- [x] E2.4 + E2.5 checked
+- [ ] CI ratification of the E2 commit — closes on the next build.yml run over
+  the pushed commit (probe via GitHub Actions API).
+
+---
+
 ## Part IV — Future phases (LOCKED — not active, listed for direction only)
 
 Per the Execution Contract, no phase may receive implementation work before
-its predecessor's exit checklist is fully checked. P0 is COMPLETE and
-CI-ratified (Cycle S4); P1 is ACTIVE; the phases below remain LOCKED. Order
+its predecessor's exit checklist is fully checked. P0–P1 and Metamorphosis
+E0/E1/E1.5 are COMPLETE and CI-ratified; E2 is ACTIVE (G1 freeze); the
+phases below remain LOCKED. Order
 reflects dependency flow; the registry is the dependency for all of them.
 
 - **P2 — Manager V2 on the registry**: the desktop Manager resolves
@@ -716,6 +755,38 @@ local reproduction was removed. Local website build + tests (34 pass) now reprod
 the CI step before push. The abort did not roll anything back: the defect was fully
 diagnosed, fixed, and re-validated in the working tree; the fix commit below is the
 ratification target.
+
+### Cycle E2 — Repository Restructure (September 16, 2026)
+
+**STATUS:** COMPLETE pending CI ratification · **DEPENDENCIES:** E1.5
+CI-ratified (`e30ecb1`) · **G1 feature freeze in effect.**
+
+- [x] **Moves** (762 renames, one surgical commit): `MagiskOnWSA/scripts/` →
+  `tools/` (4 ARM64-protected files staged with HEAD blobs via index surgery —
+  preserved work stays unstaged at the new paths), `Documentation/` →
+  `docs/archive/`, `WSABuilds Utilities/` → `utilities/`, legacy upstream
+  helpers → `upstream/`, per PATH_MAP v2. PATH_MAP's `releases/` row removed —
+  no such tracked file existed (stale row).
+- [x] **Reference repair (mapping-driven)**: build/release/update/docs/
+  security workflows, `upstream-sync.yml` requirements path, 12 scripts,
+  `tools/build_local.py` sibling resolution, `apply_custom_model.sh` root
+  computation (real functional fix — depth changed, WSA_PATH would have
+  pointed at `tools/output`), update-check fallback comment, 7 test files,
+  `.gitignore`, README structure tree, TROUBLESHOOTING archive links.
+- [x] **Guard alignment**: docs-mirror exempts `docs/archive/`; website
+  importer skips `docs/archive/`; identity_map classifies `upstream/**` as
+  protected provenance; PATH_MAP updated to executed reality.
+- [x] **False-positive fixed en route**: docs-mirror's HEAD fallback triggered
+  on *staged* changes, producing phantom mirror divergence during structural
+  commits — narrowed to *unstaged* WIP only (S4 lesson applied).
+- [x] **Import residue removed**: orphaned governance-doc imports under
+  `website/src/content/docs/getting-started/` deleted; tracked
+  `ARCHITECTURE.md` mirror restored to index truth (its source is protected
+  ARM64 WIP and stays unstaged).
+  STATUS: COMPLETE · FILES: 766 tracked paths touched · RISKS: upstream merges
+  will conflict by design (conflict path opens a triage PR) · VALIDATION:
+  267/267 OK, schema OK, compiles clean, actionlint clean, website build+tests
+  green · RESULT: E2 commit pending push; CI ratification to close.
 
 ### Cycle E1.5 — Metamorphosis Contract Tests (September 16, 2026)
 

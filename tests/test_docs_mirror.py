@@ -67,14 +67,23 @@ def normalize(text: str) -> str:
 
 
 def read_doc_source(path: Path) -> str:
-    """Read docs/ source content. If the file has uncommitted local modifications
-    (e.g., protected WIP such as ARM64 enablement), use the committed HEAD version
-    if git is available, upholding the L4 Truth Hierarchy (committed source)."""
+    """Read docs/ source content. If the file has UNCOMMITTED, UNSTAGED local
+    modifications (e.g., protected WIP such as ARM64 enablement), use the
+    committed HEAD version if git is available, upholding the L4 Truth
+    Hierarchy (committed source).
+
+    Staged-but-uncommitted changes are NOT a fallback trigger: during a
+    structural commit (e.g., E2 restructure) the staged content is the
+    incoming committed truth, and comparing it against HEAD would produce a
+    false divergence against mirrors carrying the same staged repair.
+    """
     try:
         import subprocess
 
+        # Unstaged diff only (no HEAD): staged repairs must not trigger the
+        # HEAD fallback.
         res = subprocess.run(
-            ["git", "diff", "--name-only", "HEAD", "--", str(path)],
+            ["git", "diff", "--name-only", "--", str(path)],
             capture_output=True,
             text=True,
             encoding="utf-8",
@@ -99,7 +108,13 @@ def read_doc_source(path: Path) -> str:
 
 
 def doc_files():
-    return sorted(p for p in DOCS.rglob("*.md") if p.is_file())
+    # docs/archive/** is the frozen historical record (Documentation/ moved at
+    # E2): archived docs are historical originals, not living site content -
+    # they get no website mirror.
+    return sorted(
+        p for p in DOCS.rglob("*.md")
+        if p.is_file() and "archive" not in p.parts
+    )
 
 
 def rel(path: Path) -> str:

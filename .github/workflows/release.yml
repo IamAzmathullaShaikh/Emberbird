@@ -67,14 +67,15 @@ jobs:
             scripts \
             config \
             tests \
-            MagiskOnWSA/scripts \
-            "MagiskOnWSA/Update Check" \
-            "WSABuilds Utilities/Update Script" \
-            "WSABuilds Utilities/Uninstall Script"
+            tools \
+            tools/update-check \
+            tools/core \
+            utilities \
+            upstream/installer
 
       - name: Install Test Dependencies 📦
         run: |
-          pip3 install --quiet -r MagiskOnWSA/scripts/requirements.txt
+          pip3 install --quiet -r tools/core/requirements.txt
 
       - name: Run Unit Tests 🧪
         run: |
@@ -121,23 +122,23 @@ jobs:
 
       - name: Install Python Requirements
         run: |
-          pip3 install --quiet -r MagiskOnWSA/scripts/requirements.txt
+          pip3 install --quiet -r tools/core/requirements.txt
 
       - name: Execute WSA Core Build Script ⚙️
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd MagiskOnWSA/scripts
+          cd tools
           bash build.sh --root-sol ${{ matrix.root_sol }} --gapps ${{ matrix.gapps }} --compress-format 7z
 
       - name: Compress Release Distribution (.7z) 🗜️
         run: |
-          PKG_DIR=$(find MagiskOnWSA/output -maxdepth 1 -type d -name "WSA_*" | head -n 1)
+          PKG_DIR=$(find output -maxdepth 1 -type d -name "WSA_*" | head -n 1)
           if [ -n "$PKG_DIR" ]; then
             PKG_NAME=$(basename "$PKG_DIR")
-            if [ ! -f "MagiskOnWSA/output/${PKG_NAME}.7z" ]; then
+            if [ ! -f "output/${PKG_NAME}.7z" ]; then
               echo "[*] Compressing $PKG_NAME into 7z archive..."
-              (cd MagiskOnWSA/output && 7z a -mx=7 "${PKG_NAME}.7z" "${PKG_NAME}")
+              (cd output && 7z a -mx=7 "${PKG_NAME}.7z" "${PKG_NAME}")
             fi
           fi
 
@@ -146,11 +147,11 @@ jobs:
         with:
           name: wsa-built-distribution-${{ matrix.artifact_key }}
           path: |
-            MagiskOnWSA/output/*.7z
-            MagiskOnWSA/output/WSA_*/AppxManifest.xml
-            MagiskOnWSA/output/WSA_*/Install.ps1
-            MagiskOnWSA/output/WSA_*/Run.bat
-            MagiskOnWSA/output/WSA_*/Tools/initrd.img
+            output/*.7z
+            output/WSA_*/AppxManifest.xml
+            output/WSA_*/Install.ps1
+            output/WSA_*/Run.bat
+            output/WSA_*/Tools/initrd.img
           retention-days: 2
 
   validate-and-publish:
@@ -178,7 +179,7 @@ jobs:
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           pattern: wsa-built-distribution-*
-          path: MagiskOnWSA/output
+          path: output
           merge-multiple: true
 
       - name: Download Release Notes 📝
@@ -190,16 +191,16 @@ jobs:
 
       - name: Extract Distribution Archives for Verification 🗜️
         run: |
-          for ARCHIVE in MagiskOnWSA/output/*.7z; do
+          for ARCHIVE in output/*.7z; do
             if [ -f "$ARCHIVE" ]; then
               echo "[*] Unpacking $ARCHIVE for deep partition integrity validation..."
-              7z x "$ARCHIVE" -oMagiskOnWSA/output/ -y
+              7z x "$ARCHIVE" -ooutput/ -y
             fi
           done
 
       - name: Validate Package Structural Integrity
         run: |
-          for PKG_DIR in MagiskOnWSA/output/WSA_*/; do
+          for PKG_DIR in output/WSA_*/; do
             if [ -d "$PKG_DIR" ]; then
               PKG_BASE=$(basename "$PKG_DIR")
               EDITION="standard"
@@ -212,7 +213,7 @@ jobs:
 
       - name: Validate Package Identity
         run: |
-          for PKG_DIR in MagiskOnWSA/output/WSA_*/; do
+          for PKG_DIR in output/WSA_*/; do
             if [ -d "$PKG_DIR" ]; then
               PKG_BASE=$(basename "$PKG_DIR")
               EDITION="standard"
@@ -225,7 +226,7 @@ jobs:
 
       - name: Validate Magisk & Trampoline Integration
         run: |
-          for PKG_DIR in MagiskOnWSA/output/WSA_*/; do
+          for PKG_DIR in output/WSA_*/; do
             if [ -d "$PKG_DIR" ]; then
               PKG_BASE=$(basename "$PKG_DIR")
               EDITION="standard"
@@ -238,7 +239,7 @@ jobs:
 
       - name: Validate GApps Integration
         run: |
-          for PKG_DIR in MagiskOnWSA/output/WSA_*/; do
+          for PKG_DIR in output/WSA_*/; do
             if [ -d "$PKG_DIR" ]; then
               PKG_BASE=$(basename "$PKG_DIR")
               EDITION="standard"
@@ -252,8 +253,8 @@ jobs:
       - name: Generate Checksums and Release Metadata 📊
         run: |
           python3 scripts/generate_release_metadata.py \
-            --packages-dir MagiskOnWSA/output \
-            --output-dir MagiskOnWSA/output \
+            --packages-dir output \
+            --output-dir output \
             --version "${{ inputs.wsa_ver || '2407.40000.4.0' }}" \
             --variant "${{ inputs.variant || 'Tier1_MultiConfig_Retail_x64' }}"
 
@@ -298,11 +299,11 @@ jobs:
           name: ${{ steps.release-info.outputs.title }}
           body_path: ${{ hashFiles('Windows11x64.md') != '' && 'Windows11x64.md' || '' }}
           files: |
-            MagiskOnWSA/output/*.7z
-            MagiskOnWSA/output/checksums.sha256
-            MagiskOnWSA/output/checksums.sha512
-            MagiskOnWSA/output/checksums.txt
-            MagiskOnWSA/output/release-metadata.json
+            output/*.7z
+            output/checksums.sha256
+            output/checksums.sha512
+            output/checksums.txt
+            output/release-metadata.json
             package-identity-report*.json
             package-integrity-report*.json
             magisk-validation-report*.json

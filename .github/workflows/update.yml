@@ -75,14 +75,14 @@ jobs:
       # Check Magisk stable version using repository-local script
       - name: Check Magisk Stable version ✅
         run: |
-          python3 "MagiskOnWSA/Update Check/MagiskStableUpdateCheck.py"
+          python3 tools/update-check/MagiskStableUpdateCheck.py
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
 
       # Check GApps version using repository-local script for LSPosed/WSA-Addon
       - name: Check GApps (WSA-Addon) version ☑️
         run: |
-          python3 "MagiskOnWSA/Update Check/GAppsAddonUpdateCheck.py"
+          python3 tools/update-check/GAppsAddonUpdateCheck.py
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -90,9 +90,9 @@ jobs:
       # Check WSA retail version using repository-local script
       - name: Check WSA Retail version ☑️
         run: |
-          python3 "MagiskOnWSA/Update Check/WSARetailUpdateCheck.py"
+          python3 tools/update-check/WSARetailUpdateCheck.py
         env:
-          WSA_XML_DIR: ${{ github.workspace }}/MagiskOnWSA/xml
+          WSA_XML_DIR: ${{ github.workspace }}/upstream/xml
           GITHUB_REPOSITORY: ${{ github.repository }}
 
       - name: Summarise component versions 📋
@@ -156,7 +156,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Replace download link in README.md
-        run: python "./MagiskOnWSA/Update Check/update-downloadlinks.py"
+        run: python "./tools/update-check/update-downloadlinks.py"
         env:
           LINK_FOR_W11X64: ${{ env.LINK_FOR_W11X64 }}
           RELEASE_TYPE: retail

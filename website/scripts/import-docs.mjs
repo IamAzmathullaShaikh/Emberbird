@@ -70,7 +70,7 @@ function extractMetadata(content, defaultCategory) {
 // Internal governance/programme docs are not part of the public
 // documentation information architecture (they would either break the
 // content schema or pollute end-user navigation).
-const GOVERNANCE_SKIP_DIRS = new Set(['research']);
+const GOVERNANCE_SKIP_DIRS = new Set(['research', 'archive']);
 const GOVERNANCE_SKIP_FILES = new Set([
   'CLEANUP_REGISTER.md',
   'METAMORPHOSIS.md',

@@ -42,7 +42,6 @@ EXCLUDED_PATHS = {
 # Directories excluded from machine path check (where usernames or sample paths may appear in docs/tests)
 MACHINE_PATH_EXCLUDED_DIRS = [
     "docs/",
-    "Documentation/",
     "tests/",
     ".gemini/",
 ]

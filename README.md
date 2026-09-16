@@ -180,9 +180,10 @@ WSABuilds/
 ├── data/contracts/            # Frozen platform contracts (release, channel)
 ├── data/releases/             # THE release registry: schema, generated registry, governance
 ├── deployment/                # Version metadata layer and Winget manifest configs
-├── docs/                      # Technical architecture, charter, license audit, guides
-├── Documentation/             # Comprehensive user, usage, and troubleshooting guides
-├── MagiskOnWSA/               # Core build engine, update checkers, and XML SOAP templates
+├── docs/archive/              # Historical upstream-era user docs (frozen record)
+├── upstream/                  # Vendored upstream build inputs (provenance-pinned)
+├── tools/                     # Build engine, update checkers, and XML SOAP templates
+├── utilities/                 # User utility scripts (update / uninstall helpers)
 ├── manifests/                 # Staged Winget distribution manifests (schema 1.6.0)
 ├── platform/release-engine/   # Registry metadata service (lookup, integrity, validate CLI)
 ├── scripts/                   # CLI validation tools + the registry generator
@@ -251,21 +252,21 @@ dism.exe /online /enable-feature /featurename:HypervisorPlatform /all /norestart
 **Linux/WSL2 pipeline** (`build.sh`):
 
 ```bash
-cd MagiskOnWSA
+cd tools
 # Standard Edition (Magisk Stable + OpenGApps Pico):
-./scripts/build.sh --root-sol magisk --gapps pico --compress-format 7z
+./build.sh --root-sol magisk --gapps pico --compress-format 7z
 # Banking Edition (Vanilla / No Root + OpenGApps Pico):
-./scripts/build.sh --root-sol none --gapps pico --compress-format 7z
+./build.sh --root-sol none --gapps pico --compress-format 7z
 ```
 
 **Native Windows Python builder** (`build_local.py`) — no WSL required:
 
 ```cmd
-cd MagiskOnWSA
+cd tools
 REM Standard Edition:
-python scripts\build_local.py --root-sol magisk --gapps pico
+python build_local.py --root-sol magisk --gapps pico
 REM Banking Edition:
-python scripts\build_local.py --root-sol none --gapps pico
+python build_local.py --root-sol none --gapps pico
 ```
 
 For the exhaustive walkthrough (WSL2 Ubuntu setup, dependency versions, troubleshooting), see [WINDOWS11_BUILD_GUIDE.md](WINDOWS11_BUILD_GUIDE.md) and [BUILD.md](BUILD.md).
@@ -446,7 +447,7 @@ adb devices
 ### Guided diagnostics
 
 * **Interactive Wizard**: [wsabuilds-website.pages.dev/troubleshoot/wizard](https://wsabuilds-website.pages.dev/troubleshoot/wizard) — step-by-step decision tree with copyable PowerShell commands.
-* **Fix Guides**: Per-issue walkthroughs live under [Documentation/](Documentation/) — pre-install errors (`Fix Error 0x80073CF9.md` and siblings), post-install issues (`FixInternet.md`, `Google Play Issues.md`, and more).
+* **Fix Guides**: Per-issue walkthroughs live under [docs/archive/](docs/archive/) — pre-install errors (`Fix Error 0x80073CF9.md` and siblings), post-install issues (`FixInternet.md`, `Google Play Issues.md`, and more).
 * **Error-code reference**: [docs/troubleshooting/error-codes.md](docs/troubleshooting/error-codes.md) and the portal mirror at `website/src/content/docs/troubleshooting/`.
 
 ---

@@ -16,8 +16,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-# Add MagiskOnWSA/scripts for CPIO helpers
-SCRIPT_DIR = Path(__file__).resolve().parent.parent / "MagiskOnWSA" / "scripts"
+# Add tools/ for CPIO helpers
+SCRIPT_DIR = Path(__file__).resolve().parent.parent / "tools"
 sys.path.insert(0, str(SCRIPT_DIR))
 
 try:

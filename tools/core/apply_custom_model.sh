@@ -49,8 +49,8 @@ if [ -z "$MODEL_NAME" ]; then
     exit 1
 fi
 
-# This script lives in MagiskOnWSA/scripts, so the repo root is the parent
-WORK_DIR="$(dirname "$PWD")"
+# This script lives in tools/core, so the repo root is the grandparent
+WORK_DIR="$(dirname "$(dirname "$PWD")")"
 WSA_PATH="$WORK_DIR/output/$ARTIFACT_FOLDER"
 MOUNT_BASE="$WORK_DIR/mount_temp"
 

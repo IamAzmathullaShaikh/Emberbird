@@ -11,7 +11,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-UPDATE_CHECK_DIR = REPO_ROOT / "MagiskOnWSA" / "Update Check"
+UPDATE_CHECK_DIR = REPO_ROOT / "tools" / "update-check"
 sys.path.insert(0, str(UPDATE_CHECK_DIR))
 
 from env_helpers import (

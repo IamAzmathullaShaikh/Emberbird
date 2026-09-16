@@ -4,8 +4,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-# Add MagiskOnWSA/scripts to sys.path
-SCRIPT_DIR = Path(__file__).resolve().parent.parent / "MagiskOnWSA" / "scripts"
+# Add tools/core/ to sys.path
+SCRIPT_DIR = Path(__file__).resolve().parent.parent / "tools" / "core"
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from fixGappsProp import Prop, _description, _fingerprint, _fix_prop

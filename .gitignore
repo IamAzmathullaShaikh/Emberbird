@@ -49,3 +49,11 @@ dist_artifacts_ci/
 # Clean-room E2E output (scripts/e2e_clean_room.py)
 dist_clean/
 dist_winget_submission/
+
+# WSA build outputs (tools/build.sh writes to root output/ post-E2;
+# tools/build_local.py stages downloads under upstream/download)
+output/
+download/
+
+# Local restructure residue (never enters git)
+MagiskOnWSAOld/
