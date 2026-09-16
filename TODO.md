@@ -293,7 +293,7 @@ metamorphosis freeze takes effect when E2 begins.
 
 ---
 
-### E1.5 — Metamorphosis Contract Tests (ACTIVE — CI ratification pending)
+### E1.5 — Metamorphosis Contract Tests (COMPLETE — CI-ratified)
 
 The safety net, built before any restructure or rename per the frozen programme.
 
@@ -321,7 +321,7 @@ The safety net, built before any restructure or rename per the frozen programme.
 - [x] M1/M2/M3 green locally; suite 243 → 267
 - [x] Closed discovery inventories match code reality (types.ts corrected during authoring)
 - [x] S4 matrix published and truthful
-- [ ] CI ratification of the E1.5 commit
+- [x] CI ratification of the E1.5 commit — **CONFIRMED**: all four workflows `completed/success` on head `e30ecb1` (GitHub Actions API probe).
 
 ---
 
