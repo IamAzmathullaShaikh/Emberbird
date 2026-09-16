@@ -174,6 +174,11 @@ def build_inventory() -> dict:
     # canonical dicts: totals must not carry platform insertion order
     token_counts = dict(sorted(token_counts.items()))
     class_counts = dict(sorted(class_counts.items()))
+    # canonical file order: sort by the rel-path STRING. Sorting Path objects
+    # is case-insensitive on Windows and case-sensitive on POSIX, which made
+    # the committed inventory's file-list order platform-dependent (the last
+    # hidden divergence; list order survives json.dumps sort_keys).
+    files_out.sort(key=lambda f: f["path"])
     protected = class_counts.get("upstream-attribution", 0) + class_counts.get("historical-doc", 0)
     return {
         "tool": "scripts/identity_map.py",
