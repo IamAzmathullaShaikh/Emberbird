@@ -13,6 +13,7 @@ import copy
 import json
 import re
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -26,6 +27,7 @@ from release_engine import (  # noqa: E402
     has_drift,
     validate_against_schema,
 )
+import release_engine.__main__ as release_engine_cli  # noqa: E402
 
 from fixture import FIXTURE  # noqa: E402
 
@@ -152,6 +154,36 @@ class TestDriftDetection(unittest.TestCase):
         self.curr["releases"][0]["provenance"]["commit"] = "f" * 40
         diff = diff_registries(self.prev, self.curr)
         self.assertFalse(has_drift(diff), diff)
+
+    def test_real_registry_has_no_self_drift(self):
+        diff = diff_registries(REGISTRY, REGISTRY)
+        self.assertFalse(has_drift(diff), diff)
+
+    def test_cli_diff_with_current_override_clean(self):
+        with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".json", delete=False) as f:
+            f.write(json.dumps(FIXTURE))
+            f_path = Path(f.name)
+        try:
+            rc = release_engine_cli.main(["diff", str(f_path), "--current", str(f_path), "--fail-on-drift"])
+            self.assertEqual(rc, 0)
+        finally:
+            f_path.unlink(missing_ok=True)
+
+    def test_cli_diff_with_current_override_drift_fails(self):
+        mutated = copy.deepcopy(FIXTURE)
+        mutated["releases"][0]["assets"][0]["sha256"] = "c" * 64
+        with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".json", delete=False) as f1:
+            f1.write(json.dumps(FIXTURE))
+            p1 = Path(f1.name)
+        with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".json", delete=False) as f2:
+            f2.write(json.dumps(mutated))
+            p2 = Path(f2.name)
+        try:
+            rc = release_engine_cli.main(["diff", str(p1), "--current", str(p2), "--fail-on-drift"])
+            self.assertEqual(rc, 2)
+        finally:
+            p1.unlink(missing_ok=True)
+            p2.unlink(missing_ok=True)
 
 
 class TestCITruthGate(unittest.TestCase):

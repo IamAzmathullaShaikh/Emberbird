@@ -32,6 +32,7 @@ PATH_MAP = {
 ALLOWLIST_UNMIRRORED = {
     "README.md",  # docs/ index; the website has its own portal navigation
     "EMBERBIRD_CHARTER.md",
+    "PHOENIX_CHARTER.md",
     "LICENSE_AUDIT.md",
     "ATTRIBUTION.md",
     "CLEANUP_REGISTER.md",  # platform governance evidence log

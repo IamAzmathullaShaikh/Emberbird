@@ -9,7 +9,7 @@ on:
       - 'compatibility/**'
       - 'services/analytics/**'
   pull_request:
-    branches: [master, experimental]
+    branches: [main, master, experimental]
     paths:
       - 'website/**'
       - 'docs/**'

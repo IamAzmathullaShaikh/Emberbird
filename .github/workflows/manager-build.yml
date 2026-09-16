@@ -2,12 +2,12 @@ name: WSABuilds Manager CI
 
 on:
   push:
-    branches: [master, experimental, feature/*]
+    branches: [master, main, experimental, feature/*]
     paths:
       - 'apps/manager/**'
       - '.github/workflows/manager-build.yml'
   pull_request:
-    branches: [master, experimental]
+    branches: [master, main, experimental]
     paths:
       - 'apps/manager/**'
       - '.github/workflows/manager-build.yml'

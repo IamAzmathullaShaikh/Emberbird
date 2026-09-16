@@ -106,6 +106,37 @@ class TestConsumerInventory(unittest.TestCase):
     def test_unmigrated_consumers_are_planned_phases(self):
         self.assertIn("P2 — Manager V2 on the registry", TODO, "manager migration must be a recorded planned phase")
         self.assertIn("P3 — Website on the registry", TODO, "website migration must be a recorded planned phase")
+        self.assertIn("P5 — Analytics & Ember Observatory", TODO, "analytics migration must be a recorded planned phase")
+        self.assertIn("P7 — Distribution automation", TODO, "distribution / winget migration must be a recorded planned phase")
+
+
+class TestRegistryReleaseConsistency(unittest.TestCase):
+    """Authoritative releases.json releases must be internally consistent:
+    - every asset size > 0
+    - every source_url correctly embeds tag and filename
+    - every release has published_at timestamp
+    - vault entries have valid availability_score
+    """
+
+    def test_asset_sizes_are_positive(self):
+        for rel in REGISTRY["releases"]:
+            for a in rel.get("assets", []):
+                self.assertGreater(a.get("size_bytes", 0), 0, f"{rel['release_id']}/{a.get('filename')} size must be > 0")
+
+    def test_asset_source_urls_embed_tag_and_filename(self):
+        for rel in REGISTRY["releases"]:
+            tag = rel["tag"]
+            for a in rel.get("assets", []):
+                fname = a["filename"]
+                url = a.get("source_url", "")
+                self.assertIn(tag, url, f"{rel['release_id']}/{fname} url missing tag")
+                self.assertIn(fname, url, f"{rel['release_id']}/{fname} url missing filename")
+
+    def test_vault_entries_availability_scores(self):
+        for v in REGISTRY.get("vault", []):
+            score = v.get("availability_score", 0)
+            self.assertGreaterEqual(score, 0, f"vault {v['artifact']} availability_score must be non-negative")
+            self.assertLessEqual(score, 100, f"vault {v['artifact']} availability_score must be <= 100")
 
 
 class TestWorkflowDocumentation(unittest.TestCase):

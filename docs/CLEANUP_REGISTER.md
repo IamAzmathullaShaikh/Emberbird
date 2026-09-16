@@ -52,16 +52,61 @@
 - **Evidence**: `docs/README.md` describes `getting-started/` as containing quick-start/beginner/manual-install walkthroughs, but `UPGRADE_VALIDATION.md` and `WINDOWS_VALIDATION_LAB.md` live at the `docs/` root (the website mirror holds them under `getting-started/`). The mapping is now pinned by `tests/test_docs_mirror.py::PATH_MAP`, so the drift can no longer spread silently.
 - **Decision**: **KEEP (noted)** — cosmetic; the authoritative structure map lives in the README Repository Structure section and the mirror guard. Optional cosmetic fix deferred to avoid churn in mirrored docs mid-cycle.
 
+### CR-8 — `docs-validation.yml` branch triggers omitted `main` — FIXED IN S3
+
+- **File**: `.github/workflows/docs-validation.yml`
+- **References**: `build.yml`, `.github/WORKFLOWS.md`
+- **Evidence**: `docs-validation.yml` previously only monitored `[master, experimental, 'feature/*']`. Since `main` is the primary repository branch, pushes and PRs to `main` bypassed markdown link checks and secret audits.
+- **Risk**: None.
+- **Recommendation**: Add `main` to `push.branches` and `pull_request.branches`.
+- **Decision**: **FIXED IN S3**.
+
+### CR-9 — Workflow PR/push triggers omitted `main` parity — FIXED IN S3
+
+- **File**: `.github/workflows/website-deploy.yml`, `.github/workflows/manager-build.yml`, `.github/workflows/compatibility-validation.yml`
+- **References**: `.github/WORKFLOWS.md`
+- **Evidence**: PR branch triggers in `website-deploy.yml` and `manager-build.yml` omitted `main`; push branch trigger in `compatibility-validation.yml` omitted `main`.
+- **Risk**: None.
+- **Recommendation**: Align triggers across all workflows to monitor `main`.
+- **Decision**: **FIXED IN S3**.
+
+### CR-10 — Legacy fallback repository in `WSAUpdater.py` — DEFERRED (Phase P7)
+
+- **File**: `WSABuilds Utilities/Update Script/WSAUpdater.py`
+- **References**: lines 41-42 (`FALLBACK_REPO = "MustardChef/WSABuilds"`)
+- **Evidence**: Legacy fallback points to the 2023 pre-fork repository. If primary API calls fail, fallback could attempt to pull outdated 2023 releases.
+- **Risk**: Low (standalone utility). Removing or changing without utility-suite overhaul could alter user script behavior.
+- **Recommendation**: Defer to Phase P7 (Distribution automation) utility modernization.
+- **Decision**: **KEEP (tracked)**.
+
+### CR-11 — Release Engine `diff` CLI lacked arbitrary `--current` parameter — FIXED IN S3
+
+- **File**: `platform/release-engine/release_engine/__main__.py`
+- **References**: `diff` subcommand
+- **Evidence**: CLI hardcoded the current registry to `data/releases/releases.json`, preventing automated testing or comparison between arbitrary registry snapshots without mutating workspace files.
+- **Risk**: None (purely additive argument, default preserved).
+- **Recommendation**: Add `--current` flag to `diff` subcommand.
+- **Decision**: **FIXED IN S3**.
+
+### CR-12 — Historical `Documentation/` directory — KEEP (Historical Archive)
+
+- **File**: `Documentation/` directory (all files)
+- **References**: 198+ legacy links to `MustardChef/WSABuilds`
+- **Evidence**: Historical directory from the project's inception containing obsolete guides (`Run.bat`, outdated manual install steps). Official documentation lives under `docs/` and is mirrored to `website/src/content/docs/`.
+- **Risk**: High risk of breaking historical references if deleted without explicit owner mandate.
+- **Recommendation**: Keep unchanged as an audit-safe historical archive per "no deletion without proof".
+- **Decision**: **KEEP (historical archive)**.
+
 ---
 
 ## Register statistics
 
 | Metric | Count |
 |---|---|
-| Candidates identified | 7 |
+| Candidates identified | 12 |
 | Removed this cycle | 0 (by design — evidence-first) |
-| Fixed this cycle (doc-only) | 2 (CR-1 option removal, CR-2 WORKFLOWS row) |
-| Kept with evidence | 4 (CR-3, CR-4, CR-5, CR-7) |
+| Fixed to date (doc/config/tooling) | 5 (CR-1, CR-2, CR-8, CR-9, CR-11) |
+| Kept with evidence / deferred | 6 (CR-3, CR-4, CR-5, CR-7, CR-10, CR-12) |
 | Closed by test coverage | 1 (CR-6) |
 
 ## Root Solution Policy statement

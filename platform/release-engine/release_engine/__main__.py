@@ -32,6 +32,10 @@ def main(argv=None) -> int:
     diff_parser = sub.add_parser("diff", help="Diff registry state against a previous registry (drift detection)")
     diff_parser.add_argument("previous", help="Path to the previous releases.json snapshot")
     diff_parser.add_argument(
+        "--current", default=None,
+        help="Path to the current releases.json snapshot (defaults to data/releases/releases.json)",
+    )
+    diff_parser.add_argument(
         "--fail-on-drift", action="store_true",
         help="Exit non-zero when drift is detected (policy gate)",
     )
@@ -65,12 +69,16 @@ def main(argv=None) -> int:
         if not prev_path.is_file():
             print(f"previous registry not found: {prev_path}")
             return 1
+        curr_path = _Path(args.current) if args.current else REGISTRY_PATH
+        if not curr_path.is_file():
+            print(f"current registry not found: {curr_path}")
+            return 1
         try:
             previous = json.loads(prev_path.read_text(encoding="utf-8"))
-            # Read the current registry directly: drift analysis must work
-            # even when the current state fails integrity checks (that is
+            # Read current registry directly: drift analysis must work
+            # even when current state fails integrity checks (that is
             # exactly when it is most needed). `validate` owns integrity.
-            current = json.loads(REGISTRY_PATH.read_text(encoding="utf-8"))
+            current = json.loads(curr_path.read_text(encoding="utf-8"))
         except Exception as err:
             print(f"diff failed: {err}")
             return 1

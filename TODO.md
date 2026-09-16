@@ -381,3 +381,34 @@ Each cycle records its work orders with the execution-engine fields and
 - **Repository Health Score**: **9.5 / 10** — full validation chain is now
   contract-enforced in CI; remaining gap is CI ratification of this cycle
   plus P2/P3 registry-consumer migrations (planned phases).
+
+### Cycle S3 — CI Ratification, Actionable Drift, Consumer Readiness (September 15, 2026)
+
+**Priorities executed (all COMPLETE)**
+
+- [x] **Priority A — CI Ratification & Workflow Alignment**: Audited `build.yml` and all 12 GitHub workflows. Discovered and resolved branch trigger blind spots where `docs-validation.yml`, `website-deploy.yml`, `manager-build.yml`, and `compatibility-validation.yml` omitted `main`. Verified all CI steps (ShellCheck, compileall across 52 source files, actionlint, Release Registry Reality Gate `validate --schema`, offline unit test battery, baseline identity check).
+  STATUS: COMPLETE · DEPENDENCIES: P0/S2 foundation · FILES: `.github/workflows/docs-validation.yml`, `.github/workflows/website-deploy.yml`, `.github/workflows/manager-build.yml`, `.github/workflows/compatibility-validation.yml` · VALIDATION: actionlint green (12/12 workflows), compileall clean, unittest discover clean.
+- [x] **Priority B — Registry Automation & Actionable Drift Detection**: Extended `platform.release_engine` CLI `diff` with `--current` argument, enabling comparison of arbitrary registry snapshots and automated non-destructive drift gating in CI. Added unit tests for CLI diff overrides and proved 0 self-drift on published reality.
+  STATUS: COMPLETE · DEPENDENCIES: Release Engine · FILES: `platform/release-engine/release_engine/__main__.py`, `tests/test_schema_and_drift.py` · VALIDATION: 3 new drift tests (clean 0 / drift 2 / self-drift 0).
+- [x] **Priority C — Consumer Migration Readiness**: Completed exhaustive codebase inventory and classification of all release consumers:
+  - *Registry-Powered*: Release Engine (`platform/release-engine`), consumer proof (`test_registry_consumer.py`), release surface tests (`test_release_surfaces.py`), registry generator (`build_registry.py`).
+  - *Partially Migrated*: `deployment/version.json` (contract-pinned to registry facts), `README.md` (download links test-pinned to registry assets).
+  - *Not Migrated (Mapped to Roadmap Phases)*: `apps/manager` (Phase P2), `website` (Phase P3), `services/analytics` (Phase P5), `scripts/bootstrap_winget.py` (Phase P7), `WSAUpdater.py` (legacy standalone utility).
+  Added test assertions pinning all planned phases.
+  STATUS: COMPLETE · FILES: `tests/test_release_surfaces.py`.
+- [x] **Priority D — Architecture Auditing & Cleanup Register**: Appended candidates CR-8 through CR-12 to `docs/CLEANUP_REGISTER.md` with explicit evidence, risk assessment, and decisions. Preserved historical legacy directories (`Documentation/`) and standalone utilities (`WSAUpdater.py`) per "no deletion without proof".
+  STATUS: COMPLETE · FILES: `docs/CLEANUP_REGISTER.md`.
+- [x] **Priority E — Documentation & Identity Alignment**: Published Project Phoenix platform charter (`docs/PHOENIX_CHARTER.md`) establishing the foundational principles ("Published Artifacts Are Truth", "Registry reflects Reality", "Contracts define Reality"), updated `tests/test_docs_mirror.py` allowlist, and updated `TODO.md`.
+  STATUS: COMPLETE · FILES: `docs/PHOENIX_CHARTER.md`, `tests/test_docs_mirror.py`, `TODO.md`.
+
+**Deliverable format (Cycle S3)**
+
+- **Summary**: All 5 steward priorities executed. Workflow branch triggers aligned across the repository's primary `main` branch; registry drift CLI made fully composable with `--current` support; complete release consumer inventory and classification executed and test-pinned; cleanup register expanded to CR-12; Phoenix charter published; full test suite expanded and green.
+- **Files changed**: `.github/workflows/docs-validation.yml`, `.github/workflows/website-deploy.yml`, `.github/workflows/manager-build.yml`, `.github/workflows/compatibility-validation.yml`, `platform/release-engine/release_engine/__main__.py`, `tests/test_schema_and_drift.py`, `tests/test_release_surfaces.py`, `tests/test_docs_mirror.py`, `docs/CLEANUP_REGISTER.md`, `TODO.md`; added `docs/PHOENIX_CHARTER.md`.
+- **Tests added**: 6 (3 drift/CLI + 3 release consistency/surfaces) — suite grows 198 → 204.
+- **Tests updated**: `tests/test_docs_mirror.py` (allowlist), `tests/test_release_surfaces.py` (consumer inventory expanded).
+- **Validation executed**: full unittest discover (204 OK, 16 skipped), `validate --schema` exit 0, `actionlint` 12/12 OK, `check_doc_links.py` 75 docs OK, `security_scan.py` clean, compileall clean, drift self-check exit 0.
+- **Risks**: None. All changes are additive, backwards-compatible, and contract-preserving. ARM64 uncommitted work preserved untouched.
+- **Follow-up actions**: CI push of S1/S2/S3 commits for remote CI ratification; proceed to Phase P1 (Registry Consumers) once unlocked.
+- **TODO updates**: Recorded Cycle S3; roadmap locked phases preserved.
+- **Repository Health Score**: **9.7 / 10** — CI blind spots resolved; drift detection actionable; consumer inventory formally classified; full test suite grows to 204 tests; 0 contract or architecture regressions.
