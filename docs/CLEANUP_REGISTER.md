@@ -97,15 +97,24 @@
 - **Recommendation**: Keep unchanged as an audit-safe historical archive per "no deletion without proof".
 - **Decision**: **KEEP (historical archive)**.
 
+### CR-13 — Docs-mirror false drift in `website/.../ARCHITECTURE.md` — FIXED
+
+- **File**: `website/src/content/docs/getting-started/ARCHITECTURE.md`, `tests/test_docs_mirror.py`
+- **References**: `docs/ARCHITECTURE.md`, `build.yml` Step 11
+- **Evidence**: In Cycle S1 (commit `ecf6bf2`), Section 5 (Architecture Support Matrix) from uncommitted local ARM64 drafts was mirrored and committed to `website/.../ARCHITECTURE.md`, while `docs/ARCHITECTURE.md` remained uncommitted under the ARM64 Protection Rule. On clean CI checkouts, committed `docs/ARCHITECTURE.md` lacked Section 5, failing `test_mirrored_content_matches_source`.
+- **Risk**: None (aligns mirror with committed repository source of truth L4).
+- **Recommendation**: Revert Section 5 from website mirror to match committed `docs/` source at HEAD; enhance `tests/test_docs_mirror.py` to read committed HEAD content when uncommitted working-tree modifications exist.
+- **Decision**: **FIXED**.
+
 ---
 
 ## Register statistics
 
 | Metric | Count |
 |---|---|
-| Candidates identified | 12 |
+| Candidates identified | 13 |
 | Removed this cycle | 0 (by design — evidence-first) |
-| Fixed to date (doc/config/tooling) | 5 (CR-1, CR-2, CR-8, CR-9, CR-11) |
+| Fixed to date (doc/config/tooling) | 6 (CR-1, CR-2, CR-8, CR-9, CR-11, CR-13) |
 | Kept with evidence / deferred | 6 (CR-3, CR-4, CR-5, CR-7, CR-10, CR-12) |
 | Closed by test coverage | 1 (CR-6) |
 

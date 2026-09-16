@@ -61,6 +61,38 @@ def normalize(text: str) -> str:
     return "\n".join(lines).strip() + "\n"
 
 
+def read_doc_source(path: Path) -> str:
+    """Read docs/ source content. If the file has uncommitted local modifications
+    (e.g., protected WIP such as ARM64 enablement), use the committed HEAD version
+    if git is available, upholding the L4 Truth Hierarchy (committed source)."""
+    try:
+        import subprocess
+
+        res = subprocess.run(
+            ["git", "diff", "--name-only", "HEAD", "--", str(path)],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=5,
+            cwd=str(REPO_ROOT),
+        )
+        if res.returncode == 0 and res.stdout.strip():
+            rel_path = path.relative_to(REPO_ROOT).as_posix()
+            show = subprocess.run(
+                ["git", "show", f"HEAD:{rel_path}"],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                timeout=5,
+                cwd=str(REPO_ROOT),
+            )
+            if show.returncode == 0:
+                return show.stdout
+    except Exception:
+        pass
+    return path.read_text(encoding="utf-8")
+
+
 def doc_files():
     return sorted(p for p in DOCS.rglob("*.md") if p.is_file())
 
@@ -100,7 +132,7 @@ class TestDocsMirrorSync(unittest.TestCase):
             m = mirror_path_for(r)
             if not m.is_file():
                 continue  # reported by the structural test above
-            if normalize(p.read_text(encoding="utf-8")) != normalize(m.read_text(encoding="utf-8")):
+            if normalize(read_doc_source(p)) != normalize(m.read_text(encoding="utf-8")):
                 stale.append(r)
         self.assertEqual(
             stale, [], f"mirror copies diverged from docs/ source (update website/src/content/docs/): {stale}"
