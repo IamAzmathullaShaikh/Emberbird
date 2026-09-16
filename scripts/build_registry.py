@@ -67,13 +67,26 @@ def make_provenance(now_iso: str) -> dict:
 TODAY = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
 
 
+def github_headers() -> dict:
+    """Headers for GitHub API/asset requests. GITHUB_TOKEN (when present) is
+    used for authenticated access — required for scheduled CI runs to stay
+    clear of the 60-requests/hour anonymous rate limit."""
+    import os
+
+    headers = {"User-Agent": "emberbird-registry/1.0"}
+    token = os.environ.get("GITHUB_TOKEN", "").strip()
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    return headers
+
+
 def fetch_json(url: str, retries: int = 3):
     """GET JSON with retries (GitHub occasionally 502s)."""
     import urllib.request
     last_err = None
     for attempt in range(retries):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "emberbird-registry/1.0"})
+            req = urllib.request.Request(url, headers=github_headers())
             with urllib.request.urlopen(req, timeout=30) as resp:
                 return json.loads(resp.read().decode("utf-8"))
         except Exception as err:  # noqa: BLE001
@@ -86,7 +99,7 @@ def fetch_text(url: str, retries: int = 3) -> str:
     last_err = None
     for attempt in range(retries):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "emberbird-registry/1.0"})
+            req = urllib.request.Request(url, headers=github_headers())
             with urllib.request.urlopen(req, timeout=30) as resp:
                 return resp.read().decode("utf-8", errors="replace")
         except Exception as err:  # noqa: BLE001
@@ -101,7 +114,7 @@ def sha256_of_asset(asset, retries: int = 3) -> str:
     for attempt in range(retries):
         try:
             req = urllib.request.Request(asset["browser_download_url"],
-                                         headers={"User-Agent": "emberbird-registry/1.0"})
+                                         headers=github_headers())
             with urllib.request.urlopen(req, timeout=120) as resp:
                 digest = hashlib.sha256()
                 while True:
@@ -354,17 +367,49 @@ def generate(releases_payload: list, prev_registry: dict) -> dict:
         "releases": entries,
         "vault": build_vault(entries, prev_registry, now_iso),
     }
+    # Policy carry-over (P1.3 / clause 9): `recommended` is a policy
+    # decision, never a generator default. Reality-sync re-applies the
+    # previous decision and its provenance verbatim - and only for
+    # releases that still exist in published reality.
+    prev_policy = prev_registry.get("policy") if isinstance(prev_registry, dict) else None
+    prev_rec = {
+        r.get("release_id")
+        for r in (prev_registry.get("releases", []) if isinstance(prev_registry, dict) else [])
+        if r.get("recommended")
+    }
+    if prev_rec and prev_policy and prev_policy.get("recommended_by"):
+        carried = prev_rec & {r["release_id"] for r in entries}
+        if carried:
+            for rel in entries:
+                if rel["release_id"] in carried:
+                    rel["recommended"] = True
+            registry["policy"] = dict(prev_policy)
     return registry
+
+
+def _deny_socket(*args, **kwargs):
+    raise RuntimeError("network access denied (--no-network mode)")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Emberbird Registry Generator")
     parser.add_argument("--offline", type=str, default=None,
                         help="Path to a GitHub releases JSON dump (offline mode)")
+    parser.add_argument("--no-network", action="store_true",
+                        help="Refuse every network access (CI drift runs: reads only committed data)")
     parser.add_argument("--output", type=str, default=None,
                         help="Output path (default: data/releases/releases.json)")
     args = parser.parse_args()
 
+    if args.no_network:
+        if not args.offline:
+            print("--no-network requires --offline (CI drift runs must read only committed data)")
+            return 2
+        import socket
+
+        socket.socket = _deny_socket
+        socket.create_connection = _deny_socket
+        socket.getaddrinfo = _deny_socket
     if args.offline:
         payload = json.loads(Path(args.offline).read_text(encoding="utf-8"))
     else:

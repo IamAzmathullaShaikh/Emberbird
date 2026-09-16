@@ -5,10 +5,12 @@ Zero network access. Pure stdlib.
 """
 from __future__ import annotations
 
+import copy
 import json
 import re
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 REGISTRY_PATH = REPO_ROOT / "data" / "releases" / "releases.json"
@@ -19,6 +21,15 @@ SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
 
 class RegistryError(RuntimeError):
     """Registry integrity violation."""
+
+
+class PolicyError(RuntimeError):
+    """Policy decision refused (Execution Contract clause 9)."""
+
+
+def utc_now_iso() -> str:
+    """UTC timestamp in the registry's RFC3339 'Z' format."""
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 class Release:
@@ -554,6 +565,90 @@ def has_drift(diff: dict) -> bool:
         or diff.get("asset_changes")
         or diff.get("status_changes")
     )
+
+
+# --------------- P1.2: vault mirror verification (injected fetcher) -------
+
+
+def verify_vault(registry: dict, fetcher: Callable[[dict], str], now: Optional[str] = None) -> dict:
+    """Verify every vault entry's published hash through an injected fetcher.
+
+    fetcher(vault_entry) must return the artifact's current published sha256
+    hex digest, or raise on unavailability. The engine core itself performs
+    ZERO network access; the CLI (or a test) supplies the real fetcher.
+
+    Status transitions (schema enum: available / unverified / missing):
+    - hash matches    -> "available"   (reality confirmed artifact+hash)
+    - hash mismatches -> "unverified"  (registry claim contradicted; needs reconciliation)
+    - fetcher raises  -> status unchanged (cannot observe != artifact missing)
+
+    last_verified_at is refreshed on every successful observation (match or
+    mismatch), never on fetch errors. Returns a report; mutates `registry`
+    in place so callers can choose to persist it.
+    """
+    vault = registry.get("vault", [])
+    mismatches, errors = [], []
+    verified = 0
+    observed_at = now or utc_now_iso()
+    for entry in vault:
+        name = entry.get("artifact", "<unknown>")
+        try:
+            actual = fetcher(entry)
+        except Exception as err:  # noqa: BLE001 — reported, never fatal
+            errors.append({"artifact": name, "error": str(err)})
+            continue
+        if not isinstance(actual, str) or not SHA256_RE.match(actual):
+            errors.append({"artifact": name, "error": f"fetcher returned invalid sha256: {actual!r}"})
+            continue
+        if actual == entry.get("sha256"):
+            entry["mirror_status"] = "available"
+            verified += 1
+        else:
+            entry["mirror_status"] = "unverified"
+            mismatches.append({"artifact": name, "expected": entry.get("sha256"), "actual": actual})
+        entry["last_verified_at"] = observed_at
+    return {"checked": len(vault), "verified": verified, "mismatches": mismatches, "errors": errors}
+
+
+# --------------- P1.3: recommended policy write path (clause 9) -----------
+
+
+def apply_policy(registry: dict, decision: dict) -> dict:
+    """Set the registry's recommended release from a policy decision.
+
+    `latest` is a chronological fact; `recommended` is a policy decision
+    (Execution Contract clause 9 — the two must never be conflated). This is
+    the ONLY sanctioned write path for `recommended`: it requires
+    `recommended_by` provenance, a dated decision, and a rationale, it never
+    touches chronology, and it keeps the recommendation unique across the
+    registry. Returns a new registry dict; the input is not mutated.
+    """
+    if not isinstance(registry, dict) or "releases" not in registry:
+        raise PolicyError("apply_policy requires a registry dict with a 'releases' list")
+    by = (decision.get("recommended_by") or "").strip()
+    if not by:
+        raise PolicyError("policy decision refused: recommended_by provenance is required (clause 9)")
+    rationale = (decision.get("rationale") or "").strip()
+    if not rationale:
+        raise PolicyError("policy decision refused: a rationale is required (clause 9)")
+    decided_at = (decision.get("decided_at") or "").strip()
+    if not decided_at:
+        raise PolicyError("policy decision refused: decided_at is required (clause 9)")
+    release_id = (decision.get("release_id") or "").strip()
+    if not any(r.get("release_id") == release_id for r in registry["releases"]):
+        raise PolicyError(f"policy decision refused: unknown release_id '{release_id}'")
+
+    updated = copy.deepcopy(registry)
+    for rel in updated["releases"]:
+        rel.pop("recommended", None)
+    target = next(r for r in updated["releases"] if r["release_id"] == release_id)
+    target["recommended"] = True
+    updated["policy"] = {
+        "recommended_by": by,
+        "decided_at": decided_at,
+        "rationale": rationale,
+    }
+    return updated
 
 
 def validate_file(path: Optional[Path] = None) -> int:

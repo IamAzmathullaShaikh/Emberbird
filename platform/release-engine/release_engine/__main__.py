@@ -2,20 +2,39 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
+import urllib.request
 from pathlib import Path as _Path
 
 sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
 
 from release_engine import (  # noqa: E402
     REGISTRY_PATH,
+    PolicyError,
+    apply_policy,
     diff_registries,
     has_drift,
     load,
+    utc_now_iso,
     validate_file,
     validate_schema_file,
+    verify_vault,
 )
+
+
+def _network_fetcher(entry: dict) -> str:
+    """Real fetcher for `verify`: stream the published artifact and hash it.
+    The engine core never touches the network; this is the CLI's bridge."""
+    digest = hashlib.sha256()
+    with urllib.request.urlopen(entry["source_url"], timeout=120) as resp:  # noqa: S310
+        while True:
+            chunk = resp.read(1 << 20)
+            if not chunk:
+                break
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def main(argv=None) -> int:
@@ -38,6 +57,28 @@ def main(argv=None) -> int:
     diff_parser.add_argument(
         "--fail-on-drift", action="store_true",
         help="Exit non-zero when drift is detected (policy gate)",
+    )
+    verify_parser = sub.add_parser(
+        "verify",
+        help="Verify vault mirror statuses against published reality (network)",
+    )
+    verify_parser.add_argument(
+        "--registry", default=None,
+        help="Path to the registry to verify (default: data/releases/releases.json)",
+    )
+    verify_parser.add_argument(
+        "--write", action="store_true",
+        help="Persist updated mirror statuses back to the registry",
+    )
+    apply_parser = sub.add_parser(
+        "apply-policy",
+        help="Set the recommended release from a policy decision (clause 9)",
+    )
+    apply_parser.add_argument("--decision", required=True, help="Path to a policy decision JSON file")
+    apply_parser.add_argument("--registry", default=None, help="Path to the registry (default: data/releases/releases.json)")
+    apply_parser.add_argument(
+        "--output", default=None,
+        help="Write the updated registry here instead of in place",
     )
     args = parser.parse_args(argv)
 
@@ -63,6 +104,49 @@ def main(argv=None) -> int:
             print(f"unknown release_id: {args.release_id}")
             return 1
         print(json.dumps(rel.raw, indent=2))
+        return 0
+    if args.command == "verify":
+        reg_path = _Path(args.registry) if args.registry else REGISTRY_PATH
+        if not reg_path.is_file():
+            print(f"registry not found: {reg_path}")
+            return 1
+        registry = json.loads(reg_path.read_text(encoding="utf-8"))
+        report = verify_vault(registry, _network_fetcher)
+        print(
+            f"VERIFY: checked={report['checked']} verified={report['verified']} "
+            f"mismatches={len(report['mismatches'])} errors={len(report['errors'])}"
+        )
+        for m in report["mismatches"]:
+            print(f"  MISMATCH {m['artifact']}: expected={m['expected']} actual={m['actual']}")
+        for e in report["errors"]:
+            print(f"  ERROR    {e['artifact']}: {e['error']}")
+        if args.write:
+            reg_path.write_text(
+                json.dumps(registry, indent=2, ensure_ascii=True) + "\n", encoding="utf-8"
+            )
+            print(f"updated registry written: {reg_path}")
+        return 0 if not report["mismatches"] else 1
+    if args.command == "apply-policy":
+        reg_path = _Path(args.registry) if args.registry else REGISTRY_PATH
+        decision_path = _Path(args.decision)
+        if not reg_path.is_file():
+            print(f"registry not found: {reg_path}")
+            return 1
+        if not decision_path.is_file():
+            print(f"decision file not found: {decision_path}")
+            return 1
+        registry = json.loads(reg_path.read_text(encoding="utf-8"))
+        try:
+            decision = json.loads(decision_path.read_text(encoding="utf-8"))
+            updated = apply_policy(registry, decision)
+        except (PolicyError, json.JSONDecodeError) as err:
+            print(f"apply-policy refused: {err}")
+            return 1
+        out_path = _Path(args.output) if args.output else reg_path
+        out_path.write_text(
+            json.dumps(updated, indent=2, ensure_ascii=True) + "\n", encoding="utf-8"
+        )
+        print(f"policy applied: recommended={decision.get('release_id')} by={updated['policy']['recommended_by']}")
         return 0
     if args.command == "diff":
         prev_path = _Path(args.previous)

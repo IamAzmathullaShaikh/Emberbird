@@ -9,6 +9,7 @@ The `.github/` directory manages GitHub Actions workflows, community issue templ
 | Workflow File | Name & Purpose | Triggers | Runner Environment |
 |---|---|---|---|
 | **`build.yml`** | Code Quality, ShellCheck, compileall, and offline unit test suite. | Push / PR on `master`, `main` | `ubuntu-latest` |
+| **`registry-drift.yml`** | Registry Reality Sync (P1.1): regenerates the release registry from published GitHub reality and gates on drift via the Release Engine; opens/updates a `registry-drift` issue with the delta — never auto-commits. | Daily cron / workflow_dispatch | `ubuntu-latest` |
 | **`docs-validation.yml`** | Markdown link integrity auditor and secret scanner. | Push / PR on `master`, `experimental`, `feature/*` | `ubuntu-22.04` |
 | **`compatibility-validation.yml`** | Automated JSON schema validator for app compatibility submissions. | PR on `compatibility/data/**` | `ubuntu-latest` |
 | **`manager-build.yml`** | Native desktop client typecheck, clippy, and Rust unit test suite. | Push / PR on `apps/manager/**` | `windows-latest` |
@@ -37,7 +38,7 @@ To prevent release collisions, tags are strictly segregated:
 
 | Secret Name | Consuming Workflow | Purpose |
 |---|---|---|
-| **`GITHUB_TOKEN`** | `release.yml`, `winget-release.yml` | Publishing release assets and archiving artifacts. |
+| **`GITHUB_TOKEN`** | `release.yml`, `winget-release.yml`, `registry-drift.yml` | Publishing release assets, archiving artifacts, and authenticated registry reality-sync (rate-limit headroom). |
 | **`CLOUDFLARE_API_TOKEN`** | `website-deploy.yml` | Authenticating deployment to Cloudflare Pages. |
 | **`CLOUDFLARE_ACCOUNT_ID`** | `website-deploy.yml` | Cloudflare account routing identifier. |
 

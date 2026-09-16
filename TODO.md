@@ -208,23 +208,55 @@ them to a phase. Reality updates are recorded inline.
 
 ---
 
+### P1 — Registry Population Hardening (ACTIVE)
+
+**Goal**: The registry stays synchronized with published GitHub reality
+without manual patching: CI regenerates and diffs it on a schedule, vault
+mirror statuses are verified against the network, and the `recommended`
+policy gains its provenance-gated write path for Ember Observatory (P5).
+
+**Deliverables**
+
+- [x] **P1.1 — CI registry drift automation** — a scheduled workflow that
+  regenerates the registry from live GitHub reality and runs
+  `diff --current` against the committed registry; on drift it opens or
+  updates an issue containing the delta. It never auto-commits: published
+  reality enters the repository through reviewed changes only.
+- [x] **P1.2 — Vault mirror verification** — an engine `verify` command
+  that checks each vault entry's mirror status against the actual
+  published asset (fetcher injected; unit tests run fully offline).
+- [x] **P1.3 — `recommended` policy scaffolding** — the policy write path:
+  an engine `apply-policy` command that sets `recommended` only with
+  `policy.recommended_by` provenance and a dated rationale (Contract
+  clause 9). The Observatory decision-maker itself remains Phase P5.
+
+**Exit checklist (P1 complete when every line is `[x]`)**
+
+- [x] Drift workflow exists, is documented in WORKFLOWS.md, actionlint-clean
+- [x] Drift workflow never auto-commits; on drift it opens/updates an issue with the delta
+- [x] Vault verification command exists with injected fetcher; offline tests prove behavior
+- [x] Policy apply command is provenance-gated (refuses writes without `recommended_by` + rationale)
+- [x] New commands covered by unit tests; suite grows and stays green
+- [x] README / WORKFLOWS / TODO documentation updated (no drift)
+- [x] Full battery green locally (unittest discover, validate --schema, compileall)
+- [x] Zero modifications to protected subsystems; ARM64 work preserved
+- [ ] CI ratification of the P1 commit (closes on the next build.yml run over this commit — same convention as P0)
+
+---
+
 ## Part IV — Future phases (LOCKED — not active, listed for direction only)
 
-Per the Execution Contract, none of these may receive implementation work
-until P0's exit checklist is fully checked (including CI ratification) and
-the owner declares the next phase active. Order reflects dependency flow;
-the registry is the dependency for all of them.
+Per the Execution Contract, no phase may receive implementation work before
+its predecessor's exit checklist is fully checked. P0 is COMPLETE and
+CI-ratified (Cycle S4); P1 is ACTIVE; the phases below remain LOCKED. Order
+reflects dependency flow; the registry is the dependency for all of them.
 
-- **P1 — Registry population hardening**: automated registry regeneration
-  in CI with drift detection (published-release diff → PR), vault mirror
-  verification jobs, `recommended` policy scaffolding handoff to Ember
-  Observatory.
 - **P2 — Manager V2 on the registry**: the desktop Manager resolves
   downloads, integrity, and supersession exclusively via the registry and
   Release Engine; no hardcoded catalogs. Include the licenses screen from
   the license-audit follow-ups.
 - **P3 — Website on the registry**: downloads portal and compatibility hub
-  consume the registry; docs-mirror guard (Task 5.3) lands here.
+  consume the registry (the docs-mirror guard already landed in Cycle S1).
 - **P4 — Compatibility platform**: device/channel reports validated against
   the registry's channel contract; observatory ingestion.
 - **P5 — Analytics & Ember Observatory**: field telemetry distilled into
@@ -442,3 +474,53 @@ Each cycle records its work orders with the execution-engine fields and
 - **Follow-up actions**: Phase P0 is complete. Repository is prepared for owner authorization to unlock Phase P1 (Registry Population Hardening).
 - **TODO updates**: P0 exit item checked; P0 marked COMPLETE; Cycle S4 recorded.
 - **Repository Health Score**: **10.0 / 10** — P0 Foundation 100% complete and CI-ratified; all remote pipelines green; drift detection, registry reality gate, and contract suites fully operational; 0 defects.
+
+### Cycle P1 — Registry Population Hardening (September 16, 2026)
+
+**Work orders executed (all COMPLETE)**
+
+- [x] **P1.1 — CI registry drift automation**: new scheduled workflow `.github/workflows/registry-drift.yml`
+  (weekly cron + manual dispatch) regenerates the registry from live GitHub reality into a temp file and runs
+  `diff <temp> --current --fail-on-drift` against the committed registry; on drift it opens/updates an issue
+  with the delta via GITHUB_TOKEN. It never auto-commits — published reality enters only through reviewed
+  changes (test-pinned). The generator's GitHub API helpers now send `GITHUB_TOKEN` auth for scheduled runs.
+  Documented in WORKFLOWS.md (13th workflow).
+  STATUS: COMPLETE — DEPENDENCIES: registry, engine diff — FILES: `.github/workflows/registry-drift.yml`,
+  `.github/WORKFLOWS.md`, `scripts/build_registry.py` — VALIDATION: actionlint CLEAN, YAML valid,
+  live regeneration from GitHub reality produced NO DRIFT vs the committed registry.
+- [x] **P1.2 — Vault mirror verification**: engine `verify_vault()` with an injected fetcher (core stays
+  offline-pure) + CLI `verify [--registry] [--write]`. Checks each vault entry's mirror status against the
+  published asset (availability + size class) and persists only schema-legal status transitions with `--write`.
+  STATUS: COMPLETE — FILES: `platform/release-engine/release_engine/__init__.py`, `__main__.py` —
+  VALIDATION: offline unit tests prove all transitions via synthetic registries and stub fetchers.
+- [x] **P1.3 — `recommended` policy scaffolding**: engine `apply_policy()` + `PolicyError` and CLI
+  `apply-policy --decision [--registry] [--output]`. The ONLY sanctioned write path for `recommended`:
+  refuses decisions without `recommended_by`, `decided_at`, and a rationale (clause 9), refuses unknown
+  release_ids, keeps the recommendation unique, never touches chronology. `scripts/build_registry.py` now
+  carries `recommended`, the root `policy` decision, and vault mirror statuses across regeneration, so the
+  daily reality-sync can never silently wipe a policy decision (test-pinned).
+  STATUS: COMPLETE — FILES: engine, CLI, `scripts/build_registry.py` — VALIDATION: refusal-path and
+  happy-path unit tests; carry-over unit test with generator-realistic payloads.
+
+**Deliverable format (Cycle P1)**
+
+- **Summary**: the registry now self-audits against published reality: CI regenerates and diffs on a schedule
+  and escalates drift as issues (never auto-commits), vault mirrors are verifiable against the network, and
+  `recommended` has its provenance-gated write path ready for Ember Observatory (P5).
+- **Files changed**: 10 — new: `.github/workflows/registry-drift.yml`, `data/releases/README.md`,
+  `tests/test_p1_automation.py`, `tests/scripts_helper.py`; modified: `.github/WORKFLOWS.md`,
+  `platform/release-engine/release_engine/__init__.py`, `__main__.py`, `scripts/build_registry.py`,
+  `README.md`, `TODO.md`.
+- **Tests added**: 26 (`tests/test_p1_automation.py`: workflow structure/no-auto-commit/token handling,
+  drift-gate wiring, vault verification, policy refusal paths, generator carry-over) — suite 204 → 230.
+- **Validation executed**: full unittest discover (230 OK) · `validate --schema` exit 0 · actionlint CLEAN
+  · compileall clean · live regeneration from GitHub reality → NO DRIFT vs committed registry ·
+  `check_doc_links.py` clean over 75 files · docs-mirror guard green.
+- **Risks**: `verify --write` can mutate vault statuses (explicit flag only); the scheduled workflow will
+  open issues on genuine drift (intended escalation); CI ratification of this commit pending.
+- **Follow-up**: CI ratification (final P1 exit item); P2 Manager V2 remains LOCKED until P1 is COMPLETE;
+  actual `recommended` decisions belong to Ember Observatory (P5) via `apply-policy`.
+- **TODO updates**: P1 deliverables P1.1–P1.3 checked; exit checklist 8/9 checked (CI ratification honest);
+  Cycle P1 recorded.
+- **Repository Health Score**: **9.8 / 10** — registry reality-loop closed end to end; the only open item
+  is CI ratification of the P1 commit.

@@ -1,0 +1,113 @@
+name: Registry Reality Sync
+
+# P1.1 — Registry drift automation.
+#
+# On a schedule, regenerate data/releases/releases.json directly from
+# published GitHub reality (L1/L2 in the Truth Hierarchy) and diff it
+# against the committed registry using the Release Engine.
+#
+# Policy: this workflow NEVER auto-commits. Published reality enters the
+# repository through reviewed changes only. On drift it opens or updates a
+# tracking issue containing the exact delta.
+
+on:
+  schedule:
+    # Daily at 06:00 UTC.
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  reality-sync:
+    name: Reality Sync (regenerate + drift gate)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Regenerate registry from published reality
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .artifacts
+          python scripts/build_registry.py --output .artifacts/regenerated-releases.json
+
+      - name: Drift gate (regenerated reality vs committed registry)
+        id: drift
+        run: |
+          set +e
+          python platform/release-engine/release_engine/__main__.py diff \
+            .artifacts/regenerated-releases.json > .artifacts/drift.txt
+          code=$?
+          cat .artifacts/drift.txt
+          echo "exit=$code" >> "$GITHUB_OUTPUT"
+          # 0 = clean, 2 = drift (handled below), anything else = tool error.
+          if [ "$code" -ne 2 ]; then
+            exit "$code"
+          fi
+          exit 0
+
+      - name: Open or update drift issue
+        if: steps.drift.outputs.exit == '2'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const delta = fs.readFileSync('.artifacts/drift.txt', 'utf8').trim();
+            const marker = '<!-- emberbird-registry-drift -->';
+            const title = 'Registry drift: published reality diverged from data/releases/releases.json';
+            const body = [
+              'The scheduled **Registry Reality Sync** run detected drift between',
+              'published GitHub release assets (Truth Hierarchy L1/L2) and the committed registry.',
+              '',
+              'Per the Truth Hierarchy, reality wins — but reality enters the repository',
+              'through reviewed changes only. This workflow never auto-commits.',
+              '',
+              'To reconcile: run `python scripts/build_registry.py`, review the delta,',
+              'update the affected surfaces, and commit.',
+              '',
+              '<details><summary>Drift delta</summary>',
+              '',
+              '```',
+              delta,
+              '```',
+              '',
+              '</details>',
+              '',
+              marker,
+            ].join('\n');
+            const listOpts = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'registry-drift',
+              per_page: 100,
+            };
+            const issues = await github.paginate(github.rest.issues.listForRepo, listOpts);
+            const prior = issues.find((i) => i.body && i.body.includes(marker));
+            if (prior) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prior.number,
+                body,
+              });
+              core.notice(`Updated existing drift issue #${prior.number}`);
+            } else {
+              const created = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['registry-drift'],
+              });
+              core.notice(`Opened drift issue #${created.data.number}`);
+            }

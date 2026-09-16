@@ -187,7 +187,7 @@ WSABuilds/
 ├── platform/release-engine/   # Registry metadata service (lookup, integrity, validate CLI)
 ├── scripts/                   # CLI validation tools + the registry generator
 ├── services/analytics/        # Privacy-first telemetry aggregation engine
-├── tests/                     # 140 automated Python tests (unit, contract, consumer, reality)
+├── tests/                     # automated Python tests (unit, contract, consumer, reality)
 ├── website/                   # Official documentation portal, wizard, and downloads
 ├── WINDOWS11_BUILD_GUIDE.md   # WSL2 developer compilation guide
 ├── BUILD.md                   # Native Python Windows compilation guide
@@ -360,11 +360,20 @@ The pipeline currently targets **x64**. ARM64 enablement is roadmap work (Task 4
 Every change is validated locally before push; CI ratifies independently.
 
 ```powershell
-# Core Python test suite (140 tests: unit, schema contract, engine, consumer proof)
+# Core Python test suite (unit, schema contract, engine, consumer, policy-guard tests)
 python -m unittest discover -s tests -v
 
 # Release registry validation — integrity + schema contract (must exit 0)
 python platform/release-engine/release_engine/__main__.py validate --schema
+
+# Registry drift gate — compare a previous snapshot against the committed registry (exit 2 on drift)
+python platform/release-engine/release_engine/__main__.py diff <previous-snapshot.json> --fail-on-drift
+
+# Vault mirror verification against published reality (network; --write persists statuses)
+python platform/release-engine/release_engine/__main__.py verify --write
+
+# Apply a recommended-release policy decision (provenance-gated, Execution Contract clause 9)
+python platform/release-engine/release_engine/__main__.py apply-policy --decision <decision.json>
 
 # Byte-compilation of all Python sources
 python -m compileall -q scripts platform tests
@@ -395,7 +404,7 @@ python scripts/e2e_clean_room.py
 
 | Reality Dimension | Governance Status | Empirical Verification Evidence |
 |---|---|---|
-| **Repository Qualification** | **PASS (VERIFIED)** | 140 Python tests plus Website and Manager suites; 20-check clean-room E2E gate (`scripts/e2e_clean_room.py`). 0 broken links, 0 secrets, 0 package identity drift. |
+| **Repository Qualification** | **PASS (VERIFIED)** | The full Python test suite plus Website and Manager suites; 20-check clean-room E2E gate (`scripts/e2e_clean_room.py`). 0 broken links, 0 secrets, 0 package identity drift. |
 | **Registry Reality Gate** | **PASS (VERIFIED)** | `validate` exits 0: 6 releases, 9 vault entries; schema contract tests green; registry-only consumer proof green. |
 | **Build Reality Gate** | **PASS (VERIFIED)** | Build pipelines (`build.sh`, `build_local.py`) verified. Unpacked distribution and CPIO ramdisk structures verified. |
 | **Runtime Reality Gate (Host)** | **PASS (VERIFIED)** | Verified on Windows host: active AppX registration (`Status: Ok`, `Version: 2407.40000.4.0`), `userdata.2.vhdx` (3.8 GB), and live `logcat` execution. |
