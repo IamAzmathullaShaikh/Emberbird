@@ -5,12 +5,12 @@
     "m4": "Release History Is Immutable",
     "s1": "Historical Identity Preservation — Emberbird may replace branding; it may not erase history"
   },
-  "generated_at": "2026-09-16T11:57:18Z",
+  "generated_at": "2026-09-16T12:11:33Z",
   "totals": {
     "files": 179,
-    "occurrences": 1056,
+    "occurrences": 1055,
     "by_token": {
-      "WSABuilds": 821,
+      "WSABuilds": 820,
       "MagiskOnWSA": 171,
       "MagiskOnWSALocal": 64
     },
@@ -18,7 +18,7 @@
       "identifier": 199,
       "url": 70,
       "workflow-name": 82,
-      "doc-prose": 118,
+      "doc-prose": 117,
       "path-reference": 114,
       "upstream-attribution": 45,
       "historical-doc": 345,
@@ -1722,7 +1722,7 @@
     },
     {
       "path": "docs/ARCHITECTURE.md",
-      "count": 5,
+      "count": 4,
       "occurrences": [
         {
           "line": 1,
@@ -1747,12 +1747,6 @@
           "token": "WSABuilds",
           "class": "doc-prose",
           "context": "Modified WSA packages cannot retain Microsoft's official cryptographic signature (`AppxSignature.p7x`). Rather than requiring users to install an untrusted private root CA certific"
-        },
-        {
-          "line": 112,
-          "token": "WSABuilds",
-          "class": "doc-prose",
-          "context": "WSABuilds builds against two target architectures. The x64 pipeline is fully"
         }
       ]
     },
@@ -4632,10 +4626,10 @@
           "line": 153,
           "token": "WSABuilds",
           "class": "identifier",
-          "context": "WSABuilds — Tier 1 Core Build System (Retail x64 / arm64)"
+          "context": "WSABuilds — Tier 1 Core Build System (Retail x64)"
         },
         {
-          "line": 272,
+          "line": 268,
           "token": "WSABuilds",
           "class": "identifier",
           "context": "echo \" WSABuilds  |  ${edition_name}\""
@@ -4659,7 +4653,7 @@
           "context": "parser = argparse.ArgumentParser(description=\"WSABuilds Native Local Builder (Windows / Pure Python)\")"
         },
         {
-          "line": 242,
+          "line": 237,
           "token": "WSABuilds",
           "class": "identifier",
           "context": "print(f\" WSABuilds Native Local Builder ({edition})\")"
@@ -4785,7 +4779,7 @@
           "context": "# generateGappsLink.py — Download Pico-equivalent GApps for WSABuilds"
         },
         {
-          "line": 24,
+          "line": 23,
           "token": "WSABuilds",
           "class": "identifier",
           "context": "# Copyright (C) 2024 WSABuilds Contributors"

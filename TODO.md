@@ -655,3 +655,19 @@ Each cycle records its work orders with the execution-engine fields and
   item honest-open until CI.
 - **Repository Health Score**: **9.9 / 10**.
 
+**S3 abort & resolution (E1, post-push)**: the first E1 push (`e22f6d1`) triggered
+**S3 — Phase Abort**: remote CI failed `Run Offline Unit Test Suite` (Build & CI) and
+`Build Static Site & Search Index` (Website Deployment; also red on the E0 commit).
+Root causes, both found by CI and both real: (1) `identity_map.py` scanned the
+**working tree**, so the preserved uncommitted ARM64 diffs made the inventory stale in
+any clean checkout — fixed by reading content from the **git index** (committed
+boundary truth, the S4 docs-mirror lesson re-learned), with manual UTF-8 decoding to
+survive Windows codepage subprocess decoding; (2) `website/scripts/import-docs.mjs`
+sweeps **every** `docs/**/*.md` into the Astro content collection, so the new
+governance docs (`research/`, BRAND, PATH_MAP, METAMORPHOSIS) became invalid content
+entries — fixed with an explicit governance skip list; generated mirror residue from
+local reproduction was removed. Local website build + tests (34 pass) now reproduce
+the CI step before push. The abort did not roll anything back: the defect was fully
+diagnosed, fixed, and re-validated in the working tree; the fix commit below is the
+ratification target.
+

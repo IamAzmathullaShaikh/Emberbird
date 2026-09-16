@@ -85,6 +85,27 @@ def tracked_files() -> list[str]:
     )
 
 
+def read_content(path: Path) -> str:
+    """Read file content from the git INDEX (staged tree) when available.
+
+    The inventory documents COMMITTED-boundary reality: content comes from
+    the index (`git show :<path>`), which equals HEAD in a clean CI checkout.
+    This makes the inventory immune to uncommitted working-tree changes
+    (e.g. preserved ARM64 WIP) — the defect that broke CI at e22f6d1.
+    Run `git add` before regenerating so staged content is what is measured.
+    """
+    try:
+        out = subprocess.run(
+            ["git", "show", f":{rel(path)}"],
+            cwd=REPO_ROOT, capture_output=True, check=True, timeout=30,
+        )
+        # decode manually: text=True would use the OS codepage (cp1252 on
+        # Windows) and crash on UTF-8 content beyond it
+        return out.stdout.decode("utf-8", errors="ignore")
+    except (OSError, subprocess.SubprocessError):
+        return path.read_text(encoding="utf-8", errors="ignore")
+
+
 def rel(p: Path) -> str:
     return p.relative_to(REPO_ROOT).as_posix().replace("\\", "/")
 
@@ -124,7 +145,7 @@ def build_inventory() -> dict:
     for path in tracked_files():
         rp = rel(path)
         try:
-            text = path.read_text(encoding="utf-8", errors="ignore")
+            text = read_content(path)
         except OSError:
             continue
         occurrences = []
