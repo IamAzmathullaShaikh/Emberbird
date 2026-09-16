@@ -203,6 +203,21 @@ def main() -> int:
             return json.dumps(d, sort_keys=True, ensure_ascii=False)
         if without_ts(current) != without_ts(payload):
             print("STALE: docs/identity-inventory.json does not match the current tree — regenerate it.", file=sys.stderr)
+            # precision diagnostics: where exactly do committed vs fresh scans differ?
+            try:
+                committed = json.loads(current)
+                fresh = json.loads(payload)
+                cfiles = {f["path"]: f["count"] for f in committed.get("files", [])}
+                ffiles = {f["path"]: f["count"] for f in fresh.get("files", [])}
+                for path in sorted(set(cfiles) | set(ffiles)):
+                    c, n = cfiles.get(path), ffiles.get(path)
+                    if c != n:
+                        print(f"DIFF file: {path}: committed={c} fresh={n}", file=sys.stderr)
+                ct, ft = committed.get("totals", {}), fresh.get("totals", {})
+                print(f"DIFF totals: committed={ct.get('occurrences')} fresh={ft.get('occurrences')}", file=sys.stderr)
+                print(f"DIFF classes: committed={ct.get('by_class')} fresh={ft.get('by_class')}", file=sys.stderr)
+            except Exception as diag_exc:  # diagnostics must never mask the primary failure
+                print(f"DIFF diagnostics unavailable: {diag_exc}", file=sys.stderr)
             return 1
         print(f"INVENTORY OK: {inventory['totals']['occurrences']} occurrences, "
               f"{inventory['totals']['files']} files, "
