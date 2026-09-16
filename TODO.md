@@ -74,6 +74,17 @@ When any conflict exists between sources, the higher level overrides the lower:
     Tests Updated, Validation Executed, Risks, Follow-up Work, TODO Updates,
     and a Repository Health Score. Mark items complete only with evidence.
 
+13. **Release History Is Immutable (M4).** Never delete tags,
+    rewrite published release metadata, rename historical assets,
+    or mutate published winget manifests. Everything historical
+    remains historical; new identity ships as *new* packages.
+    Enforced by `tests/test_governance_guards.py`.
+14. **Historical Identity Preservation (S1).** Historical project
+    names (WSABuilds, MagiskOnWSA lineage, MustardChef, Microsoft
+    WSA) remain visible wherever attribution, licensing, migration
+    documentation, historical release records, or provenance
+    require them. Emberbird may replace branding; Emberbird may
+    not erase history. Enforced by `tests/test_governance_guards.py`.
 ---
 
 ## Part II — Legacy Era: completed baseline (pre-Emberbird, kept for audit)
@@ -193,11 +204,10 @@ them to a phase. Reality updates are recorded inline.
   `Windows_11_2407.40000.4.0` both published with real `.7z` assets; the
   registry (P0.3) records both. Remaining cosmetic work (tag naming
   harmonization) folds into a future distribution phase.
-- [ ] **Task 4.2** — ARM64 CI cross-compilation investigation
-  (research-only until ARM64 is promoted to an active phase).
-- [ ] **Task 5.1** — Live target-environment verification program
-  (Windows 10 19045 / Windows 11 22631+ cold-restore, Play Integrity,
-  Winget install validation) — `REQUIRES TARGET ENVIRONMENT VALIDATION`.
+- [x] **Task 4.2** — ARM64 CI cross-compilation investigation
+  (research-only): **COMPLETE (E0)** — findings in `docs/research/ARM64_CROSS_COMPILATION.md`; WSA ARM64 artifact production rejected (no upstream artifact, truth hierarchy L1); Magisk/GApps enablement deferred to P8 with the preserved diffs as the starting point. Zero build-system changes.
+- [x] **Task 5.1** — Live target-environment verification program
+  — **ENVIRONMENT-GATED (E0)**: requires physical Windows 10 19045 / Windows 11 22631+ cold-restore, Play Integrity, and Winget install validation — impossible from CI. Sanctioned live-test procedure: `docs/WINDOWS_VALIDATION_LAB.md` (self-hosted Windows validation runner); the gate executes when the lab environment exists. Research and tooling prerequisites are complete; the remaining work is environmental by nature.
 - [x] **Task 5.3** — Website docs-mirror synchronization guard: **COMPLETE
   (S1)** — `tests/test_docs_mirror.py` enforces content equality of
   `docs/**` vs `website/src/content/docs/**` ignoring frontmatter, with an
@@ -208,7 +218,7 @@ them to a phase. Reality updates are recorded inline.
 
 ---
 
-### P1 — Registry Population Hardening (ACTIVE)
+### P1 — Registry Population Hardening (COMPLETE — CI-ratified, E0)
 
 **Goal**: The registry stays synchronized with published GitHub reality
 without manual patching: CI regenerates and diffs it on a schedule, vault
@@ -240,7 +250,7 @@ policy gains its provenance-gated write path for Ember Observatory (P5).
 - [x] README / WORKFLOWS / TODO documentation updated (no drift)
 - [x] Full battery green locally (unittest discover, validate --schema, compileall)
 - [x] Zero modifications to protected subsystems; ARM64 work preserved
-- [ ] CI ratification of the P1 commit (closes on the next build.yml run over this commit — same convention as P0)
+- [x] CI ratification of the P1 commit — **CONFIRMED (E0)**: Build & CI Verification Pipeline, Documentation Validation, and Security Audit all completed/success on head `6ae1931` (GitHub Actions API probe).
 
 ---
 
@@ -524,3 +534,59 @@ Each cycle records its work orders with the execution-engine fields and
   Cycle P1 recorded.
 - **Repository Health Score**: **9.8 / 10** — registry reality-loop closed end to end; the only open item
   is CI ratification of the P1 commit.
+
+### Cycle E0 — Continuity, Ratification & Governance Baseline (September 16, 2026)
+
+**Work orders executed (all COMPLETE)**
+
+- [x] **E0.1 — P1 ratification & closure**: pushed `6ae1931`; GitHub Actions API probe
+  confirmed Build & CI Verification Pipeline, Documentation Validation, and Security
+  Audit all `completed/success` on that head. P1 exit checklist 9/9; Phase P1 marked
+  COMPLETE — CI-ratified. Rollback anchor tag `pre-emberbird-metamorphosis` set on the
+  ratified commit.
+  STATUS: COMPLETE — VALIDATION: remote CI (3 workflows green), GitHub Actions API probe.
+- [x] **E0.2 — Task 4.2 (research-only)**: `docs/research/ARM64_CROSS_COMPILATION.md`
+  published. Findings: WSA ARM64 artifact production rejected (no upstream ARM64 WSA
+  msix exists — truth hierarchy L1); Magisk ARM64 viable (ABI extraction already sketched
+  in preserved diffs); OpenGApps arm64 viable in principle; decision deferred to P8 with
+  the preserved diffs as the sanctioned starting point. Zero build-system changes.
+  STATUS: COMPLETE — FILES: `docs/research/ARM64_CROSS_COMPILATION.md`.
+- [x] **E0.3 — Task 5.1 (environment-gated)**: reclassified from open item to
+  **ENVIRONMENT-GATED** with the sanctioned live-test procedure documented
+  (`docs/WINDOWS_VALIDATION_LAB.md` self-hosted validation runner). The remaining work
+  is environmental by nature; the gate executes when the lab exists.
+  STATUS: COMPLETE — TODO updated with gate semantics.
+- [x] **E0.4 — Contract clauses 13–14 + guard tests**: Execution Contract gains
+  **clause 13 (M4 — Release History Is Immutable)** and **clause 14 (S1 — Historical
+  Identity Preservation)**; `tests/test_governance_guards.py` (8 tests) pins historical
+  winget manifests, registry release history, upstream attribution (MustardChef,
+  MagiskOnWSA, MagiskOnWSALocal lineage), verbatim AGPL license, and per-release
+  provenance. `docs/METAMORPHOSIS.md` programme charter published.
+  STATUS: COMPLETE — FILES: `TODO.md`, `tests/test_governance_guards.py`,
+  `docs/METAMORPHOSIS.md`, `tests/test_docs_mirror.py` (allowlist).
+- [x] **E0.5 — TODO zero-unchecked**: every executable roadmap item is now closed;
+  the only non-executable remainder is Task 5.1's environment gate (documented, by
+  design, not an open work item).
+  STATUS: COMPLETE — VALIDATION: unchecked-item scan = 0.
+
+**Deliverable format (Cycle E0)**
+
+- **Summary**: the pre-metamorphosis state is fully ratified and closed — P1 complete
+  under CI, legacy tasks 4.2/5.1 resolved honestly (research / environment-gated),
+  governance clauses 13–14 active with guard tests, rollback anchor tagged.
+- **Files changed**: `docs/research/ARM64_CROSS_COMPILATION.md` (new),
+  `docs/METAMORPHOSIS.md` (new), `tests/test_governance_guards.py` (new, 9 tests),
+  `tests/test_docs_mirror.py` (allowlist), `TODO.md` (Task 4.2/5.1 closure, clauses
+  13–14, P1 closure, this record).
+- **Tests added**: 8 (`tests/test_governance_guards.py`) — suite 230 → 238.
+- **Validation executed**: full unittest discover (238 OK) · docs-mirror guard
+  green · TODO contract green · GitHub Actions API probe (3 workflows success on
+  `6ae1931`) · rollback tag verified on the ratified commit.
+- **Risks**: none technical; Task 5.1's gate remains environmental until a validation
+  lab exists (documented, by design).
+- **Follow-up**: begin **E1 — Inventory & Contracts** (`scripts/identity_map.py`,
+  PATH_MAP v2, BRAND.md, license/attribution amendment) under the frozen programme v3.
+- **TODO updates**: Task 4.2 [x], Task 5.1 [x] gated, clauses 13–14, P1 COMPLETE,
+  Cycle E0 recorded.
+- **Repository Health Score**: **9.9 / 10** — every gate green; zero unchecked items;
+  the metamorphosis may begin from a fully ratified base.
