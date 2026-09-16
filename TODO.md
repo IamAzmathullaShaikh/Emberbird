@@ -462,7 +462,7 @@ parity before removing the legacy derivation path.
 
 ---
 
-### E4 — Repository Rename & URL Rewrite (ACTIVE — slug contract)
+### E4 — Repository Rename & URL Rewrite (ACTIVE — E4.3 REQUIRES OWNER DECISION)
 
 Per the approved programme: the canonical repository becomes
 `IamAzmathullaShaikh/Emberbird`. The code-side rewrite lands first, under a
@@ -487,6 +487,19 @@ every old URL keeps working through GitHub's redirect after it.
 
 **Exit checklist**: E4.1–E4.3 checked (E4.3 may close only on owner
 confirmation), full battery green, CI ratification, cycle record.
+
+**Cycle record (E4 — September 17, 2026)**
+- **STATUS**: COMPLETE (E4.1 + E4.2, CI-ratified on `d9d93e4`); E4.3 REQUIRES OWNER DECISION.
+- **DEPENDENCIES**: E3C closed; rollback anchor `post-e3c-migration`; empirical slug probe
+  (old repo 200 OK, new slug 404) decided the pin-before-flip design.
+- **FILES CHANGED**: `docs/BRAND.md` §7; 20 living surfaces rewritten (34 occurrences);
+  `scripts/e4_slug_transform.py`; `tests/test_e4_slug_contract.py`; `docs/identity-inventory.json`.
+- **VALIDATION**: 275/275 Python tests, 39/39 website, 30/30 Manager, `tsc --noEmit` clean,
+  registry+schema OK, actionlint OK, doc links clean, inventory OK (staged truth).
+- **RISKS**: low — frozen truth untouched; publication plumbing pinned so no release can
+  reference a 404 slug; the E4.3 flip is one documented command after the owner renames.
+- **FOLLOW-UP**: owner executes the GitHub rename, then the E4.3 flip, then E4.3 closes;
+  the next reality-sync regenerates registry `source_url`s from the renamed repo.
 
 ---
 
