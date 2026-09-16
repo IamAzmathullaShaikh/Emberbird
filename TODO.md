@@ -432,7 +432,7 @@ any legacy discovery is removed.
 
 ---
 
-### E3C — Manager Consumer Migration (ACTIVE — G2/S2 parity contract)
+### E3C — Manager Consumer Migration (COMPLETE — CI-ratified `191c5d9`)
 
 Per G2: inventory the Manager's release-URL derivation, migrate it to
 registry resolution with a reviewable diff and rollback path, and prove S2
@@ -453,8 +453,36 @@ parity before removing the legacy derivation path.
 
 - [x] E3C.1–E3C.4 implemented; 30/30 Manager tests (incl. 6 new registry tests)
 - [x] Full Python battery green; M3 guard pins zero-discovery + registry module
-- [ ] CI ratification of the E3C commit — closes on the next build.yml run
-  over the pushed commit (probe via GitHub Actions API).
+- [x] CI ratification of the E3C work — `4041881` went 4/5 green with one
+  real defect: the E3C.4 wrapper removal orphaned the `ReleaseInfo` type
+  import, failing Manager CI's `tsc --noEmit` (`noUnusedLocals`) — local Node
+  type-stripping tests do not fail on unused imports. Fixed in `191c5d9`;
+  Manager CI green (Build & CI, Security, Manager — API probe). Lesson
+  recorded: run `tsc --noEmit` locally before pushing TS changes.
+
+---
+
+### E4 — Repository Rename & URL Rewrite (ACTIVE — slug contract)
+
+Per the approved programme: the canonical repository becomes
+`IamAzmathullaShaikh/Emberbird`. The code-side rewrite lands first, under a
+documented slug contract; the GitHub-side rename is a single owner action and
+every old URL keeps working through GitHub's redirect after it.
+
+- [ ] **E4.1 — Slug contract**: document the canonical repository identity,
+  the redirect guarantee, and the S1 boundary (historical URLs inside
+  attribution, archive docs, and published release records stay verbatim).
+- [ ] **E4.2 — URL rewrite**: living surfaces (badges, clone instructions,
+  env defaults, website config, workflow env vars) move to the new slug;
+  published registry `source_url`s are NOT hand-edited — they are observed
+  reality at generation time and redirect after the rename; the next
+  reality-sync regenerates them from the renamed repo.
+- [ ] **E4.3 — Owner action recorded**: the GitHub rename itself is executed
+  by the owner (requires credentials this environment does not have); the
+  exit item stays honestly open until confirmed.
+
+**Exit checklist**: E4.1–E4.3 checked (E4.3 may close only on owner
+confirmation), full battery green, CI ratification, cycle record.
 
 ---
 
@@ -880,8 +908,8 @@ CI-ratified (`a5402c3`) · **G2/S2 executed in order; G1 still in effect.**
   STATUS: COMPLETE (pending CI) · FILES: registry.ts (new), registry.test.mjs
   (new), ipc.ts, types.ts, CONSUMER_MATRIX, guard test · RISKS: low —
   additive module + dead-code removal; Rust untouched · VALIDATION: 30/30
-  Manager tests, 39/39 website, full Python battery OK · RESULT: E3C commit
-  pending push; CI ratification to close.
+  Manager tests, 39/39 website, full Python battery OK · RESULT:
+  COMPLETE — CI-ratified (`191c5d9`).
 
 ### Cycle E3B — Website Consumer Migration (September 17, 2026)
 
