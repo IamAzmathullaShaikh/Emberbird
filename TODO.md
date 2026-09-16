@@ -401,7 +401,7 @@ explicitly kept for their designated later phases.
 
 ---
 
-### E3B — Website Consumer Migration (ACTIVE — G2/S2 parity contract)
+### E3B — Website Consumer Migration (COMPLETE — CI-ratified `a5402c3`)
 
 Per G2: first inventory the website's metadata inputs and release-discovery
 logic (CONSUMER_MATRIX is the baseline), deliver the migration as a reviewable
@@ -426,8 +426,31 @@ any legacy discovery is removed.
 
 - [x] E3B.1–E3B.4 implemented; 39/39 website tests (incl. 5 new parity tests)
 - [x] Full Python battery green; M3 guard flipped to zero-discovery + oracle rule
-- [ ] CI ratification of the E3B commit — closes on the next build.yml run
-  over the pushed commit (probe via GitHub Actions API).
+- [x] CI ratification of the E3B commit — **CONFIRMED**: all four workflows
+  `completed/success` on head `a5402c3` (Build & CI, Documentation, Website
+  Deployment, Security — GitHub Actions API probe).
+
+---
+
+### E3C — Manager Consumer Migration (ACTIVE — G2/S2 parity contract)
+
+Per G2: inventory the Manager's release-URL derivation, migrate it to
+registry resolution with a reviewable diff and rollback path, and prove S2
+parity before removing the legacy derivation path.
+
+- [ ] **E3C.1 — G2 inventory**: enumerate every release-URL derivation site in
+  `apps/manager/src/lib/` (`env.ts`, `ipc.ts`, `types.ts`) and classify each
+  as registry-derivable or legacy-only.
+- [ ] **E3C.2 — Registry resolution**: the Manager resolves release download
+  URLs and integrity data from the bundled Ember Registry (offline), keeping
+  published artifact identities intact (E5 boundary respected).
+- [ ] **E3C.3 — S2 parity proof**: derivation output and registry output agree
+  for the current release set — demonstrated by test.
+- [ ] **E3C.4 — Legacy derivation removal** (only after parity): inventoried
+  modules leave the derivation inventory; M3 guard flipped; rollback = revert.
+
+**Exit checklist**: E3C.1–E3C.4 checked, full battery green, CI ratification
+confirmed, cycle record appended.
 
 ---
 
@@ -860,7 +883,7 @@ CI-ratified (`e4f21ad`) · **G2/S2 executed in order; G1 still in effect.**
   CONSUMER_MATRIX, guard test · RISKS: low — display output proven
   equivalent; pages consume tag/date/assets only · VALIDATION: 39/39
   website tests, build green, consumer-compliance guards OK · RESULT:
-  E3B commit pending push; CI ratification to close.
+  COMPLETE — CI-ratified (`a5402c3`).
 
 ### Cycle E3A — Brand Metamorphosis (September 16, 2026)
 
