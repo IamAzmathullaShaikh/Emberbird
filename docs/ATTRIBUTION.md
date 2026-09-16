@@ -9,6 +9,7 @@ generated release entry to the tooling that produced it.
 | Project | What Emberbird inherits | Location |
 |---|---|---|
 | **WSABuilds** (MustardChef + contributors) | The build pipeline, dual-edition packaging, CI conventions, and the community this platform serves | `MagiskOnWSA/` scripts derive from the upstream project |
+| **MagiskOnWSALocal** (prior name of WSABuilds) | The same lineage under its earlier name; historical references to it resolve to this project | Name history — preserved for provenance (S1) |
 | **MagiskOnWSA** (upstream of upstream) | The original WSA-patching approach | Conceptual ancestor of `MagiskOnWSA/` scripts |
 
 ## 2. Components embedded in builds
@@ -44,7 +45,30 @@ generated release entry to the tooling that produced it.
 *platform*, not for Microsoft's product, which is always referred to as
 the Windows Subsystem for Android.
 
-## 5. Corrections
+## 5. Metamorphosis legal statement (E1)
+
+
+
+Emberbird is an **independent distribution platform**. It claims no
+
+affiliation with Microsoft Corporation; *Windows*, *Windows Subsystem
+
+for Android*, and related marks are trademarks of Microsoft. All
+
+third-party marks (Magisk/topjohnwu, Google, OpenGApps) belong to their
+
+owners. The metamorphosis from the WSABuilds identity to Emberbird
+
+replaces **branding only**: attribution above, the AGPL-3.0 license
+
+text, historical release records, and historical manifests remain
+
+verbatim (Execution Contract clauses 13–14; guarded by
+
+`tests/test_governance_guards.py` and the E1.5 attribution tests).
+
+
+## 6. Corrections
 
 If you are credited incorrectly or not at all, open an issue — attribution
 errors are treated as release-metadata defects and fixed in the next

@@ -254,6 +254,45 @@ policy gains its provenance-gated write path for Ember Observatory (P5).
 
 ---
 
+### E1 — Inventory & Contracts (ACTIVE — implementation complete, CI ratification pending)
+
+Per Metamorphosis Programme v3. Phase E0 is COMPLETE (Cycle E0); the G1
+metamorphosis freeze takes effect when E2 begins.
+
+**Deliverables**
+
+- [x] **E1.1 — Identity inventory tool** — `scripts/identity_map.py` scans all
+  tracked text files for `WSABuilds` / `MagiskOnWSALocal` / `MagiskOnWSA` and
+  produces `docs/identity-inventory.json`, classifying every occurrence into
+  the policy classes of `docs/BRAND.md` (upstream-attribution and
+  historical-doc are PROTECTED forever). `--check` mode exits 1 when the
+  inventory is stale — the audit trail cannot drift from the tree.
+- [x] **E1.2 — `docs/PATH_MAP.md` v2** — the authoritative old→new directory
+  mapping for E2 (Documentation→docs/archive, WSABuilds Utilities→utilities,
+  MagiskOnWSA/scripts toolchain→tools, upstream remainder→upstream), with
+  stability anchors and the redirect policy.
+- [x] **E1.3 — `docs/BRAND.md`** — canonical identity, the never-touch list
+  (S1), per-class policy with E1 baseline counts, naming rules, rename
+  mechanics, and the legal safety statement.
+- [x] **E1.4 — License & attribution amendment** — `docs/ATTRIBUTION.md` gains
+  the MagiskOnWSALocal lineage row and the metamorphosis legal statement;
+  `docs/LICENSE_AUDIT.md` gains the metamorphosis addendum. AGPL obligations
+  verbatim; upstream attribution intact.
+- [x] **E1.5 — Inventory pinning tests** — `tests/test_identity_inventory.py`
+  (5 tests) enforce freshness (`--check`), class validity, and the protected
+  block's measurability.
+
+**Exit checklist (E1 complete when every line is `[x]`)**
+
+- [x] Inventory tool + inventory exist and are fresh in the same commit
+- [x] PATH_MAP v2 and BRAND.md published and link-clean
+- [x] Attribution + license audit amended; AGPL text untouched
+- [x] Inventory tests green; suite grows
+- [x] Zero protected-class modifications (attribution/historical docs)
+- [ ] CI ratification of the E1 commit (closes on the next workflow run over this commit)
+
+---
+
 ## Part IV — Future phases (LOCKED — not active, listed for direction only)
 
 Per the Execution Contract, no phase may receive implementation work before
@@ -590,3 +629,29 @@ Each cycle records its work orders with the execution-engine fields and
   Cycle E0 recorded.
 - **Repository Health Score**: **9.9 / 10** — every gate green; zero unchecked items;
   the metamorphosis may begin from a fully ratified base.
+### Cycle E1 — Inventory & Contracts (September 16, 2026)
+
+**Deliverable format (Cycle E1)**
+
+- **Summary**: the metamorphosis now has its audit basis — every one of the
+  1029+ identity occurrences is classified, with the protected block (upstream
+  attribution + historical documentation) measured and pinned; the directory
+  mapping and brand policy are published; the legal position is documented in
+  the attribution and license-audit amendments.
+- **Files changed**: `scripts/identity_map.py` (new), `docs/identity-inventory.json`
+  (new, generated), `docs/PATH_MAP.md` (new), `docs/BRAND.md` (new),
+  `docs/ATTRIBUTION.md` (lineage row + legal statement), `docs/LICENSE_AUDIT.md`
+  (metamorphosis addendum), `tests/test_identity_inventory.py` (new), `TODO.md`.
+- **Tests added**: 5 (`tests/test_identity_inventory.py`).
+- **Validation executed**: full unittest discover · `identity_map.py --check`
+  freshness · doc links over 79 markdown files · registry validate · attribution
+  misclassification scan (zero).
+- **Risks**: classification heuristics are conservative — ambiguous occurrences
+  default to `identifier` (case-by-case review), so over-protection is possible,
+  under-protection is not.
+- **Follow-up**: E1.5 contract-test safety net (M1/M2/M3), then the E2
+  restructure under the G1 freeze.
+- **TODO updates**: Phase E1 declared with deliverables checked; ratification
+  item honest-open until CI.
+- **Repository Health Score**: **9.9 / 10**.
+

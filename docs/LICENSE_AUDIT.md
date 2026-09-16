@@ -59,3 +59,15 @@ never silently deleted.
 2. If Emberbird ever ships its own signed binaries, signing-key policy
    (Phase 6, Trusted Signing) must add a key-governance addendum to this
    audit.
+
+## Metamorphosis addendum (E1)
+
+The Emberbird metamorphosis does not alter any licensing fact recorded
+above. Specifically: the repository license remains AGPL-3.0 verbatim
+(`LICENSE`); upstream attribution (MustardChef/WSABuilds, the
+MagiskOnWSA/MagiskOnWSALocal lineage, Microsoft WSA) is preserved in
+`docs/ATTRIBUTION.md`; historical release artifacts keep their original
+identity and checksums; new distribution identity ships as new packages
+rather than by mutating published artifacts. Enforcement:
+`tests/test_governance_guards.py` (clauses 13–14) plus the E1.5
+attribution preservation tests.
