@@ -165,8 +165,15 @@ def build_inventory() -> dict:
                 token_counts[token] = token_counts.get(token, 0) + 1
                 class_counts[cls] = class_counts.get(cls, 0) + 1
         if occurrences:
+            # canonical order: the artifact must be byte-identical regardless of
+            # platform scan order (Windows vs Linux walk order was observed to
+            # differ, which alone re-staled the committed inventory)
+            occurrences.sort(key=lambda o: (o["token"], o["class"], o["context"]))
             files_out.append({"path": rp, "count": len(occurrences), "occurrences": occurrences})
 
+    # canonical dicts: totals must not carry platform insertion order
+    token_counts = dict(sorted(token_counts.items()))
+    class_counts = dict(sorted(class_counts.items()))
     protected = class_counts.get("upstream-attribution", 0) + class_counts.get("historical-doc", 0)
     return {
         "tool": "scripts/identity_map.py",
@@ -219,6 +226,25 @@ def main() -> int:
                 ct, ft = committed.get("totals", {}), fresh.get("totals", {})
                 print(f"DIFF totals: committed={ct.get('occurrences')} fresh={ft.get('occurrences')}", file=sys.stderr)
                 print(f"DIFF classes: committed={ct.get('by_class')} fresh={ft.get('by_class')}", file=sys.stderr)
+                cocc = {f["path"]: f.get("occurrences", []) for f in committed.get("files", [])}
+                focc = {f["path"]: f.get("occurrences", []) for f in fresh.get("files", [])}
+                shown = 0
+                for path in sorted(set(cocc) | set(focc)):
+                    if shown >= 5:
+                        print("DIFF occurrences: ...more suppressed", file=sys.stderr)
+                        break
+                    a, b = cocc.get(path), focc.get(path)
+                    if a != b:
+                        print(f"DIFF occurrences in {path}: committed={len(a or [])} fresh={len(b or [])}", file=sys.stderr)
+                        for i in range(max(len(a or []), len(b or []))):
+                            ea = (a or [])[i] if i < len(a or []) else None
+                            eb = (b or [])[i] if i < len(b or []) else None
+                            if ea != eb:
+                                print(f"  first diff at [{i}]:", file=sys.stderr)
+                                print(f"    committed: {json.dumps(ea, ensure_ascii=False)[:200]}", file=sys.stderr)
+                                print(f"    fresh:     {json.dumps(eb, ensure_ascii=False)[:200]}", file=sys.stderr)
+                                break
+                        shown += 1
             except Exception as diag_exc:  # diagnostics must never mask the primary failure
                 print(f"DIFF diagnostics unavailable: {diag_exc}", file=sys.stderr)
             return 1
