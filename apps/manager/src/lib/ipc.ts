@@ -1,7 +1,6 @@
 import type {
   WsaStatus,
   UpdateStatus,
-  ReleaseInfo,
   ManagerEnvConfig,
   BackupResult,
   RestoreCandidate,
