@@ -5,14 +5,14 @@
     "m4": "Release History Is Immutable",
     "s1": "Historical Identity Preservation — Emberbird may replace branding; it may not erase history"
   },
-  "generated_at": "2026-09-16T13:25:05Z",
+  "generated_at": "2026-09-16T13:27:15Z",
   "totals": {
     "files": 181,
-    "occurrences": 1061,
+    "occurrences": 1064,
     "by_token": {
-      "MagiskOnWSA": 173,
-      "MagiskOnWSALocal": 66,
-      "WSABuilds": 822
+      "MagiskOnWSA": 174,
+      "MagiskOnWSALocal": 67,
+      "WSABuilds": 823
     },
     "by_class": {
       "doc-prose": 117,
@@ -20,12 +20,12 @@
       "identifier": 204,
       "package-name": 48,
       "path-reference": 115,
-      "upstream-attribution": 45,
+      "upstream-attribution": 48,
       "url": 70,
       "user-facing": 35,
       "workflow-name": 82
     },
-    "protected_occurrences": 390
+    "protected_occurrences": 393
   },
   "files": [
     {
@@ -3589,7 +3589,7 @@
     },
     {
       "path": "TODO.md",
-      "count": 13,
+      "count": 16,
       "occurrences": [
         {
           "token": "MagiskOnWSA",
@@ -3609,6 +3609,11 @@
         {
           "token": "MagiskOnWSA",
           "class": "upstream-attribution",
+          "context": "S1 in executable form — MustardChef, WSABuilds lineage, MagiskOnWSA/MagiskOnWSALocal"
+        },
+        {
+          "token": "MagiskOnWSA",
+          "class": "upstream-attribution",
           "context": "names (WSABuilds, MagiskOnWSA lineage, MustardChef, Microsoft"
         },
         {
@@ -3620,6 +3625,11 @@
           "token": "MagiskOnWSALocal",
           "class": "upstream-attribution",
           "context": "MagiskOnWSA, MagiskOnWSALocal lineage), verbatim AGPL license, and per-release"
+        },
+        {
+          "token": "MagiskOnWSALocal",
+          "class": "upstream-attribution",
+          "context": "S1 in executable form — MustardChef, WSABuilds lineage, MagiskOnWSA/MagiskOnWSALocal"
         },
         {
           "token": "MagiskOnWSALocal",
@@ -3645,6 +3655,11 @@
           "token": "WSABuilds",
           "class": "doc-prose",
           "context": "mapping for E2 (Documentation→docs/archive, WSABuilds Utilities→utilities,"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "upstream-attribution",
+          "context": "S1 in executable form — MustardChef, WSABuilds lineage, MagiskOnWSA/MagiskOnWSALocal"
         },
         {
           "token": "WSABuilds",

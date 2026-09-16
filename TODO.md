@@ -293,6 +293,38 @@ metamorphosis freeze takes effect when E2 begins.
 
 ---
 
+### E1.5 — Metamorphosis Contract Tests (ACTIVE — CI ratification pending)
+
+The safety net, built before any restructure or rename per the frozen programme.
+
+**Deliverables**
+
+- [x] **M1 — Metamorphosis contract tests** (`tests/test_metamorphosis_contract.py`):
+  pins PATH_MAP v2 in both directions (legacy paths must exist until E2 executes;
+  E2 target directories must NOT exist yet — no partial restructure), the brand
+  identity layers, and all eight charter rules. Fail-first for E2.
+- [x] **M2 — Attribution preservation tests** (`tests/test_attribution_preservation.py`):
+  S1 in executable form — MustardChef, WSABuilds lineage, MagiskOnWSA/MagiskOnWSALocal
+  prior names, Microsoft provenance, the verbatim AGPL text, the CC-BY-NC-ND file,
+  and the independent-platform legal statement must survive every phase boundary.
+  Any failure is an S3 abort condition.
+- [x] **M3 — Consumer compliance tests** (`tests/test_consumer_compliance.py`):
+  engine core proven offline-pure (zero network tokens); website GitHub-discovery
+  inventory CLOSED at exactly `lib/github.ts` + `lib/release-service.ts`; manager
+  URL-derivation inventory CLOSED at `lib/env.ts`/`lib/ipc.ts`/`lib/types.ts`;
+  no consumer may gain a new discovery path.
+- [x] **S4 — Consumer Purity Matrix** (`docs/CONSUMER_MATRIX.md`): the running
+  audit table M3 pins against; the E7 Registry Purity Audit reads it.
+
+**Exit checklist (E1.5 complete when every line is `[x]`)**
+
+- [x] M1/M2/M3 green locally; suite 243 → 267
+- [x] Closed discovery inventories match code reality (types.ts corrected during authoring)
+- [x] S4 matrix published and truthful
+- [ ] CI ratification of the E1.5 commit
+
+---
+
 ## Part IV — Future phases (LOCKED — not active, listed for direction only)
 
 Per the Execution Contract, no phase may receive implementation work before
@@ -684,4 +716,25 @@ local reproduction was removed. Local website build + tests (34 pass) now reprod
 the CI step before push. The abort did not roll anything back: the defect was fully
 diagnosed, fixed, and re-validated in the working tree; the fix commit below is the
 ratification target.
+
+### Cycle E1.5 — Metamorphosis Contract Tests (September 16, 2026)
+
+**Deliverable format (Cycle E1.5)**
+
+- **Summary**: before the restructure or any rename, the metamorphosis now has an
+  executable safety net: structure pinned to PATH_MAP/BRAND/charter (M1), history
+  pinned to attribution and license anchors (M2), and consumers pinned to a closed
+  discovery inventory with a public purity matrix (M3+S4).
+- **Files changed**: `tests/test_metamorphosis_contract.py` (new),
+  `tests/test_attribution_preservation.py` (new), `tests/test_consumer_compliance.py`
+  (new), `docs/CONSUMER_MATRIX.md` (new), `tests/test_docs_mirror.py` (allowlist),
+  `docs/identity-inventory.json` (regenerated).
+- **Tests added**: 24 (suite 243 → 267).
+- **Validation executed**: full unittest discover (267 OK) · inventory freshness
+  via index-read discipline.
+- **Risks**: M1's pre-E2 assertions must be rewritten in the E2 commit itself
+  (documented in the test) — a deliberate tripwire, not drift.
+- **Follow-up**: E2 restructure under the G1 freeze; then E3A.
+- **TODO updates**: Phase E1.5 declared; record appended.
+- **Repository Health Score**: **9.9 / 10**.
 
