@@ -1,4 +1,4 @@
-name: WSABuilds Manager CI
+name: Emberbird Manager CI
 
 on:
   push:
