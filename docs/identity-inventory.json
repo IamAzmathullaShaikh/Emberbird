@@ -5,14 +5,14 @@
     "m4": "Release History Is Immutable",
     "s1": "Historical Identity Preservation — Emberbird may replace branding; it may not erase history"
   },
-  "generated_at": "2026-09-17T02:58:39Z",
+  "generated_at": "2026-09-17T02:59:41Z",
   "totals": {
     "files": 147,
-    "occurrences": 934,
+    "occurrences": 936,
     "by_token": {
       "MagiskOnWSA": 111,
-      "MagiskOnWSALocal": 70,
-      "WSABuilds": 753
+      "MagiskOnWSALocal": 71,
+      "WSABuilds": 754
     },
     "by_class": {
       "doc-prose": 99,
@@ -20,12 +20,12 @@
       "identifier": 184,
       "package-name": 51,
       "path-reference": 118,
-      "upstream-attribution": 64,
+      "upstream-attribution": 66,
       "url": 51,
       "user-facing": 14,
       "workflow-name": 8
     },
-    "protected_occurrences": 409
+    "protected_occurrences": 411
   },
   "files": [
     {
@@ -682,7 +682,7 @@
     },
     {
       "path": "TODO.md",
-      "count": 30,
+      "count": 32,
       "occurrences": [
         {
           "token": "MagiskOnWSA",
@@ -733,6 +733,11 @@
           "token": "MagiskOnWSA",
           "class": "upstream-attribution",
           "context": "tracked text files for `WSABuilds` / `MagiskOnWSALocal` / `MagiskOnWSA` and"
+        },
+        {
+          "token": "MagiskOnWSALocal",
+          "class": "upstream-attribution",
+          "context": "- **LEGAL/ATTRIBUTION REVIEW**: upstream names (MagiskOnWSALocal, WSABuilds,"
         },
         {
           "token": "MagiskOnWSALocal",
@@ -808,6 +813,11 @@
           "token": "WSABuilds",
           "class": "upstream-attribution",
           "context": "(WSABuilds/MustardChef) plus ATTRIBUTION and HISTORICAL_PRESERVATION docs;"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "upstream-attribution",
+          "context": "- **LEGAL/ATTRIBUTION REVIEW**: upstream names (MagiskOnWSALocal, WSABuilds,"
         },
         {
           "token": "WSABuilds",

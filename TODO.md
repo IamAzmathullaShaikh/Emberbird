@@ -558,7 +558,7 @@ cycle record, rollback tag.
   Manager release; `emberbird-manager-0.2.2` registry row will be born from
   reality-sync at that publication (never hand-authored).
 
-### E6 — Experience Layer: README transformation + website lineage (ACTIVE)
+### E6 — Experience Layer: README transformation + website lineage (COMPLETE)
 
 Per the mission contract: README becomes the project's front door — story,
 architecture, learning path, getting started, registry, consumers, roadmap,
@@ -573,9 +573,31 @@ active, no trademark misuse, concise).
   and links verified.
 - [ ] **E6.2 — Contract evolution**: `tests/test_readme_contract.py` pins the
   new mandated section order.
-- [ ] **E6.3 — Website lineage**: footer carries upstream attribution links
+- [x] **E6.3 — Website lineage**: footer carries upstream attribution links
   (WSABuilds/MustardChef) plus ATTRIBUTION and HISTORICAL_PRESERVATION docs;
   credits, licenses, and release discoverability preserved.
+
+**Exit checklist**: E6.1–E6.3 checked, full battery green, CI ratification,
+cycle record, rollback tag.
+
+**Cycle record (E6 — September 17, 2026)**
+- **STATUS**: COMPLETE — CI-ratified (`3a57c6b`, 4/4 triggered workflows green;
+  Manager CI docs-excluded by design, then CI-ratified by its own rename push).
+- **FILES CHANGED**: README.md (19-section structure, 250 lines added),
+  `tests/test_readme_contract.py` (contract evolution 14→19),
+  `website/src/layouts/Layout.astro` (attribution footer),
+  `.github/workflows/manager-build.yml` (display name), inventory.
+- **VALIDATION**: 284/284 Python tests, 39/39 website, build green, doc links
+  clean, link validator + README contract + docs-mirror all OK.
+- **LEGAL/ATTRIBUTION REVIEW**: upstream names (MagiskOnWSALocal, WSABuilds,
+  MustardChef, Magisk/topjohnwu, Microsoft, OpenGApps) visible and linked in
+  README §16 and the website footer; trademark disclaimers intact; telemetry
+  explicitly opt-in/disabled-by-default with a no-personal-data guarantee.
+- **PROCESS INCIDENT (recorded)**: the Manager CI display-name rename initially
+  pushed without regenerating the identity inventory — the freshness guard
+  caught it and `7b46f4f` repaired the process slip. Guards work.
+- **RISKS**: none — documentation and display-only changes.
+- **ROLLBACK**: revert `3a57c6b` + `771a0a3` + `7b46f4f`; tag `post-e6-experience`.
 
 ## Part IV — Future phases (LOCKED — not active, listed for direction only)
 
