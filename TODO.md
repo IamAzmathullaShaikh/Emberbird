@@ -566,12 +566,12 @@ contributing, credits, license, attribution, security, support, historical
 lineage — while staying documentation of reality (no planned features as
 active, no trademark misuse, concise).
 
-- [ ] **E6.1 — README transformation**: 19-section structure with Project
+- [x] **E6.1 — README transformation**: 19-section structure with Project
   Story, Learning Path, Getting Started (5-minute install), Architecture
   Overview, Registry consumers, Credits/Attribution/Historical Lineage,
   Security & Support, and Roadmap; trademark-hygienic wording; all anchors
   and links verified.
-- [ ] **E6.2 — Contract evolution**: `tests/test_readme_contract.py` pins the
+- [x] **E6.2 — Contract evolution**: `tests/test_readme_contract.py` pins the
   new mandated section order.
 - [x] **E6.3 — Website lineage**: footer carries upstream attribution links
   (WSABuilds/MustardChef) plus ATTRIBUTION and HISTORICAL_PRESERVATION docs;
