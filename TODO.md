@@ -1164,6 +1164,34 @@ manifest-only "subsystem archives", and a `release-metadata.json` claiming VERIF
   RISKS: `release_pipeline.py` now reports FAIL where it previously reported PASS for scaffold builds — this is the intended correction; genuine CI builds are unaffected because they stage real artifacts
   RESULT: Phase RI1 is COMPLETE.
 
+### Cycle RI2 — Release Build Chain Repair (September 18, 2026)
+
+**How it was found**: RI1 added a Publish Guard and explicit dispatch inputs precisely so a release could be cut safely. Dispatching `release.yml` for a new tag failed within ~90 seconds — at `Execute WSA Core Build Script`, both editions:
+
+```
+build.sh: line 52: ./download_utils.sh: No such file or directory
+ERROR: Failed to source download_utils.sh
+```
+
+**Root cause**: the E2 restructure moved `MagiskOnWSA/scripts/*` → `tools/` and `tools/core/`, and `MagiskOnWSA/{bin,installer,xml}` → `upstream/{bin,installer,xml}`, but never repaired the references *inside* the moved files. The WSA build had therefore been unable to run since E2. Nothing noticed because no test executes the toolchain, and the last real subsystem release (2026-09-13) predates the restructure — the release workflows stayed green only because no release had been attempted.
+
+**Deliverables**
+
+- [x] **RI2.1 — Sourcing repaired** — `tools/build.sh` sources `core/download_utils.sh`; `tools/core/run.sh` invokes `../build.sh`.
+- [x] **RI2.2 — Invocations repaired** — `core/generateWSALinks.py`, `core/extractWSA.py`, `core/generateMagiskLink.py`, `core/extractMagisk.py`, `core/fixGappsProp.py` (all previously unqualified and unresolvable from `tools/`).
+- [x] **RI2.3 — Assets repaired** — `../bin/<arch>/{lspinit,makepri.exe}` → `../upstream/bin/...`; `../installer/*` → `../upstream/installer/*`; `../xml/priconfig.xml` → `../upstream/xml/priconfig.xml`.
+- [x] **RI2.4 — Python anchors repaired** — `generateWSALinks.py` resolved `<repo>/xml` and `<BASE_DIR>/Update Check`; it now anchors at the repository root and resolves `upstream/xml` + `tools/update-check`.
+- [x] **RI2.5 — Environment agreement repaired** — `install_deps.sh` created the venv at `tools/python3-env` while `build.sh` activated `<repo>/python3-env`; both now resolve to the repository root.
+- [x] **RI2.6 — Argument contract repaired** — `--skip-down-wsa` passed `"skip_wsa"` to a script that tests `== "1"`, so the flag was silently ignored.
+- [x] **RI2.7 — `tests/test_build_chain_integrity.py` (16 tests)** — resolves every script reference, every quoted relative asset path, the Python path anchors, the venv agreement, and the workflow/toolchain path agreement **statically**. A moved file now fails a sub-second test instead of a 90-second release build.
+
+  STATUS: COMPLETE · BLOCKERS: none · DEPENDENCIES: `tools/build.sh`, `.github/workflows/release.yml`
+  FILES: `tools/build.sh`, `tools/core/generateWSALinks.py`, `tools/core/run.sh`, `tools/core/install_deps.sh`, `tests/test_build_chain_integrity.py` (new), `TODO.md`
+  TESTS ADDED: 16; suite 437 → 453
+  VALIDATION: 453 Python tests OK (3 skipped) · `bash -n` clean on all modified shell scripts · `compileall` clean · `env_helpers` import resolves via the repaired path · the release workflow's build step now passes its first failure point
+  RISKS: remaining build-chain defects can only surface by executing the toolchain on a runner — the re-dispatched release run is the ratification
+  RESULT: Cycle RI2 is COMPLETE; release re-dispatch pending.
+
 ## Part IV — Future phases (LOCKED — completed & governed roadmap)
 
 Per the Execution Contract, all historical and post-metamorphosis roadmap phases
@@ -1183,6 +1211,7 @@ programme ratified by the Programme Board.
 - **P7 — Distribution automation**: COMPLETE (Cycle P7) — Automated Winget, Scoop, and Chocolatey manifest generation from registry truth.
 - **P8 — ARM64 (Project Snapdragon)**: COMPLETE (Cycle A1) — Native ARM64 build toolchain and BYOB pipeline operational.
 - **RI1 — Release integrity**: COMPLETE (Cycle RI1) — Publication Integrity Gate blocks fabricated artifacts; publishing any build requires a new tag, and published release history can no longer be overwritten by accident.
+- **RI2 — Release build chain**: COMPLETE (Cycle RI2) — the E2 restructure had severed every internal reference in the WSA toolchain; sourcing, invocations, assets, Python anchors and the venv path are repaired and statically guarded.
 
 ---
 

@@ -5,12 +5,12 @@
     "m4": "Release History Is Immutable",
     "s1": "Historical Identity Preservation — Emberbird may replace branding; it may not erase history"
   },
-  "generated_at": "2026-09-17T18:51:19Z",
+  "generated_at": "2026-09-17T19:14:01Z",
   "totals": {
     "files": 159,
-    "occurrences": 977,
+    "occurrences": 979,
     "by_token": {
-      "MagiskOnWSA": 124,
+      "MagiskOnWSA": 126,
       "MagiskOnWSALocal": 74,
       "WSABuilds": 779
     },
@@ -20,12 +20,12 @@
       "identifier": 193,
       "package-name": 51,
       "path-reference": 122,
-      "upstream-attribution": 85,
+      "upstream-attribution": 87,
       "url": 57,
       "user-facing": 9,
       "workflow-name": 5
     },
-    "protected_occurrences": 430
+    "protected_occurrences": 432
   },
   "files": [
     {
@@ -661,7 +661,7 @@
     },
     {
       "path": "TODO.md",
-      "count": 33,
+      "count": 35,
       "occurrences": [
         {
           "token": "MagiskOnWSA",
@@ -687,6 +687,16 @@
           "token": "MagiskOnWSA",
           "class": "path-reference",
           "context": "instructed `cd MagiskOnWSA` and referenced `MagiskOnWSA/scripts/...`"
+        },
+        {
+          "token": "MagiskOnWSA",
+          "class": "upstream-attribution",
+          "context": "**Root cause**: the E2 restructure moved `MagiskOnWSA/scripts/*` → `tools/` and `tools/core/`, and `MagiskOnWSA/{bin,installer,xml}` → `upstream/{bin,installer,xml}`, but never rep"
+        },
+        {
+          "token": "MagiskOnWSA",
+          "class": "upstream-attribution",
+          "context": "**Root cause**: the E2 restructure moved `MagiskOnWSA/scripts/*` → `tools/` and `tools/core/`, and `MagiskOnWSA/{bin,installer,xml}` → `upstream/{bin,installer,xml}`, but never rep"
         },
         {
           "token": "MagiskOnWSA",

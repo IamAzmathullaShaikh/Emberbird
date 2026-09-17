@@ -48,8 +48,8 @@ cd "$(dirname "$0")" || exit 1
 # shellcheck source=config.sh
 source ./config.sh || { echo "ERROR: Failed to source config.sh" >&2; exit 1; }
 
-# shellcheck source=download_utils.sh
-source ./download_utils.sh || { echo "ERROR: Failed to source download_utils.sh" >&2; exit 1; }
+# shellcheck source=core/download_utils.sh
+source ./core/download_utils.sh || { echo "ERROR: Failed to source core/download_utils.sh" >&2; exit 1; }
 
 # =============================================================================
 # Directory / path constants
@@ -335,17 +335,17 @@ download_wsa() {
     if [ -z "$OFFLINE" ]; then
         if [ -z "$SKIP_DOWN_WSA" ]; then
             echo "build: generating WSA download links …"
-            python3 generateWSALinks.py \
+            python3 core/generateWSALinks.py \
                 "$TARGET_ARCH" "$TARGET_RELEASE_TYPE" \
                 "$DOWNLOAD_DIR" "$DOWNLOAD_CONF_NAME" \
                 || abort "generateWSALinks.py failed"
             echo "build: downloading WSA …"
         else
             echo "build: generating WSA dependency links (WSA zip will be reused) …"
-            python3 generateWSALinks.py \
+            python3 core/generateWSALinks.py \
                 "$TARGET_ARCH" "$TARGET_RELEASE_TYPE" \
                 "$DOWNLOAD_DIR" "$DOWNLOAD_CONF_NAME" \
-                "skip_wsa" \
+                "1" \
                 || abort "generateWSALinks.py failed"
             echo "build: skipping WSA zip download; downloading dependencies only …"
         fi
@@ -372,7 +372,7 @@ extract_wsa() {
     assert_file_exists "$WSA_ZIP_PATH" "WSA zip (${WSA_ZIP_PATH})" \
         || abort "WSA zip not found. Run without --offline or check ../download/."
 
-    if ! python3 extractWSA.py "$TARGET_ARCH" "$WSA_ZIP_PATH" "$WORK_DIR" "$WSA_WORK_ENV"; then
+    if ! python3 core/extractWSA.py "$TARGET_ARCH" "$WSA_ZIP_PATH" "$WORK_DIR" "$WSA_WORK_ENV"; then
         CLEAN_DOWNLOAD_WSA=1
         abort "Extraction of WSA zip failed — the file may be corrupt."
     fi
@@ -411,7 +411,7 @@ download_magisk_and_gapps() {
     # -- Magisk Stable --------------------------------------------------------
     if [ -z "$CUSTOM_MAGISK" ]; then
         echo "build: fetching Magisk stable link …"
-        python3 generateMagiskLink.py \
+        python3 core/generateMagiskLink.py \
             "$DOWNLOAD_DIR" "$DOWNLOAD_CONF_NAME" \
             || abort "generateMagiskLink.py failed"
     else
@@ -506,7 +506,7 @@ verify_required_files() {
 extract_magisk() {
     echo -e "\n── Step 5: Extract Magisk ──────────────────────────────────────"
 
-    if ! python3 extractMagisk.py "$TARGET_ARCH" "$MAGISK_PATH" "$WORK_DIR"; then
+    if ! python3 core/extractMagisk.py "$TARGET_ARCH" "$MAGISK_PATH" "$WORK_DIR"; then
         CLEAN_DOWNLOAD_MAGISK=1
         abort "Magisk extraction failed — the ZIP may be corrupt or incomplete."
     fi
@@ -539,7 +539,7 @@ integrate_magisk() {
         local target_initrd
         target_initrd=$(to_native_path "$WORK_DIR/wsa/$TARGET_ARCH/Tools/initrd.img")
         local path_lspinit
-        path_lspinit=$(to_native_path "../bin/$TARGET_ARCH/lspinit")
+        path_lspinit=$(to_native_path "../upstream/bin/$TARGET_ARCH/lspinit")
         local path_cust
         path_cust=$(to_native_path "$CUST_PATH")
 
@@ -597,7 +597,7 @@ integrate_magisk() {
     local target_initrd
     target_initrd=$(to_native_path "$WORK_DIR/wsa/$TARGET_ARCH/Tools/initrd.img")
     local path_lspinit
-    path_lspinit=$(to_native_path "../bin/$TARGET_ARCH/lspinit")
+    path_lspinit=$(to_native_path "../upstream/bin/$TARGET_ARCH/lspinit")
     local path_magiskinit
     path_magiskinit=$(to_native_path "$WORK_DIR/magisk/magiskinit")
     local path_magisk64
@@ -699,7 +699,7 @@ fix_gapps_props() {
     echo -e "\n── Step 8: Fix build.prop for GApps ───────────────────────────"
 
     local output_path="$WORK_DIR/wsa/$TARGET_ARCH"
-    python3 fixGappsProp.py \
+    python3 core/fixGappsProp.py \
         "$output_path" \
         "$TARGET_DEVICE_NAME" \
         "Pixel 5" \
@@ -727,12 +727,12 @@ assemble_output() {
     # Copy Windows runtime libraries and installer scripts
     cp "$vclibs_PATH" "$xaml_PATH" "$WORK_DIR/wsa/$TARGET_ARCH"       || abort "Copy VCLibs failed"
     cp "$UWPVCLibs_PATH" "$xaml_PATH" "$WORK_DIR/wsa/$TARGET_ARCH"    || abort "Copy UWP VCLibs failed"
-    cp "../bin/$TARGET_ARCH/makepri.exe" "$WORK_DIR/wsa/$TARGET_ARCH"  || abort "Copy makepri.exe failed"
+    cp "../upstream/bin/$TARGET_ARCH/makepri.exe" "$WORK_DIR/wsa/$TARGET_ARCH"  || abort "Copy makepri.exe failed"
     mkdir -p "$WORK_DIR/wsa/$TARGET_ARCH/xml"
-    cp "../xml/priconfig.xml" "$WORK_DIR/wsa/$TARGET_ARCH/xml/"        || abort "Copy priconfig.xml failed"
-    cp ../installer/MakePri.ps1 "$WORK_DIR/wsa/$TARGET_ARCH"           || abort "Copy MakePri.ps1 failed"
-    cp ../installer/Install.ps1 "$WORK_DIR/wsa/$TARGET_ARCH"           || abort "Copy Install.ps1 failed"
-    cp ../installer/Run.bat     "$WORK_DIR/wsa/$TARGET_ARCH"           || abort "Copy Run.bat failed"
+    cp "../upstream/xml/priconfig.xml" "$WORK_DIR/wsa/$TARGET_ARCH/xml/" || abort "Copy priconfig.xml failed"
+    cp ../upstream/installer/MakePri.ps1 "$WORK_DIR/wsa/$TARGET_ARCH"  || abort "Copy MakePri.ps1 failed"
+    cp ../upstream/installer/Install.ps1 "$WORK_DIR/wsa/$TARGET_ARCH"  || abort "Copy Install.ps1 failed"
+    cp ../upstream/installer/Run.bat     "$WORK_DIR/wsa/$TARGET_ARCH"  || abort "Copy Run.bat failed"
 
     # Generate the file manifest used by the Windows installer
     find "$WORK_DIR/wsa/$TARGET_ARCH" -maxdepth 1 -mindepth 1 -printf "%P\n" \

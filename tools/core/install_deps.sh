@@ -160,7 +160,9 @@ if [ -n "${NEED_INSTALL[*]}" ]; then
 fi
 
 python_version=$(python3 -c 'import sys;print("{0}{1}".format(*(sys.version_info[:2])))')
-PYTHON_VENV_DIR="$(dirname "$PWD")/python3-env"
+# Post-E2 layout: this script lives at <repo>/tools/core, while build.sh creates and
+# activates <repo>/python3-env. Both must resolve to the same directory.
+PYTHON_VENV_DIR="$(cd "$(dirname "$0")/../.." && pwd)/python3-env"
 if [ "$python_version" -ge 311 ] || [ -f "$PYTHON_VENV_DIR/bin/activate" ]; then
     python3 -c "import venv" >/dev/null 2>&1 || {
         case "$PM" in

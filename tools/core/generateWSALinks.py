@@ -56,9 +56,12 @@ release_name_map = {"retail": "Retail", "RP": "Release Preview",
                     "WIS": "Insider Slow", "WIF": "Insider Fast"}
 release_type = sys.argv[2] if sys.argv[2] != "" else "Retail"
 release_name = release_name_map[release_type]
-BASE_DIR = Path(__file__).resolve().parent.parent
-XML_DIR = BASE_DIR / "xml"
-download_dir = BASE_DIR / "download" if sys.argv[3] == "" else Path(sys.argv[3])
+# Post-E2 layout: this script lives at <repo>/tools/core/generateWSALinks.py, so the
+# repository root is three levels up. XML definitions live under upstream/xml and
+# the update-check helpers under tools/update-check.
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+XML_DIR = REPO_ROOT / "upstream" / "xml"
+download_dir = REPO_ROOT / "download" if sys.argv[3] == "" else Path(sys.argv[3])
 ms_account_conf = download_dir/".ms_account"
 tempScript = sys.argv[4]
 skip_wsa_download = sys.argv[5] == "1" if len(sys.argv) >= 6 else False
@@ -66,7 +69,7 @@ cat_id = '858014f3-3934-4abe-8078-4aa193e74ca8'
 user = ''
 
 # Import central SSL configuration with certifi CA bundle + Microsoft intermediate CA
-sys.path.insert(0, str((BASE_DIR / "Update Check").resolve()))
+sys.path.insert(0, str((REPO_ROOT / "tools" / "update-check").resolve()))
 from env_helpers import configure_ssl_session
 
 session = configure_ssl_session()

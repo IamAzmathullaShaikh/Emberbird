@@ -114,5 +114,6 @@ fi
 
 clear
 echo "COMMAND_LINE=${COMMAND_LINE[*]}"
-chmod +x ./build.sh
-./build.sh "${COMMAND_LINE[@]}"
+# Post-E2 layout: build.sh sits one level above this script (tools/build.sh).
+chmod +x ../build.sh
+../build.sh "${COMMAND_LINE[@]}"
