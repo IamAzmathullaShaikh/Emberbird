@@ -31,5 +31,5 @@ pub fn run() {
             execute_upgrade
         ])
         .run(tauri::generate_context!())
-        .expect("error while running WSABuilds Manager application");
+        .expect("error while running Emberbird Manager application");
 }

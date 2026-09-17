@@ -5,17 +5,17 @@
     "m4": "Release History Is Immutable",
     "s1": "Historical Identity Preservation — Emberbird may replace branding; it may not erase history"
   },
-  "generated_at": "2026-09-17T04:04:25Z",
+  "generated_at": "2026-09-17T06:50:09Z",
   "totals": {
-    "files": 146,
-    "occurrences": 935,
+    "files": 145,
+    "occurrences": 933,
     "by_token": {
       "MagiskOnWSA": 111,
       "MagiskOnWSALocal": 71,
-      "WSABuilds": 753
+      "WSABuilds": 751
     },
     "by_class": {
-      "doc-prose": 98,
+      "doc-prose": 99,
       "historical-doc": 345,
       "identifier": 184,
       "package-name": 51,
@@ -23,7 +23,7 @@
       "upstream-attribution": 66,
       "url": 51,
       "user-facing": 14,
-      "workflow-name": 8
+      "workflow-name": 5
     },
     "protected_occurrences": 411
   },
@@ -105,27 +105,6 @@
           "token": "WSABuilds",
           "class": "workflow-name",
           "context": "name: Sync with MustardChef/WSABuilds"
-        }
-      ]
-    },
-    {
-      "path": ".github/workflows/winget-release.yml",
-      "count": 3,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "VITE_PUBLIC_GITHUB_REPO: IamAzmathullaShaikh/WSABuilds"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "VITE_PUBLIC_GITHUB_REPO_URL: https://github.com/IamAzmathullaShaikh/WSABuilds"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "VITE_PUBLIC_RELEASES_URL: https://github.com/IamAzmathullaShaikh/WSABuilds/releases"
         }
       ]
     },
@@ -1412,7 +1391,7 @@
     },
     {
       "path": "docs/BRAND.md",
-      "count": 10,
+      "count": 11,
       "occurrences": [
         {
           "token": "MagiskOnWSA",
@@ -1448,6 +1427,11 @@
           "token": "WSABuilds",
           "class": "doc-prose",
           "context": "`grep -rl \"E4.3-FLIP\" --include=\"*.yml\" --include=\"*.ts\" . | xargs sed -i 's/IamAzmathullaShaikh\\/WSABuilds/IamAzmathullaShaikh\\/Emberbird/g'`"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "are removed, and `IamAzmathullaShaikh/WSABuilds` resolves through GitHub's"
         },
         {
           "token": "WSABuilds",

@@ -40,7 +40,7 @@ mod tests {
     fn test_resolve_environment_defaults() {
         let cfg = resolve_environment().expect("Environment should resolve with defaults");
         assert_eq!(cfg.github_repo, "IamAzmathullaShaikh/Emberbird");
-        assert!(cfg.repo_url.contains("WSABuilds"));
+        assert!(cfg.repo_url.contains("Emberbird"));
         assert!(cfg.releases_url.contains("releases"));
     }
 }
