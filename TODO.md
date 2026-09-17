@@ -607,18 +607,47 @@ residue found by the audit itself, and cut the `emberbird-v1.0.0` milestone tag
 (milestone only — no workflow triggers on it; publications remain gated by the
 reality pipeline).
 
-- [ ] **E7.1 — Purity audit guards**: `tests/test_e7_purity_audit.py` pins
+- [x] **E7.1 — Purity audit guards**: `tests/test_e7_purity_audit.py` pins
   workflow-inventory completeness, no hardcoded release tags in living
   production code, no hardcoded asset hashes in production modules,
   consumer-matrix migrated state, and milestone metadata consistency.
-- [ ] **E7.2 — Audit-driven repairs**: every residue the audit finds is fixed
+- [x] **E7.2 — Audit-driven repairs**: every residue the audit finds is fixed
   in the same cycle (evidence recorded below), with zero deletions of
   functionality.
-- [ ] **E7.3 — Security & privacy pass**: `security_scan.py` clean,
+- [x] **E7.3 — Security & privacy pass**: `security_scan.py` clean,
   `validate_analytics.py` Zero-PII clean at the milestone commit.
-- [ ] **E7.4 — Milestone**: tag `emberbird-v1.0.0` after CI ratification;
+- [x] **E7.4 — Milestone**: tag `emberbird-v1.0.0` after CI ratification;
   cycle record lists the honest open items (E4.3 owner rename; ARM64 WIP
   preserved and deliberately unmerged).
+
+**Exit checklist**: E7.1–E7.4 checked, full battery green, CI ratification,
+cycle record, milestone tag.
+
+**Cycle record (E7 — September 17, 2026)**
+- **STATUS**: COMPLETE — CI-ratified on `93a74e6`; milestone `emberbird-v1.0.0` tagged.
+- **AUDIT FINDINGS (repaired in-cycle)**: `website/src/lib/types.ts` JSDoc used
+  real release tags as examples (drift-prone prose → reworded to registry
+  reference); `.github/WORKFLOWS.md` displayed the historical Manager packaging
+  name (E3A residue → rebranded). Zero functionality deleted; no branch
+  deletions (branch policy respected — all branches presumed referenced).
+- **VALIDATION**: 289/289 Python tests, 39/39 website, 30/30 Manager,
+  `tsc --noEmit` clean, registry+schema OK, doc links clean, actionlint OK,
+  security scan clean, Zero-PII clean. Clean-room E2E: 5 passed; 2 build
+  checks REQUIRE TARGET ENVIRONMENT VALIDATION (local `upstream/download/
+  wsa-retail.zip` input absent — build paths untouched this cycle); Manager
+  binary check skips (no local Rust/NSIS toolchain; built+published by CI).
+- **HONEST OPEN ITEMS (not blockers for the milestone; tracked)**:
+  1. E4.3 — the GitHub repository rename is an OWNER action (REQUIRES OWNER
+     DECISION); all code-side identity work is done and pinned behind the
+     documented `E4.3-FLIP` markers.
+  2. ARM64 enablement WIP (5 files) is preserved uncommitted-by-design and
+     stays untouched until the ARM64 phase unlocks (Part IV P8).
+  3. Manager backup data directory keeps its historical name pending a real
+     migration path (BRAND §8 rule 5).
+  4. First `EmberbirdManager-*` publication and the `emberbird-manager`
+     registry row happen at the next Manager release via reality-sync.
+- **ROLLBACK**: revert `93a74e6`; delete the milestone tag (tags are not
+  published release truth until a release object references them).
 
 ## Part IV — Future phases (LOCKED — not active, listed for direction only)
 
