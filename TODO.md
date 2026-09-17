@@ -683,6 +683,41 @@ Generated 2026-09-17 (read-only; no branch deleted — deletion is an owner deci
 - **Governance discovery:** the default branch is still `master` while all
   programme work lands on `main` — switching the default is recorded as a
   recommended owner action (pairs naturally with the E4.3 rename window).
+- **Reality correction (2026-09-17):** `gh-pages` is the repo's live GitHub Pages
+  source (repo-settings probe: `build_type: legacy`, status: built) — the
+  report's "superseded by Cloudflare" verdict is corrected; `gh-pages` is KEPT.
+
+### Post-Programme Governance — Rename Completion, Branch Cleanup, Gate Validation (September 17, 2026)
+
+With the owner's blanket execution authorization, the two queued owner decisions
+were executed and the one environment-gated item was validated with hard evidence.
+
+- [x] **E4.3 CI repair** — the flip commit's two CI failures (Python suite:
+  stale identity inventory; Manager CI: Rust test pinning the old-slug default)
+  diagnosed from CI annotations and repaired (`9a2a45f`); **5/5 workflows green**.
+- [x] **Default branch `master` → `main`** — switched via the GitHub API (Branch
+  Hygiene finding 1, executed in the rename window as recommended). API-verified.
+- [x] **Branch cleanup executed** per `docs/BRANCH_HYGIENE.md` evidence: archive
+  tags pushed for the 3 unmerged tips, 18 merged/unreferenced remote branches
+  deleted, zero open PRs verified first, zero unique commits lost. One live-probe
+  correction honored: `gh-pages` KEPT (active GitHub Pages source — repo settings
+  evidence the file-only reference scan could not see).
+- [x] **Registry validation post-rename** — `validate`: REGISTRY OK (6 releases,
+  9 vault entries); Rename Policy sequence fully closed.
+- [x] **Task 5.1 gate validated** — hard evidence: WSL is not installed on the
+  local machine (`wsl.exe --status` → "not installed"), so the clean-room build
+  phase cannot execute here; the gate remains REQUIRES TARGET ENVIRONMENT
+  VALIDATION by environment (Windows-lab + admin/reboot prerequisites), while CI
+  builds both editions green on every push. Status unchanged, now evidence-backed.
+
+STATUS: COMPLETE · DEPENDENCIES: owner authorization; E4.3 flip landed ·
+FILES: `docs/BRANCH_HYGIENE.md` (execution addendum), `TODO.md` (this record) ·
+TESTS ADDED: none (governance/infrastructure cycle; all guards re-run green) ·
+VALIDATION: 289/289 Python suite, registry `validate` OK, doc links clean ·
+RISK: low — deletions were evidence-gated and archive-tagged; default-branch
+switch verified by API probe · ROLLBACK: re-push branch names from main history
+or archive tags; default branch is one API call · CI: 5/5 green on `9a2a45f` ·
+RESULT: no pending tasks remain that this environment can execute.
 
 ## Part IV — Future phases (LOCKED — not active, listed for direction only)
 

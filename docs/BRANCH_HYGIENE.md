@@ -38,3 +38,31 @@
 - **Archive-then-decide:** `update` (tag its tip `archive/update-branch-2026-01` first), both `dependabot/*` (dependabot will reopen fresher bumps).
 - **Local cleanup:** `git branch -d origin` (misnamed, merged; local-only).
 - M4 note: branch deletion never touches tags, releases, or manifests — release history remains immutable regardless of this report's outcome.
+
+## Execution addendum (2026-09-17 — executed with owner authorization)
+
+The owner granted blanket execution rights ("all rights given, leave no pending tasks"); the
+recommendations above were executed the same day, with one **evidence correction found by live
+probing** (reality wins over this report):
+
+1. **Default branch switched `master` → `main`** via the GitHub API. All programme work lands on
+   `main`; CI triggers cover both. (Finding 1 resolved.)
+2. **Correction — `gh-pages` was NOT "superseded"**: the repo-level GitHub Pages config is live
+   (`build_type: legacy`, source branch `gh-pages`, status: built) at probe time. The report's
+   "none found" reference scan missed repo settings (they are not files). `gh-pages` is therefore
+   **kept**; it was NOT deleted.
+3. **Archive tags pushed** before deletion of the 3 unmerged tips:
+   `archive/update-branch-2026-01`, `archive/dependabot-setup-python-2026-07`,
+   `archive/dependabot-git-auto-commit-2026-06` — the unique commits remain reachable forever
+   (M4: nothing published becomes unreachable).
+4. **18 remote branches deleted** per the evidence table (15 fully merged + the 3 archived
+   above): all `feature/*`, `fix/*`, `WSA-next`, `refactor/modernize-and-audit`, `update`,
+   `dependabot/*`. Zero unique commits were lost (merged tips remain reachable from `main`).
+5. **Local cleanup**: the misnamed local branch `origin` was already absent at execution time.
+6. **Remaining remote branches (4)**: `main` (default), `master` (historical default; kept while
+   any workflow/config still references it), `experimental` (CI-trigger-referenced), `gh-pages`
+   (live Pages source).
+7. **Open PR check before deletion**: none open — no PR head branch was orphaned.
+
+Rollback: deleted branch names can be re-pushed from `main` history or the archive tags at any
+time; the default-branch switch is a single API call.
