@@ -96,20 +96,16 @@ class TestE4SlugContract(unittest.TestCase):
                 stale.append(rel)
         self.assertEqual(stale, [], f"living surfaces still carry the historical slug: {stale}")
 
-    def test_03_publication_plumbing_pinned_with_flip_marker(self):
+    def test_03_publication_plumbing_flipped_to_canonical(self):
+        """E4.3 executed: publication plumbing points at the canonical slug and
+        the flip markers are removed (BRAND §7 status note)."""
         for rel in PINNED_SURFACES:
             text = read(rel)
-            self.assertIn(
-                "E4.3-FLIP", text, f"{rel} must carry the E4.3-FLIP marker (BRAND §7)"
-            )
-            self.assertIn(
-                OLD, text, f"{rel} must stay pinned to the historical slug until E4.3"
-            )
             self.assertNotIn(
-                NEW,
-                text.split(FLIP_MARK)[0],
-                f"{rel} code below the flip marker must not point at the new slug yet",
+                FLIP_MARK, text, f"{rel} flip marker must be removed after the executed rename"
             )
+            self.assertIn(NEW, text, f"{rel} must carry the canonical slug after the flip")
+            self.assertNotIn(OLD, text, f"{rel} must no longer pin the historical slug")
 
     def test_04_frozen_truth_keeps_historical_slug(self):
         for rel in FROZEN_SURFACES:

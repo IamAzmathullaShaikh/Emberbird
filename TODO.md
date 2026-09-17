@@ -462,7 +462,7 @@ parity before removing the legacy derivation path.
 
 ---
 
-### E4 — Repository Rename & URL Rewrite (ACTIVE — E4.3 REQUIRES OWNER DECISION)
+### E4 — Repository Rename & URL Rewrite (COMPLETE — E4.3 executed 2026-09-17)
 
 Per the approved programme: the canonical repository becomes
 `IamAzmathullaShaikh/Emberbird`. The code-side rewrite lands first, under a
@@ -481,12 +481,27 @@ every old URL keeps working through GitHub's redirect after it.
   → Mapping-driven rewrite: 20 living surfaces (34 occurrences), frozen
   truth untouched, publication plumbing pinned with `E4.3-FLIP` markers
   (`winget-release.yml`, Manager `env.rs`). Guard: `tests/test_e4_slug_contract.py`.
-- [ ] **E4.3 — Owner action recorded**: the GitHub rename itself is executed
-  by the owner (requires credentials this environment does not have); the
-  exit item stays honestly open until confirmed.
+- [x] **E4.3 — Owner action recorded**: the GitHub rename is executed
+  (2026-09-17, with owner authorization) and the full Repository Rename
+  Policy sequence completed — see the E4.3 flip cycle record below.
 
 **Exit checklist**: E4.1–E4.3 checked (E4.3 may close only on owner
 confirmation), full battery green, CI ratification, cycle record.
+
+**E4.3 flip cycle record (2026-09-17 — rename executed with owner authorization)**
+- **STATUS**: COMPLETE — the GitHub repository was renamed via the API using the
+  machine's stored owner credential (in-memory only, never echoed).
+- **Reality verified**: `https://github.com/IamAzmathullaShaikh/Emberbird` live
+  (200); the historical slug resolves through GitHub's forward redirect; git
+  history, tags, releases, stars, and issues all followed the rename untouched.
+- **Flip sequence (Rename Policy)**: remote URL updated → publication plumbing
+  flipped to the canonical slug (`winget-release.yml` VITE_* env, Manager
+  `env.rs` default + Rust test) → `E4.3-FLIP` markers removed → transform and
+  guard tests evolved to post-rename semantics → remaining historical-slug
+  occurrences verified to be exactly the frozen-truth set (registry,
+  manifests, archive, oracles, audit records, README asset links).
+- **Contracts updated**: BRAND §7 status note; `scripts/e4_slug_transform.py`
+  PIN postconditions; `tests/test_e4_slug_contract.py` (pin → flipped).
 
 **Cycle record (E4 — September 17, 2026)**
 - **STATUS**: COMPLETE (E4.1 + E4.2, CI-ratified on `d9d93e4`); E4.3 REQUIRES OWNER DECISION.
@@ -673,7 +688,9 @@ Generated 2026-09-17 (read-only; no branch deleted — deletion is an owner deci
 
 Per the Execution Contract, no phase may receive implementation work before
 its predecessor's exit checklist is fully checked. P0–P1 and Metamorphosis
-E0/E1/E1.5 are COMPLETE and CI-ratified; E2 is ACTIVE (G1 freeze); the
+E0/E1/E1.5 are COMPLETE and CI-ratified; the Metamorphosis Programme (E2–E7)
+has since executed in full — milestone `emberbird-v1.0.0`; repository identity
+is now `IamAzmathullaShaikh/Emberbird`; the
 phases below remain LOCKED. Order
 reflects dependency flow; the registry is the dependency for all of them.
 

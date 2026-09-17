@@ -1,5 +1,3 @@
-# E4.3-FLIP: slug below stays on the historical repository
-# until IamAzmathullaShaikh/Emberbird exists (docs/BRAND.md §7).
 name: Winget Distribution & Packaging CI
 
 on:
@@ -120,9 +118,9 @@ jobs:
         working-directory: apps/manager
         env:
           NODE_ENV: production
-          VITE_PUBLIC_GITHUB_REPO: IamAzmathullaShaikh/WSABuilds
-          VITE_PUBLIC_GITHUB_REPO_URL: https://github.com/IamAzmathullaShaikh/WSABuilds
-          VITE_PUBLIC_RELEASES_URL: https://github.com/IamAzmathullaShaikh/WSABuilds/releases
+          VITE_PUBLIC_GITHUB_REPO: IamAzmathullaShaikh/Emberbird
+          VITE_PUBLIC_GITHUB_REPO_URL: https://github.com/IamAzmathullaShaikh/Emberbird
+          VITE_PUBLIC_RELEASES_URL: https://github.com/IamAzmathullaShaikh/Emberbird/releases
         shell: bash
         run: |
           echo "[*] Running npx tauri build (runs beforeBuildCommand: npm run build, then cargo build + NSIS bundling)..."

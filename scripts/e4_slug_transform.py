@@ -122,15 +122,13 @@ def main() -> int:
     for rel in PIN:
         p = REPO / rel
         text = p.read_text(encoding="utf-8")
-        if FLIP_MARK not in text:
-            failures.append(f"{rel}: missing {FLIP_MARK} marker")
-        if apply and FLIP_MARK not in text:
-            marker = (
-                f"# {FLIP_MARK}: slug below stays on the historical repository\n"
-                f"# until IamAzmathullaShaikh/Emberbird exists (docs/BRAND.md SS7).\n"
-            )
-            p.write_text(marker + text, encoding="utf-8")
-        print(f"{'APPLIED' if apply else 'PLAN   '} pin     {rel}: marker")
+        # Post-E4.3 semantics (rename executed): the pin surfaces carry the
+        # canonical slug and the flip markers are removed.
+        if FLIP_MARK in text:
+            failures.append(f"{rel}: E4.3-FLIP marker must be removed after the executed rename")
+        if OLD in text:
+            failures.append(f"{rel}: still pinned to the historical slug after the executed rename")
+        print(f"{'APPLIED' if apply else 'PLAN   '} pin     {rel}: flipped to canonical slug")
 
     for rel in KEEP:
         text = (REPO / rel).read_text(encoding="utf-8")

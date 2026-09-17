@@ -1,5 +1,3 @@
-// E4.3-FLIP: slug below stays on the historical repository
-// until IamAzmathullaShaikh/Emberbird exists (docs/BRAND.md §7).
 use serde::{Deserialize, Serialize};
 use std::env;
 
@@ -13,7 +11,7 @@ pub struct ManagerEnvConfig {
 pub fn resolve_environment() -> Result<ManagerEnvConfig, String> {
     let repo = env::var("PUBLIC_GITHUB_REPO")
         .or_else(|_| env::var("VITE_PUBLIC_GITHUB_REPO"))
-        .unwrap_or_else(|_| "IamAzmathullaShaikh/WSABuilds".to_string());
+        .unwrap_or_else(|_| "IamAzmathullaShaikh/Emberbird".to_string());
 
     if repo.trim().is_empty() {
         return Err("PUBLIC_GITHUB_REPO must be explicitly configured.".to_string());
@@ -41,7 +39,7 @@ mod tests {
     #[test]
     fn test_resolve_environment_defaults() {
         let cfg = resolve_environment().expect("Environment should resolve with defaults");
-        assert_eq!(cfg.github_repo, "IamAzmathullaShaikh/WSABuilds");
+        assert_eq!(cfg.github_repo, "IamAzmathullaShaikh/Emberbird");
         assert!(cfg.repo_url.contains("WSABuilds"));
         assert!(cfg.releases_url.contains("releases"));
     }

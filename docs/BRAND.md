@@ -108,6 +108,11 @@ historical URL truth — frozen URLs keep working forever through the redirect.
 **Guard:** `tests/test_e4_slug_contract.py` pins this table: rewritten surfaces stay
 rewritten, pinned surfaces carry flip markers, frozen truth keeps the historical slug.
 
+**Status (2026-09-17): E4.3 EXECUTED.** The GitHub rename was performed and the
+flip applied: publication plumbing now points at the canonical slug, flip markers
+are removed, and `IamAzmathullaShaikh/WSABuilds` resolves through GitHub's
+forward redirect. Frozen truth keeps the historical slug permanently.
+
 ## 8. Distribution identity (E5)
 
 **Active distribution identity (from `deployment/version.json` — the seam):**
