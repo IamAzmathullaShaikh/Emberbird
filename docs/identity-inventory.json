@@ -5,19 +5,19 @@
     "m4": "Release History Is Immutable",
     "s1": "Historical Identity Preservation — Emberbird may replace branding; it may not erase history"
   },
-  "generated_at": "2026-09-17T18:41:49Z",
+  "generated_at": "2026-09-17T18:51:19Z",
   "totals": {
-    "files": 163,
-    "occurrences": 987,
+    "files": 159,
+    "occurrences": 977,
     "by_token": {
       "MagiskOnWSA": 124,
       "MagiskOnWSALocal": 74,
-      "WSABuilds": 789
+      "WSABuilds": 779
     },
     "by_class": {
       "doc-prose": 110,
       "historical-doc": 345,
-      "identifier": 203,
+      "identifier": 193,
       "package-name": 51,
       "path-reference": 122,
       "upstream-attribution": 85,
@@ -4288,22 +4288,6 @@
       ]
     },
     {
-      "path": "scripts/audit_release_pipeline.py",
-      "count": 2,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "outputs_expected=[\"WSABuildsManager-Setup-<ver>-x64.exe\", \"WSABuildsManager-Portable-<ver>-x64.zip\"],"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "outputs_expected=[\"WSABuildsManager-Setup-<ver>-x64.exe\", \"WSABuildsManager-Portable-<ver>-x64.zip\"],"
-        }
-      ]
-    },
-    {
       "path": "scripts/bootstrap_winget.py",
       "count": 3,
       "occurrences": [
@@ -4337,22 +4321,6 @@
           "token": "WSABuilds",
           "class": "identifier",
           "context": "pkg_assets = [a for a in assets if a[\"name\"].endswith((\".exe\", \".zip\")) and \"WSABuildsManager\" in a[\"name\"]]"
-        }
-      ]
-    },
-    {
-      "path": "scripts/build_release_candidates.py",
-      "count": 2,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "exe_name = f\"WSABuildsManager-Setup-{version}-x64.exe\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "zip_name = f\"WSABuildsManager-Portable-{version}-x64.zip\""
         }
       ]
     },
@@ -4771,22 +4739,6 @@
           "token": "WSABuilds",
           "class": "path-reference",
           "context": "if hist.is_file() and \"WSABuilds.WSABuildsManager\" in hist.read_text(encoding=\"utf-8\"):"
-        }
-      ]
-    },
-    {
-      "path": "scripts/publish_release.py",
-      "count": 2,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "repo_slug: str = \"IamAzmathullaShaikh/WSABuilds\","
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "repo_slug: str = \"IamAzmathullaShaikh/WSABuilds\","
         }
       ]
     },
@@ -5321,32 +5273,6 @@
           "token": "WSABuilds",
           "class": "identifier",
           "context": "legacy = [\"Documentation\", \"WSABuilds Utilities\", \"MagiskOnWSA\"]"
-        }
-      ]
-    },
-    {
-      "path": "tests/test_publish_release.py",
-      "count": 4,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "portable_zip = dist_dir / \"WSABuildsManager-Portable-0.2.3-x64.zip\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "self.assertIn(\"WSABuildsManager-Portable-0.2.3-x64.zip\", filenames)"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "self.assertIn(\"WSABuildsManager-Setup-0.2.3-x64.exe\", filenames)"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "setup_exe = dist_dir / \"WSABuildsManager-Setup-0.2.3-x64.exe\""
         }
       ]
     },
