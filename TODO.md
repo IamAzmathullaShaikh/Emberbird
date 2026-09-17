@@ -599,6 +599,27 @@ cycle record, rollback tag.
 - **RISKS**: none — documentation and display-only changes.
 - **ROLLBACK**: revert `3a57c6b` + `771a0a3` + `7b46f4f`; tag `post-e6-experience`.
 
+### E7 — Purity Audit, Cleanup v2 & emberbird-v1.0.0 Milestone (ACTIVE)
+
+The final metamorphosis phase: codify the audit findings as permanent guards,
+prove no duplicated release truth or undocumented workflow remains, repair any
+residue found by the audit itself, and cut the `emberbird-v1.0.0` milestone tag
+(milestone only — no workflow triggers on it; publications remain gated by the
+reality pipeline).
+
+- [ ] **E7.1 — Purity audit guards**: `tests/test_e7_purity_audit.py` pins
+  workflow-inventory completeness, no hardcoded release tags in living
+  production code, no hardcoded asset hashes in production modules,
+  consumer-matrix migrated state, and milestone metadata consistency.
+- [ ] **E7.2 — Audit-driven repairs**: every residue the audit finds is fixed
+  in the same cycle (evidence recorded below), with zero deletions of
+  functionality.
+- [ ] **E7.3 — Security & privacy pass**: `security_scan.py` clean,
+  `validate_analytics.py` Zero-PII clean at the milestone commit.
+- [ ] **E7.4 — Milestone**: tag `emberbird-v1.0.0` after CI ratification;
+  cycle record lists the honest open items (E4.3 owner rename; ARM64 WIP
+  preserved and deliberately unmerged).
+
 ## Part IV — Future phases (LOCKED — not active, listed for direction only)
 
 Per the Execution Contract, no phase may receive implementation work before

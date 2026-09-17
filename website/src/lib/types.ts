@@ -66,7 +66,7 @@ export interface ReleaseFilterOptions {
 export interface ReleaseProvider {
   name: string;
   getLatestRelease(): Promise<UnifiedRelease | null>;
-  /** Fetch a specific release by exact tag (e.g. `v0.2.2` or `wsa-v2311.40000.5.0`). */
+  /** Fetch a specific release by exact tag (an exact `tag` value from the registry). */
   getReleaseByTag(tag: string): Promise<UnifiedRelease | null>;
   /** Fetch every published release, newest first (as ordered by the GitHub API). */
   listReleases(): Promise<UnifiedRelease[]>;

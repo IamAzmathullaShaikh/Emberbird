@@ -29,7 +29,7 @@ The `.github/` directory manages GitHub Actions workflows, community issue templ
 To prevent release collisions, tags are strictly segregated:
 - **`Windows_*` / `wsa-v*`**: Triggers **WSA Subsystem Packaging** (`release.yml`).  
   *Example*: `Windows_11_2311.40000.5.0` or `wsa-v2311.40000.5.0`
-- **`v*`**: Triggers **WSABuilds Manager Desktop Packaging** (`winget-release.yml`).  
+- **`v*`**: Triggers **Emberbird Manager Desktop Packaging** (`winget-release.yml`).  
   *Example*: `v0.2.0`
 
 ---

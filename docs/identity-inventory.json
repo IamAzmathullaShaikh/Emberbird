@@ -5,17 +5,17 @@
     "m4": "Release History Is Immutable",
     "s1": "Historical Identity Preservation — Emberbird may replace branding; it may not erase history"
   },
-  "generated_at": "2026-09-17T03:00:28Z",
+  "generated_at": "2026-09-17T03:06:15Z",
   "totals": {
-    "files": 147,
-    "occurrences": 936,
+    "files": 146,
+    "occurrences": 935,
     "by_token": {
       "MagiskOnWSA": 111,
       "MagiskOnWSALocal": 71,
-      "WSABuilds": 754
+      "WSABuilds": 753
     },
     "by_class": {
-      "doc-prose": 99,
+      "doc-prose": 98,
       "historical-doc": 345,
       "identifier": 184,
       "package-name": 51,
@@ -68,17 +68,6 @@
           "token": "WSABuilds",
           "class": "identifier",
           "context": "description: Propose an idea, automation improvement, or platform enhancement for WSABuilds."
-        }
-      ]
-    },
-    {
-      "path": ".github/WORKFLOWS.md",
-      "count": 1,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "doc-prose",
-          "context": "- **`v*`**: Triggers **WSABuilds Manager Desktop Packaging** (`winget-release.yml`)."
         }
       ]
     },
