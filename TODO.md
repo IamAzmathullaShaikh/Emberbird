@@ -719,6 +719,39 @@ switch verified by API probe · ROLLBACK: re-push branch names from main history
 or archive tags; default branch is one API call · CI: 5/5 green on `9a2a45f` ·
 RESULT: no pending tasks remain that this environment can execute.
 
+### Steady-State Stewardship — Continuous Audit Cycle (September 17, 2026)
+
+First steady-state cycle under the completed programme: full Continuous Audit Mode
+across all ten drift dimensions, plus a dispatched post-rename reality-sync.
+
+- [x] **Full validation battery** — 289-test suite green; `validate` REGISTRY OK
+  (6 releases, 9 vault entries); distribution validator SUCCESS incl. frozen-history
+  check (M4); security scan clean; actionlint clean; compileall clean; doc links
+  clean; identity inventory fresh; purity/consumer/attribution guards all green.
+- [x] **Post-rename reality-sync dispatched** — `Registry Reality Sync`
+  (`workflow_dispatch`, run 35196181681) regenerated the registry from live
+  published reality on CI: **zero drift, no escalation issue**. Registry `source_url`
+  values remain generation-time observed reality (old-slug URLs, all verified to
+  redirect 200 → `IamAzmathullaShaikh/Emberbird`); the daily schedule owns updates.
+- [x] **Historical tags verified live** on the renamed remote — release history
+  untouched by the rename (M4 hold confirmed by API probe).
+- [x] **Authoritative-memory audit finding** — `PHOENIX_CHARTER.md` (named in the
+  stewardship directive) does not exist and never did; the authoritative charter is
+  `docs/EMBERBIRD_CHARTER.md` (the phoenix→ember identity is the same programme;
+  every CI-ratified cycle executed under it). No separate ADR directory or Programme
+  Board file exists — those records are embodied in TODO Part V cycle records and
+  `docs/METAMORPHOSIS.md`. **No duplicate charter/board files were created**
+  (Restricted: no duplicate sources of truth). Future directives referencing
+  `PHOENIX_CHARTER.md` resolve to `docs/EMBERBIRD_CHARTER.md`.
+
+STATUS: COMPLETE · DEPENDENCIES: E4.3 closure; reality-sync workflow (P1.1) ·
+FILES: `TODO.md` (this record) · TESTS ADDED: none (audit-only cycle) ·
+VALIDATION: full battery + CI-dispatched reality-sync (zero drift) + live
+redirect/tag probes · LEGAL/ATTRIBUTION: nothing touched; M4/S1 guards green ·
+RISK: none — read-only audit + one read-only workflow dispatch · ROLLBACK: n/a ·
+CI: Build & CI, Documentation, Security, Website green on `c830a6a`; Reality Sync
+success · RESULT: all ten audit dimensions green; platform in verified steady state.
+
 ## Part IV — Future phases (LOCKED — not active, listed for direction only)
 
 Per the Execution Contract, no phase may receive implementation work before
