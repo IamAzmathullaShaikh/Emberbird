@@ -1183,13 +1183,14 @@ ERROR: Failed to source download_utils.sh
 - [x] **RI2.4 — Python anchors repaired** — `generateWSALinks.py` resolved `<repo>/xml` and `<BASE_DIR>/Update Check`; it now anchors at the repository root and resolves `upstream/xml` + `tools/update-check`.
 - [x] **RI2.5 — Environment agreement repaired** — `install_deps.sh` created the venv at `tools/python3-env` while `build.sh` activated `<repo>/python3-env`; both now resolve to the repository root.
 - [x] **RI2.6 — Argument contract repaired** — `--skip-down-wsa` passed `"skip_wsa"` to a script that tests `== "1"`, so the flag was silently ignored.
-- [x] **RI2.7 — `tests/test_build_chain_integrity.py` (16 tests)** — resolves every script reference, every quoted relative asset path, the Python path anchors, the venv agreement, and the workflow/toolchain path agreement **statically**. A moved file now fails a sub-second test instead of a 90-second release build.
+- [x] **RI2.7 — `tests/test_build_chain_integrity.py` (18 tests)** — resolves every script reference, every quoted relative asset path, the Python path anchors, the venv agreement, and the workflow/toolchain path agreement **statically**. A moved file now fails a sub-second test instead of a 90-second release build.
+- [x] **RI2.8 — Magisk overlay payloads (found by the first re-dispatch)** — after RI2.1–RI2.7 the re-dispatched run proved the repair: **Banking Edition built end-to-end**. Standard Edition advanced through download → extract → initrd patch and then failed at `magiskboot cpio`: `lstat 'init.lsp.magisk.rc': No such file or directory`. The cpio `add` entries passed bare filenames, which resolved beside `build.sh` pre-E2 but now live in `tools/core/`. Both overlay scripts (`init.lsp.magisk.rc`, `post-fs-data.sh`) are now addressed by absolute path, and the guard parses every `add <mode> <target> <source>` entry to assert each source resolves on disk.
 
   STATUS: COMPLETE · BLOCKERS: none · DEPENDENCIES: `tools/build.sh`, `.github/workflows/release.yml`
   FILES: `tools/build.sh`, `tools/core/generateWSALinks.py`, `tools/core/run.sh`, `tools/core/install_deps.sh`, `tests/test_build_chain_integrity.py` (new), `TODO.md`
-  TESTS ADDED: 16; suite 437 → 453
-  VALIDATION: 453 Python tests OK (3 skipped) · `bash -n` clean on all modified shell scripts · `compileall` clean · `env_helpers` import resolves via the repaired path · the release workflow's build step now passes its first failure point
-  RISKS: remaining build-chain defects can only surface by executing the toolchain on a runner — the re-dispatched release run is the ratification
+  TESTS ADDED: 18; suite 437 → 455
+  VALIDATION: 455 Python tests OK (3 skipped) · `bash -n` clean on all modified shell scripts · `compileall` clean · `env_helpers` import resolves via the repaired path · **first re-dispatch: Banking Edition success, Standard Edition reached initrd patching before failing on RI2.8 (now fixed)** · no release was published from either incomplete run — the publish job was correctly skipped
+  RISKS: the Standard Edition path can only be fully ratified by executing it; the second re-dispatch is that ratification
   RESULT: Cycle RI2 is COMPLETE; release re-dispatch pending.
 
 ## Part IV — Future phases (LOCKED — completed & governed roadmap)

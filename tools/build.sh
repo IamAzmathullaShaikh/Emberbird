@@ -612,6 +612,11 @@ integrate_magisk() {
     path_stub=$(to_native_path "$WORK_DIR/magisk/stub.xz")
     local path_cust
     path_cust=$(to_native_path "$CUST_PATH")
+    # Overlay scripts ship in tools/core/ post-E2; magiskboot resolves the last
+    # argument on disk, so they must be addressed explicitly.
+    local path_initrc path_postfs
+    path_initrc=$(to_native_path "$PWD/core/init.lsp.magisk.rc")
+    path_postfs=$(to_native_path "$PWD/core/post-fs-data.sh")
 
     # Build CPIO patch command array dynamically with relative paths (no leading slashes)
     local -a cpio_cmds=(
@@ -639,8 +644,8 @@ integrate_magisk() {
     cpio_cmds+=(
         "add 0644 overlay.d/sbin/stub.xz $path_stub"
         "mkdir 000 .backup"
-        "add 000 overlay.d/init.lsp.magisk.rc init.lsp.magisk.rc"
-        "add 000 overlay.d/sbin/post-fs-data.sh post-fs-data.sh"
+        "add 000 overlay.d/init.lsp.magisk.rc $path_initrc"
+        "add 000 overlay.d/sbin/post-fs-data.sh $path_postfs"
         "add 000 overlay.d/sbin/lsp_cust.img $path_cust"
     )
 

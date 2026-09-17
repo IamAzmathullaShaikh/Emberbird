@@ -153,6 +153,44 @@ class TestRelativeAssetPathsResolve(unittest.TestCase):
                 )
 
 
+class TestMagiskbootPayloadsExist(unittest.TestCase):
+    """`magiskboot cpio ... add <mode> <target> <source>` resolves <source> on disk.
+
+    The E2 move left two bare filenames (init.lsp.magisk.rc, post-fs-data.sh)
+    pointing at files that now live in tools/core/, which failed the Standard
+    Edition release build after ~20 minutes of downloading and extracting.
+    """
+
+    ADD_ENTRY = re.compile(r'"add\s+\d+\s+(\S+)\s+(\S+)"')
+
+    def test_every_cpio_source_resolves(self):
+        text = read(BUILD_SH)
+        entries = self.ADD_ENTRY.findall(text)
+        self.assertGreaterEqual(len(entries), 4, "cpio add entries not found — pattern drifted")
+
+        missing = []
+        for target, source in entries:
+            if source.startswith("$"):
+                continue  # bound to a path_* variable at runtime
+            candidates = (
+                BUILD_SH.parent / source,
+                BUILD_SH.parent / "core" / source,
+            )
+            if not any(c.resolve().is_file() for c in candidates):
+                missing.append(f"{target} <- {source}")
+        self.assertEqual(missing, [], f"cpio sources not found on disk: {missing}")
+
+    def test_core_overlay_scripts_are_addressed_by_path(self):
+        text = read(BUILD_SH)
+        self.assertIn("$PWD/core/init.lsp.magisk.rc", text)
+        self.assertIn("$PWD/core/post-fs-data.sh", text)
+        for name in ("init.lsp.magisk.rc", "post-fs-data.sh"):
+            self.assertTrue((REPO_ROOT / "tools" / "core" / name).is_file())
+        # The bare-filename form is what broke the release build.
+        self.assertNotIn("overlay.d/init.lsp.magisk.rc init.lsp.magisk.rc", text)
+        self.assertNotIn("overlay.d/sbin/post-fs-data.sh post-fs-data.sh", text)
+
+
 class TestPythonPathAnchors(unittest.TestCase):
     """Post-E2, a core script's repo root is three levels up, not two."""
 
