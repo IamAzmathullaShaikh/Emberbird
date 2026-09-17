@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""README contract tests (WO-4c, Cycle S1).
+"""README contract tests (WO-4c Cycle S1; evolved by E6, Metamorphosis).
 
-README.md is documentation of reality and must carry the 14 mandated
-sections in order, reference the registry as the source of truth, never
+README.md is documentation of reality and must carry the mandated section
+structure — the metamorphosis-era contract (E6) adds Project Story, Learning
+Path, Getting Started, Consumers, Roadmap, Credits/Attribution/Lineage, and
+Security & Support — reference the registry as the source of truth, never
 describe planned features as active, and contain no broken relative links.
 
 stdlib-only; runs in CI unchanged.
@@ -15,10 +17,13 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 README = REPO_ROOT / "README.md"
 
 MANDATED_SECTIONS = [
-    "Current Project Overview",
+    "Project Story",
+    "Learning Path",
+    "Getting Started",
+    "Architecture Overview",
     "Supported Build Types",
     "Release Architecture",
-    "Registry Architecture",
+    "Registry",
     "Repository Structure",
     "Windows 11 Build Guide",
     "Dependency Installation",
@@ -27,7 +32,9 @@ MANDATED_SECTIONS = [
     "Validation Instructions",
     "Troubleshooting",
     "Contributing",
+    "Credits, Attribution & Historical Lineage",
     "License",
+    "Security & Support",
     "Release Workflow",
 ]
 
@@ -40,9 +47,9 @@ def readme_text() -> str:
 
 
 class TestMandatedSections(unittest.TestCase):
-    def test_exactly_14_top_level_sections(self):
+    def test_exactly_19_top_level_sections(self):
         titles = SECTION_RE.findall(readme_text())
-        self.assertEqual(len(titles), 14, f"expected 14 sections, found {len(titles)}: {titles}")
+        self.assertEqual(len(titles), 19, f"expected 19 sections, found {len(titles)}: {titles}")
 
     def test_sections_match_mandated_order(self):
         titles = SECTION_RE.findall(readme_text())

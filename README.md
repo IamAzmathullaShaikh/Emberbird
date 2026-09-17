@@ -1,4 +1,4 @@
-# Emberbird — Windows Subsystem for Android™ Automation Platform
+# Emberbird — A Lifecycle Platform for Android on Windows
 
 <p align="center">
   <img src="https://img.shields.io/badge/WSA-2407.40000.4.0-blue.svg?style=for-the-badge&logo=android" alt="WSA Version"/>
@@ -15,9 +15,67 @@
   <a href="https://wsabuilds-website.pages.dev"><strong>🌐 Official Website & Downloads Portal</strong></a> — interactive documentation, compatibility hub, and diagnostic wizard
 </p>
 
+> **From the ashes of a discontinued platform, a living one.** Microsoft ended
+> Windows Subsystem for Android development in March 2025. Emberbird carries the
+> work forward: patched, verified, registry-driven builds — a modified Windows
+> Subsystem for Android distribution, evolved from the
+> [WSABuilds](https://github.com/MustardChef/WSABuilds) and MagiskOnWSA lineage
+> under AGPL-3.0, with every upstream credit intact
+> ([full attribution](docs/ATTRIBUTION.md),
+> [historical lineage](docs/HISTORICAL_PRESERVATION.md)).
+
 ---
 
-## 1. Current Project Overview
+## 1. Project Story
+
+Emberbird began as a metamorphosis, not a rewrite. Its ancestor, **WSABuilds**
+(by [MustardChef](https://github.com/MustardChef), descended from the
+MagiskOnWSALocal community project), made patched Windows Subsystem for
+Android builds reproducible. When WSA's discontinuation turned every mirror
+and fork into a liability, the project chose a harder path: rebuild itself
+around a **release registry** — one validated source of truth for every
+version, hash, and download — so that nothing a user installs is ever
+guessed, scraped, or invented.
+
+The name? Every stage of that journey burned away one more assumption about
+what the platform had to be.
+
+## 2. Learning Path
+
+New here? Follow the fastest route for your goal:
+
+| I want to... | Go to |
+|---|---|
+| **Install a release** (5 minutes, no tooling) | [Getting Started](#3-getting-started-install-in-5-minutes) |
+| **Verify what I download** | [Checksum Verification](#checksum-verification) and the [Registry](#registry-the-single-source-of-truth) |
+| **Understand the architecture** | [Architecture Overview](#architecture-overview) |
+| **Build from source on Windows 11** | [Windows 11 Build Guide](#windows-11-build-guide) |
+| **Contribute code or compatibility data** | [Contributing](#contributing) |
+| **Understand where Emberbird came from** | [Credits, Attribution & Historical Lineage](#16-credits-attribution--historical-lineage) |
+
+Developers: [Developer Setup](#11-developer-setup) runs clone →
+setup → build → test → contribute end to end.
+
+---
+
+## 3. Getting Started: Install in 5 Minutes
+
+> The current flagship release is **WSA 2407.40000.4.0 (Android 13)** with
+> OpenGApps Pico, published in two editions. Verify every download against
+> the registry before installing — see
+> [Checksum Verification](#checksum-verification).
+
+### Install a Published Release (3 steps)
+
+1. Download your edition from the [downloads portal](https://wsabuilds-website.pages.dev/downloads) or the [releases page](https://github.com/IamAzmathullaShaikh/Emberbird/releases) — pick **Standard** (rooted, Magisk) or **Banking** (unrooted) via the table in [Supported Build Types](#5-supported-build-types).
+2. Verify the archive's SHA-256 against `checksums.txt` (and the registry, for the belt-and-braces check) — [Checksum Verification](#checksum-verification).
+3. Right-click → `Install` the `.msixbundle`/`.7z`-packaged AppX, or follow the detailed walkthrough in the full guide: [Install a Published Release](#9a-install-a-published-release-3-steps).
+
+Prefer winget for the desktop Manager? `winget install Emberbird.Manager` (package rolling out to the winget community repository).
+
+---
+
+## 4. Architecture Overview
 
 **Emberbird** is an automated engineering and packaging platform for the **Windows Subsystem for Android (WSA)** on Windows 11 and Windows 10. Microsoft ended WSA development in March 2025; this platform continues patched, verified builds of the subsystem. It automates update discovery directly from Microsoft's Windows Update Delivery Network (FE3), integrates minimal **Google Play Store and Services (OpenGApps Pico)**, provides automated ARM translation layers (libhoudini) for x86_64 PCs, spoofs device properties to Google Pixel 5 (`redfin`) for Google Play Protect certification, and packages production-ready release archives in two officially supported **Tier 1 Editions**:
 
@@ -34,7 +92,7 @@
 
 ---
 
-## 2. Supported Build Types
+## 5. Supported Build Types
 
 Emberbird provides two purpose-built Tier 1 subsystem configurations plus a desktop manager:
 
@@ -81,7 +139,7 @@ Total transparency regarding supported vs unsupported variants:
 
 ---
 
-## 3. Release Architecture
+## 6. Release Architecture
 
 ### How releases are organized
 
@@ -117,7 +175,7 @@ Compare the output against the official hashes published in `checksums.txt` on t
 
 ---
 
-## 4. Registry Architecture
+## 7. Registry: The Single Source of Truth
 
 The platform's release intelligence lives in **one validated registry** — not in READMEs, scripts, or workflow files.
 
@@ -169,7 +227,23 @@ the reality source the generator read.
 
 ---
 
-## 5. Repository Structure
+### Registry consumers
+
+Every release-facing consumer derives its intelligence from the registry —
+never from scraping GitHub, parsing release pages, or trusting filenames:
+
+| Consumer | What it derives |
+|---|---|
+| [Downloads portal](https://wsabuilds-website.pages.dev/downloads) | Release list, assets, hashes (via `RegistryReleaseProvider`) |
+| Desktop Manager | Bundled registry snapshot for offline resolution |
+| Winget bootstrap (`scripts/bootstrap_winget.py`) | Published installer URLs + hashes for manifests |
+| Release Engine (`platform/release-engine/`) | Validation, drift detection, vault mirrors |
+
+The full compliance audit lives in [docs/CONSUMER_MATRIX.md](docs/CONSUMER_MATRIX.md).
+
+---
+
+## 8. Repository Structure
 
 ```text
 WSABuilds/
@@ -217,11 +291,11 @@ WSABuilds/
 
 ---
 
-## 6. Windows 11 Build Guide
+## 9. Windows 11 Build Guide
 
 Two paths are supported: **installing a published release** (most users) and **building from source** (developers).
 
-### 6a. Install a Published Release (3 steps)
+### 9a. Install a Published Release (3 steps)
 
 **Step 1 — Enable Windows Virtualization (one-time setup)**. Open PowerShell as **Administrator** and run:
 
@@ -247,7 +321,7 @@ dism.exe /online /enable-feature /featurename:HypervisorPlatform /all /norestart
 > [!IMPORTANT]
 > **Data-Preserving In-Place Upgrade Guarantee**: When updating to a newer release, **DO NOT UNINSTALL** your existing installation. Simply download the new release, extract it, and run `Install.ps1`. Windows automatically updates the package files while preserving all your installed Android apps, logins, and virtual storage (`userdata.vhdx`).
 
-### 6b. Build from Source on Windows 11
+### 9b. Build from Source on Windows 11
 
 **Linux/WSL2 pipeline** (`build.sh`):
 
@@ -284,7 +358,7 @@ For the exhaustive walkthrough (WSL2 Ubuntu setup, dependency versions, troubles
 
 ---
 
-## 7. Dependency Installation
+## 10. Dependency Installation
 
 Fresh Windows 11 machine → build-ready, using PowerShell:
 
@@ -316,7 +390,7 @@ WSL2 users (for `build.sh`) additionally need an Ubuntu environment with the pac
 
 ---
 
-## 8. Developer Setup
+## 11. Developer Setup
 
 ```powershell
 # Clone and enter the repository
@@ -341,9 +415,9 @@ Notes:
 
 ---
 
-## 9. Build Instructions
+## 12. Build Instructions
 
-Covered in [Section 6b](#6b-build-from-source-on-windows-11). Quick reference:
+Covered in [Build from Source on Windows 11](#9b-build-from-source-on-windows-11). Quick reference:
 
 | Target | Command | Environment |
 |---|---|---|
@@ -356,7 +430,7 @@ The pipeline currently targets **x64**. ARM64 enablement is roadmap work (Task 4
 
 ---
 
-## 10. Validation Instructions
+## 13. Validation Instructions
 
 Every change is validated locally before push; CI ratifies independently.
 
@@ -411,15 +485,9 @@ python scripts/e2e_clean_room.py
 | **Runtime Reality Gate (Host)** | **PASS (VERIFIED)** | Verified on Windows host: active AppX registration (`Status: Ok`, `Version: 2407.40000.4.0`), `userdata.2.vhdx` (3.8 GB), and live `logcat` execution. |
 | **Target Environment Gate** | **MANAGED** | Live Google Play Integrity attestation and physical locked VHDX file copy are actively observed in field validation. |
 
-### Security & privacy posture
-
-* **Microsoft Root Certificate Trust**: Network interactions with Microsoft's Windows Update Delivery Network (FE3) are secured via a bundled Microsoft Root CA 2011 / Intermediate CA 2.1 certificate bundle, eliminating OS certificate store tampering.
-* **Zero-PII Telemetry**: Public telemetry aggregated under [services/analytics/](services/analytics/) collects zero personally identifiable information (0 IP addresses, 0 device IDs, 0 usernames). Validated by [scripts/validate_analytics.py](scripts/validate_analytics.py).
-* **Automated Security Scans**: Every commit is audited by [scripts/security_scan.py](scripts/security_scan.py) to prevent accidental inclusion of personal access tokens, credentials, or private machine paths.
-
 ---
 
-## 11. Troubleshooting
+## 14. Troubleshooting
 
 ### Common Error Codes & Rapid Fixes
 
@@ -452,7 +520,7 @@ adb devices
 
 ---
 
-## 12. Contributing
+## 15. Contributing
 
 We welcome community contributions, bug reports, and application compatibility records!
 
@@ -477,7 +545,32 @@ Submit new records by adding JSON files to [compatibility/data/](compatibility/d
 
 ---
 
-## 13. License
+## 16. Credits, Attribution & Historical Lineage
+
+Emberbird stands on the shoulders of a documented lineage — visible, credited,
+and permanent ([full manifest](docs/HISTORICAL_PRESERVATION.md)):
+
+* **[MagiskOnWSALocal](https://github.com/MustardChef/MagiskOnWSALocal)** — the
+  community build recipe that started it all.
+* **[WSABuilds](https://github.com/MustardChef/WSABuilds)** by
+  [MustardChef](https://github.com/MustardChef) — the direct ancestor of this
+  platform; the metamorphosis preserved its history, attribution, and release
+  truth without alteration.
+* **[Magisk](https://github.com/topjohnwu/Magisk)** by topjohnwu — the root
+  solution in Standard Edition.
+* **Microsoft** — Windows Subsystem for Android itself. Emberbird distributes
+  a *modified* WSA; WSA, Windows 11, and Windows 10 are trademarks of
+  Microsoft Corporation, and this project is not affiliated with Microsoft.
+* **OpenGApps / MindTheGapps** — the Google Apps packages.
+* Every contributor to the upstream projects and to this repository.
+
+Historical release tags, assets, checksums, and the historical winget package
+(`WSABuilds.WSABuildsManager`) remain permanently traceable in
+[docs/HISTORICAL_PRESERVATION.md](docs/HISTORICAL_PRESERVATION.md).
+
+---
+
+## 17. License & Third-Party Notices
 
 * **Build Scripts, Code & Tooling**: Licensed under the [GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)](LICENSE).
 * **Documentation, Guides & Media**: Licensed under [Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC-BY-NC-ND-4.0)](LICENSE-CC-BY-NC-ND).
@@ -486,7 +579,25 @@ Submit new records by adding JSON files to [compatibility/data/](compatibility/d
 
 ---
 
-## 14. Release Workflow
+## 18. Security & Support
+
+### Security posture
+
+* **Microsoft Root Certificate Trust**: Network interactions with Microsoft's Windows Update Delivery Network (FE3) are secured via a bundled Microsoft Root CA 2011 / Intermediate CA 2.1 certificate bundle, eliminating OS certificate store tampering.
+* **Zero-PII Telemetry**: Public telemetry aggregated under [services/analytics/](services/analytics/) collects zero personally identifiable information (0 IP addresses, 0 device IDs, 0 usernames). Validated by [scripts/validate_analytics.py](scripts/validate_analytics.py). Telemetry is **opt-in and disabled by default**.
+* **Automated Security Scans**: Every commit is audited by [scripts/security_scan.py](scripts/security_scan.py) to prevent accidental inclusion of personal access tokens, credentials, or private machine paths.
+* **Privacy guarantee**: the platform stores no user identifiers, emails, device fingerprints, auth tokens, or personal data anywhere.
+
+### Support channels
+
+* **Questions & troubleshooting**: [GitHub Discussions](https://github.com/IamAzmathullaShaikh/Emberbird/discussions) — search before opening a new thread.
+* **Bug reports & feature requests**: [GitHub Issues](https://github.com/IamAzmathullaShaikh/Emberbird/issues) with the structured templates.
+* **Application compatibility problems**: submit through the [Compatibility Hub](https://wsabuilds-website.pages.dev/compatibility) so records land in the validated dataset.
+* **Fix guides**: per-issue walkthroughs under [docs/archive/](docs/archive/) cover the classic pre/post-install errors.
+
+---
+
+## 19. Release Workflow & Governance
 
 ### Pipeline
 
@@ -506,3 +617,12 @@ All releases are governed by transparent reality gates under the platform's Exec
 * **Deprecation, not deletion** — superseded releases stay queryable via explicit `superseded_by` chains.
 
 Workflow inventory and tag triggers: [.github/WORKFLOWS.md](.github/WORKFLOWS.md).
+
+### Roadmap
+
+The executable roadmap lives in [TODO.md](TODO.md): the Emberbird Metamorphosis
+Programme (Part III) and the locked future phases (Part IV) — Manager V2 depth,
+compatibility platform, analytics, trusted signing, distribution automation,
+and ARM64 promotion. The roadmap is execution-ordered; phases unlock only when
+their predecessor's exit checklist is complete.
+

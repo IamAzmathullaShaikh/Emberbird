@@ -558,6 +558,25 @@ cycle record, rollback tag.
   Manager release; `emberbird-manager-0.2.2` registry row will be born from
   reality-sync at that publication (never hand-authored).
 
+### E6 — Experience Layer: README transformation + website lineage (ACTIVE)
+
+Per the mission contract: README becomes the project's front door — story,
+architecture, learning path, getting started, registry, consumers, roadmap,
+contributing, credits, license, attribution, security, support, historical
+lineage — while staying documentation of reality (no planned features as
+active, no trademark misuse, concise).
+
+- [ ] **E6.1 — README transformation**: 19-section structure with Project
+  Story, Learning Path, Getting Started (5-minute install), Architecture
+  Overview, Registry consumers, Credits/Attribution/Historical Lineage,
+  Security & Support, and Roadmap; trademark-hygienic wording; all anchors
+  and links verified.
+- [ ] **E6.2 — Contract evolution**: `tests/test_readme_contract.py` pins the
+  new mandated section order.
+- [ ] **E6.3 — Website lineage**: footer carries upstream attribution links
+  (WSABuilds/MustardChef) plus ATTRIBUTION and HISTORICAL_PRESERVATION docs;
+  credits, licenses, and release discoverability preserved.
+
 ## Part IV — Future phases (LOCKED — not active, listed for direction only)
 
 Per the Execution Contract, no phase may receive implementation work before

@@ -5,27 +5,27 @@
     "m4": "Release History Is Immutable",
     "s1": "Historical Identity Preservation — Emberbird may replace branding; it may not erase history"
   },
-  "generated_at": "2026-09-17T02:38:34Z",
+  "generated_at": "2026-09-17T02:48:15Z",
   "totals": {
     "files": 147,
-    "occurrences": 923,
+    "occurrences": 935,
     "by_token": {
-      "MagiskOnWSA": 110,
-      "MagiskOnWSALocal": 67,
-      "WSABuilds": 746
+      "MagiskOnWSA": 111,
+      "MagiskOnWSALocal": 70,
+      "WSABuilds": 754
     },
     "by_class": {
       "doc-prose": 99,
       "historical-doc": 345,
       "identifier": 184,
       "package-name": 51,
-      "path-reference": 117,
-      "upstream-attribution": 55,
+      "path-reference": 118,
+      "upstream-attribution": 64,
       "url": 51,
-      "user-facing": 12,
+      "user-facing": 14,
       "workflow-name": 9
     },
-    "protected_occurrences": 400
+    "protected_occurrences": 409
   },
   "files": [
     {
@@ -339,8 +339,53 @@
     },
     {
       "path": "README.md",
-      "count": 13,
+      "count": 24,
       "occurrences": [
+        {
+          "token": "MagiskOnWSA",
+          "class": "upstream-attribution",
+          "context": "> [WSABuilds](https://github.com/MustardChef/WSABuilds) and MagiskOnWSA lineage"
+        },
+        {
+          "token": "MagiskOnWSALocal",
+          "class": "upstream-attribution",
+          "context": "* **[MagiskOnWSALocal](https://github.com/MustardChef/MagiskOnWSALocal)** — the"
+        },
+        {
+          "token": "MagiskOnWSALocal",
+          "class": "upstream-attribution",
+          "context": "* **[MagiskOnWSALocal](https://github.com/MustardChef/MagiskOnWSALocal)** — the"
+        },
+        {
+          "token": "MagiskOnWSALocal",
+          "class": "upstream-attribution",
+          "context": "MagiskOnWSALocal community project), made patched Windows Subsystem for"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "(`WSABuilds.WSABuildsManager`) remain permanently traceable in"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "upstream-attribution",
+          "context": "* **[WSABuilds](https://github.com/MustardChef/WSABuilds)** by"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "upstream-attribution",
+          "context": "* **[WSABuilds](https://github.com/MustardChef/WSABuilds)** by"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "upstream-attribution",
+          "context": "> [WSABuilds](https://github.com/MustardChef/WSABuilds) and MagiskOnWSA lineage"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "upstream-attribution",
+          "context": "> [WSABuilds](https://github.com/MustardChef/WSABuilds) and MagiskOnWSA lineage"
+        },
         {
           "token": "WSABuilds",
           "class": "url",
@@ -385,6 +430,16 @@
           "token": "WSABuilds",
           "class": "user-facing",
           "context": "### WSABuilds Manager (Desktop Application, v0.2.2)"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "user-facing",
+          "context": "(`WSABuilds.WSABuildsManager`) remain permanently traceable in"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "user-facing",
+          "context": "Emberbird began as a metamorphosis, not a rewrite. Its ancestor, **WSABuilds**"
         },
         {
           "token": "WSABuilds",
@@ -632,7 +687,7 @@
     },
     {
       "path": "TODO.md",
-      "count": 29,
+      "count": 30,
       "occurrences": [
         {
           "token": "MagiskOnWSA",
@@ -753,6 +808,11 @@
           "token": "WSABuilds",
           "class": "upstream-attribution",
           "context": "(E5), repo URLs + `cd WSABuilds` (E4), `MustardChef/WSABuilds` (S1),"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "upstream-attribution",
+          "context": "(WSABuilds/MustardChef) plus ATTRIBUTION and HISTORICAL_PRESERVATION docs;"
         },
         {
           "token": "WSABuilds",
