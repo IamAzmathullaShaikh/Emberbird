@@ -649,6 +649,26 @@ cycle record, milestone tag.
 - **ROLLBACK**: revert `93a74e6`; delete the milestone tag (tags are not
   published release truth until a release object references them).
 
+### Post-Programme Governance — Branch Hygiene Report (Branch Policy compliance)
+
+With every metamorphosis phase complete and CI-ratified, the mission's standing
+**Branch Policy** requires an evidence report before any cleanup decision.
+Generated 2026-09-17 (read-only; no branch deleted — deletion is an owner decision):
+
+- **23 remote branches audited** → `docs/BRANCH_HYGIENE.md`.
+- **20 fully merged** into `main` (zero unique commits): all `feature/sprint-*`,
+  `feature/tier-1-multi-config`, `fix/*`, `gh-pages`, `WSA-next`,
+  `refactor/modernize-and-audit`, `experimental`.
+- **3 carry unique commits** (`update` — legacy "Update App Version"; two
+  `dependabot/*` action bumps): none tag-reachable, none referenced by any
+  workflow; archive tags recommended before any deletion.
+- **Referenced/kept:** `main` (integration), `master` (repository default branch
+  per GitHub API; 6 workflow triggers), `experimental` (3 workflow triggers).
+- **Local artifact:** misnamed local branch `origin` is merged; local deletion safe.
+- **Governance discovery:** the default branch is still `master` while all
+  programme work lands on `main` — switching the default is recorded as a
+  recommended owner action (pairs naturally with the E4.3 rename window).
+
 ## Part IV — Future phases (LOCKED — not active, listed for direction only)
 
 Per the Execution Contract, no phase may receive implementation work before

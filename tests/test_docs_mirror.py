@@ -42,6 +42,7 @@ ALLOWLIST_UNMIRRORED = {
     "PATH_MAP.md",  # repository mapping (E1)
     "CONSUMER_MATRIX.md",  # S4 consumer purity matrix (E1.5)
     "HISTORICAL_PRESERVATION.md",  # G3 historical preservation manifest (E5.5)
+    "BRANCH_HYGIENE.md",  # Branch Policy evidence report (post-programme governance)
 }
 
 FRONTMATTER_RE = re.compile(r"\A---\s*\n.*?\n---\s*\n", re.DOTALL)
