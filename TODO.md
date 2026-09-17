@@ -599,7 +599,7 @@ cycle record, rollback tag.
 - **RISKS**: none — documentation and display-only changes.
 - **ROLLBACK**: revert `3a57c6b` + `771a0a3` + `7b46f4f`; tag `post-e6-experience`.
 
-### E7 — Purity Audit, Cleanup v2 & emberbird-v1.0.0 Milestone (ACTIVE)
+### E7 — Purity Audit, Cleanup v2 & emberbird-v1.0.0 Milestone (COMPLETE — milestone `emberbird-v1.0.0` tagged)
 
 The final metamorphosis phase: codify the audit findings as permanent guards,
 prove no duplicated release truth or undocumented workflow remains, repair any
