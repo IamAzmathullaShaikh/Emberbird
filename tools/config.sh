@@ -17,7 +17,17 @@
 # Architecture & WSA release channel
 # ---------------------------------------------------------------------------
 TARGET_ARCH="${TARGET_ARCH:-x64}"
-TARGET_ARCH_NATIVE="${TARGET_ARCH_NATIVE:-x86_64}"          # used by GApps / OpenGApps naming
+# Native machine naming used by GApps / OpenGApps artifacts ("x86_64" or "arm64").
+# Kept distinct from TARGET_ARCH because WSA x64 packages ship x86_64 GApps images.
+# Defaults from TARGET_ARCH (x64 -> x86_64, arm64 -> arm64); an explicit
+# TARGET_ARCH_NATIVE in the environment still wins for custom GApps images.
+case "${TARGET_ARCH_NATIVE:-}" in
+    x86_64|arm64) : ;;
+    *) case "${TARGET_ARCH}" in
+           arm64) TARGET_ARCH_NATIVE="arm64" ;;
+           *)     TARGET_ARCH_NATIVE="x86_64" ;;
+       esac ;;
+esac
 TARGET_RELEASE_TYPE="${TARGET_RELEASE_TYPE:-retail}"
 
 # ---------------------------------------------------------------------------
@@ -42,8 +52,9 @@ readonly ANDROID_API_MAP_30="11.0"
 readonly ANDROID_API_MAP_32="12.1"
 readonly ANDROID_API_MAP_33="13.0"
 
-# GApps ext4 images and initrd mount scripts for Android 13 x86_64 are published
-# in the LSPosed/WSA-Addon releases repo and consumed by generateGappsLink.py.
+# GApps ext4 images and initrd mount scripts for Android 13 (x86_64 and arm64)
+# are published in the LSPosed/WSA-Addon releases repo and consumed by
+# generateGappsLink.py.
 readonly GAPPS_ADDON_OWNER="LSPosed"
 readonly GAPPS_ADDON_REPO="WSA-Addon"
 
@@ -66,6 +77,10 @@ gapps_image_name() {
         32) api_ver="$ANDROID_API_MAP_32" ;;
         33) api_ver="$ANDROID_API_MAP_33" ;;
         *)  echo "config.sh: unknown API level: $api" >&2; return 1 ;;
+    esac
+    case "$TARGET_ARCH_NATIVE" in
+        x86_64|arm64) : ;;
+        *) echo "config.sh: unsupported GApps arch: $TARGET_ARCH_NATIVE" >&2; return 1 ;;
     esac
     echo "gapps-${api_ver}-${TARGET_ARCH_NATIVE}.img"
 }

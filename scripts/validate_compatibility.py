@@ -38,6 +38,14 @@ ALLOWED_VERIFICATION = {
     "community_submitted"
 }
 
+ALLOWED_CHANNELS = {
+    "retail",
+    "stable",
+    "RP",
+    "WIS",
+    "WIF"
+}
+
 REQUIRED_FIELDS = [
     "app_name",
     "package_id",
@@ -51,6 +59,7 @@ REQUIRED_FIELDS = [
 
 ALLOWED_FIELDS = set(REQUIRED_FIELDS) | {
     "$schema",
+    "tested_channel",
     "last_tested_date",
     "workaround_steps",
     "known_issues"
@@ -119,6 +128,11 @@ def validate_record_data(data, filepath):
 
     if "last_tested_date" in data and not isinstance(data["last_tested_date"], str):
         errors.append(f"{filepath}: 'last_tested_date' must be a string.")
+
+    if "tested_channel" in data:
+        channel = data["tested_channel"]
+        if channel not in ALLOWED_CHANNELS:
+            errors.append(f"{filepath}: 'tested_channel' ('{channel}') is invalid. Allowed: {sorted(list(ALLOWED_CHANNELS))}")
 
     return errors
 

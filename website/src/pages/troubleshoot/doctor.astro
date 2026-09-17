@@ -1,0 +1,291 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const probesCatalog = [
+  { id: 'PRB-01', domain: 'Virtualization', title: 'Hardware Virtualization (VT-x / AMD-V)', fix: "Enable 'Intel Virtualization Technology' (VT-x) or 'SVM Mode' (AMD-V) in BIOS/UEFI settings." },
+  { id: 'PRB-02', domain: 'Hyper-V', title: 'VirtualMachinePlatform Feature', fix: 'dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart' },
+  { id: 'PRB-03', domain: 'Hyper-V', title: 'HypervisorPlatform Feature', fix: 'dism.exe /online /enable-feature /featurename:HypervisorPlatform /all /norestart' },
+  { id: 'PRB-04', domain: 'Windows', title: 'Windows Developer Mode', fix: 'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock" /t REG_DWORD /f /v "AllowDevelopmentWithoutDevLicense" /d 1' },
+  { id: 'PRB-05', domain: 'Services', title: 'AppX Deployment Service (AppXSvc)', fix: 'net start AppXSvc' },
+  { id: 'PRB-06', domain: 'Networking', title: 'ADB Loopback Binding (58526)', fix: "Enable Developer Mode in WSA Settings and run 'adb connect 127.0.0.1:58526'." },
+  { id: 'PRB-07', domain: 'Storage', title: 'Virtual Disk Lock (userdata.vhdx)', fix: "Terminate any orphaned WsaClient or vmcompute processes with 'taskkill /F /IM WsaClient.exe'." },
+  { id: 'PRB-08', domain: 'WSL', title: 'Host Compute Service & WSL (vmcompute)', fix: 'net start vmcompute' },
+  { id: 'PRB-09', domain: 'Play Services', title: 'Google Play Services Registration', fix: 'Install an Emberbird WSA release bundled with GApps (WSA Standard Edition).' },
+  { id: 'PRB-10', domain: 'Auth', title: 'Google Play Store Certification & Sign-In', fix: 'Register your device GSF ID at google.com/android/uncertified or clear Play Store cache.' },
+  { id: 'PRB-11', domain: 'Networking', title: 'Virtual Network Adapter & Hyper-V Switch', fix: 'netsh winsock reset' },
+  { id: 'PRB-12', domain: 'Storage', title: 'Disk Space & userdata.vhdx Health', fix: 'Ensure >= 25 GB free disk space on drive C: for dynamic VHDX expansion.' },
+];
+---
+
+<Layout
+  title="Ember Doctor Diagnostic Analyzer - Emberbird"
+  description="Inspect host diagnostics, verify virtualization, Play Services, and storage health for Windows Subsystem for Android."
+>
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Header -->
+    <div class="max-w-3xl mb-10">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-4">
+        Subsystem Doctor &bull; Phase D1
+      </div>
+      <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+        Ember Doctor Diagnostic Analyzer
+      </h1>
+      <p class="mt-4 text-slate-400 leading-relaxed text-sm sm:text-base">
+        Verify system requirements, virtualization features, networking adapters, and storage health. Paste your Doctor CLI report or run diagnostic commands on your machine.
+      </p>
+    </div>
+
+    <!-- Quick Run Commands Card -->
+    <div class="p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950/30 to-slate-900 border border-indigo-500/20 mb-10 shadow-xl">
+      <h2 class="text-lg font-bold text-white mb-2">Run Diagnostics Locally</h2>
+      <p class="text-xs text-slate-400 mb-4">Execute Ember Doctor via Python or the built-in diagnostic tool in Emberbird Manager:</p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800">
+          <span class="text-[11px] font-semibold text-slate-400 block mb-1 uppercase tracking-wider">Inspect Host Environment</span>
+          <code class="text-xs font-mono text-indigo-300 block select-all">python scripts/doctor.py</code>
+        </div>
+        <div class="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800">
+          <span class="text-[11px] font-semibold text-slate-400 block mb-1 uppercase tracking-wider">Elevated Safe Self-Healing</span>
+          <code class="text-xs font-mono text-emerald-300 block select-all">python scripts/doctor.py --fix</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Doctor Report Analyzer -->
+    <div class="p-6 sm:p-8 rounded-2xl bg-slate-900 border border-indigo-500/30 shadow-xl mb-10">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800 mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-white tracking-tight">Interactive Doctor Report Analyzer</h2>
+          <p class="text-xs text-slate-400 mt-1">Paste the JSON output of <code class="text-indigo-300 font-mono">python scripts/doctor.py --json</code> to inspect probe results in the browser.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            id="load-sample-btn"
+            class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition-colors border border-slate-700"
+          >
+            Load Sample Report
+          </button>
+          <button
+            type="button"
+            id="clear-report-btn"
+            class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-400 transition-colors border border-slate-700"
+          >
+            Clear
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label for="doctor-json-input" class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+          Paste JSON Output Below:
+        </label>
+        <textarea
+          id="doctor-json-input"
+          rows="5"
+          placeholder='{"platform_name": "Emberbird", "overall_status": "PASS", "probes": [...]}'
+          class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 font-mono text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
+        ></textarea>
+      </div>
+
+      <button
+        type="button"
+        id="analyze-btn"
+        class="w-full sm:w-auto px-6 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-colors shadow-md shadow-indigo-600/20"
+      >
+        Analyze Report
+      </button>
+
+      <!-- Analysis Results Display Area -->
+      <div id="analyzer-results" class="hidden mt-8 pt-6 border-t border-slate-800">
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6">
+          <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
+            <span class="text-[10px] uppercase font-bold text-slate-400 block">Overall Status</span>
+            <span id="res-overall" class="text-base font-bold text-white">-</span>
+          </div>
+          <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
+            <span class="text-[10px] uppercase font-bold text-slate-400 block">Passed</span>
+            <span id="res-passed" class="text-base font-bold text-emerald-400">0</span>
+          </div>
+          <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
+            <span class="text-[10px] uppercase font-bold text-slate-400 block">Warnings</span>
+            <span id="res-warn" class="text-base font-bold text-amber-400">0</span>
+          </div>
+          <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
+            <span class="text-[10px] uppercase font-bold text-slate-400 block">Failures</span>
+            <span id="res-fail" class="text-base font-bold text-rose-400">0</span>
+          </div>
+        </div>
+
+        <div id="probes-result-list" class="space-y-3">
+          <!-- Dynamic Probe Cards -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Diagnostic Probes Directory -->
+    <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur shadow-xl mb-10">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-6">
+        <div>
+          <h2 class="text-xl font-bold text-white tracking-tight">Diagnostic Probes Reference</h2>
+          <p class="text-xs text-slate-400 mt-1">12 diagnostic domains evaluated across BIOS, Windows features, ADB, and storage.</p>
+        </div>
+        <span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
+          12 Active Probes
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {probesCatalog.map((p) => (
+          <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-mono text-xs font-bold text-indigo-400">{p.id}</span>
+                <span class="text-[11px] font-medium text-slate-400 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
+                  {p.domain}
+                </span>
+              </div>
+              <h3 class="text-sm font-semibold text-white mb-2">{p.title}</h3>
+            </div>
+            <div class="pt-2 border-t border-slate-800/60 mt-2">
+              <span class="text-[10px] uppercase font-semibold text-slate-500 block mb-1">Standard Fix:</span>
+              <code class="text-[11px] font-mono text-slate-300 bg-slate-900 px-2 py-1 rounded block truncate" title={p.fix}>
+                {p.fix}
+              </code>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Navigation Footer -->
+    <div class="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-slate-900/30 border border-slate-800 text-xs text-slate-400">
+      <a href="/troubleshoot/wizard" class="text-indigo-400 hover:text-indigo-300 transition-colors underline">
+        &larr; Return to Interactive Troubleshooting Wizard
+      </a>
+      <a href="/docs/troubleshooting/error-codes" class="text-indigo-400 hover:text-indigo-300 transition-colors underline">
+        View Error Codes Reference &rarr;
+      </a>
+    </div>
+  </div>
+
+  <script>
+    const jsonInput = document.getElementById('doctor-json-input') as HTMLTextAreaElement;
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const loadSampleBtn = document.getElementById('load-sample-btn');
+    const clearBtn = document.getElementById('clear-report-btn');
+    const resultsContainer = document.getElementById('analyzer-results');
+    const resOverall = document.getElementById('res-overall');
+    const resPassed = document.getElementById('res-passed');
+    const resWarn = document.getElementById('res-warn');
+    const resFail = document.getElementById('res-fail');
+    const probesList = document.getElementById('probes-result-list');
+
+    const sampleReport = {
+      platform_name: "Emberbird",
+      version: "1.0.0",
+      system_os: "Windows",
+      os_release: "11",
+      architecture: "AMD64",
+      overall_status: "WARN",
+      exit_code: 1,
+      total_probes: 12,
+      passed_count: 10,
+      warn_count: 2,
+      fail_count: 0,
+      probes: [
+        { probe_id: "PRB-01", domain: "Hardware Virtualization", title: "CPU Virtualization Firmware Enabled", status: "PASS", severity: "CRITICAL", summary: "Hardware virtualization is enabled in BIOS/UEFI.", details: "WMI VirtualizationFirmwareEnabled: True", remediation_cmd: null, can_autofix: false },
+        { probe_id: "PRB-02", domain: "Virtual Machine Platform", title: "Windows Feature: VirtualMachinePlatform", status: "PASS", severity: "CRITICAL", summary: "VirtualMachinePlatform feature is Enabled.", details: "DISM reported state: Enabled", remediation_cmd: null, can_autofix: false },
+        { probe_id: "PRB-03", domain: "Hypervisor Platform", title: "Windows Feature: HypervisorPlatform", status: "PASS", severity: "CRITICAL", summary: "HypervisorPlatform feature is Enabled.", details: "DISM reported state: Enabled", remediation_cmd: null, can_autofix: false },
+        { probe_id: "PRB-04", domain: "Developer Mode", title: "AppModelUnlock Developer Mode", status: "PASS", severity: "CRITICAL", summary: "Windows Developer Mode is ENABLED.", details: "AllowDevelopmentWithoutDevLicense is set to 1", remediation_cmd: null, can_autofix: false },
+        { probe_id: "PRB-05", domain: "AppX Deployment", title: "Windows Service: AppXSvc", status: "PASS", severity: "CRITICAL", summary: "AppX Deployment Service (AppXSvc) is RUNNING.", details: "Service is active and ready.", remediation_cmd: null, can_autofix: false },
+        { probe_id: "PRB-06", domain: "ADB Connectivity", title: "ADB Loopback Port 58526", status: "WARN", severity: "WARNING", summary: "WSA ADB daemon is not listening on 127.0.0.1:58526.", details: "WSA is not running or Developer Mode is disabled inside WSA Settings.", remediation_cmd: "Launch WSA Settings, enable Developer Mode, and run 'adb connect 127.0.0.1:58526'.", can_autofix: false },
+        { probe_id: "PRB-07", domain: "Storage & Process Lock", title: "userdata.vhdx Lock Status", status: "PASS", severity: "INFO", summary: "No locked processes detected. Subsystem is stopped cleanly.", details: "userdata.vhdx is free from active locks.", remediation_cmd: null, can_autofix: false },
+        { probe_id: "PRB-08", domain: "WSL & Compute Services", title: "Host Compute Service & WSL Status", status: "PASS", severity: "CRITICAL", summary: "Host Compute Service (vmcompute) is RUNNING.", details: "Virtual machine compute layer is active.", remediation_cmd: null, can_autofix: false },
+        { probe_id: "PRB-09", domain: "Google Play Services", title: "Play Services & GApps Registration", status: "PASS", severity: "INFO", summary: "WSA package registered with Google Play Services support.", details: "Package: MicrosoftCorporationII.WindowsSubsystemForAndroid", remediation_cmd: null, can_autofix: false },
+        { probe_id: "PRB-10", domain: "Google Account Authentication", title: "Google Sign-In & Play Store Certification", status: "PASS", severity: "INFO", summary: "Google Play Services sign-in capability ready.", details: "PlayStoreEnabled confirmed.", remediation_cmd: null, can_autofix: false },
+        { probe_id: "PRB-11", domain: "Virtual Networking", title: "WSA Virtual Switch & Network Loopback", status: "PASS", severity: "CRITICAL", summary: "Hyper-V Virtual Ethernet Adapter is Up.", details: "Adapter status: Up", remediation_cmd: null, can_autofix: false },
+        { probe_id: "PRB-12", domain: "Storage Capacity & Integrity", title: "System Disk Space & userdata.vhdx Health", status: "WARN", severity: "WARNING", summary: "Low disk space: 14 GB free (25 GB recommended for upgrades).", details: "Free space is below 25 GB. Upgrades may fail if storage is exhausted.", remediation_cmd: "Clean up temporary files or compact userdata.vhdx using Emberbird Manager.", can_autofix: false }
+      ]
+    };
+
+    loadSampleBtn?.addEventListener('click', () => {
+      if (jsonInput) {
+        jsonInput.value = JSON.stringify(sampleReport, null, 2);
+        parseAndRenderReport();
+      }
+    });
+
+    clearBtn?.addEventListener('click', () => {
+      if (jsonInput) jsonInput.value = '';
+      if (resultsContainer) resultsContainer.classList.add('hidden');
+    });
+
+    analyzeBtn?.addEventListener('click', parseAndRenderReport);
+
+    function parseAndRenderReport() {
+      const raw = jsonInput?.value.trim();
+      if (!raw) return;
+
+      try {
+        const data = JSON.parse(raw);
+        if (!data.probes || !Array.isArray(data.probes)) {
+          alert('Invalid Doctor report: missing "probes" array.');
+          return;
+        }
+
+        if (resOverall) {
+          resOverall.textContent = data.overall_status || 'UNKNOWN';
+          resOverall.className = 'text-base font-bold ' + (
+            data.overall_status === 'PASS' ? 'text-emerald-400' :
+            data.overall_status === 'WARN' ? 'text-amber-400' : 'text-rose-400'
+          );
+        }
+        if (resPassed) resPassed.textContent = data.passed_count ?? data.probes.filter((p: any) => p.status === 'PASS').length;
+        if (resWarn) resWarn.textContent = data.warn_count ?? data.probes.filter((p: any) => p.status === 'WARN').length;
+        if (resFail) resFail.textContent = data.fail_count ?? data.probes.filter((p: any) => p.status === 'FAIL').length;
+
+        if (probesList) {
+          probesList.innerHTML = '';
+          data.probes.forEach((p: any) => {
+            const card = document.createElement('div');
+            const statusBg = p.status === 'PASS' ? 'border-emerald-500/30 bg-emerald-950/10' :
+                             p.status === 'WARN' ? 'border-amber-500/30 bg-amber-950/10' :
+                             'border-rose-500/30 bg-rose-950/10';
+            const badgeBg = p.status === 'PASS' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' :
+                            p.status === 'WARN' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' :
+                            'bg-rose-500/20 text-rose-300 border-rose-500/40';
+
+            card.className = `p-4 rounded-xl border ${statusBg} transition-colors`;
+            card.innerHTML = `
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-xs font-bold text-white">${p.probe_id}</span>
+                  <span class="text-xs text-slate-400">&bull; ${p.domain}</span>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold border ${badgeBg}">${p.status}</span>
+              </div>
+              <h4 class="text-sm font-semibold text-white mb-1">${p.title}</h4>
+              <p class="text-xs text-slate-300 mb-2">${p.summary}</p>
+              ${p.details ? `<p class="text-[11px] text-slate-400 font-mono mb-2">${p.details}</p>` : ''}
+              ${p.remediation_cmd ? `
+                <div class="mt-2 pt-2 border-t border-slate-800">
+                  <span class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Remediation Command:</span>
+                  <code class="text-xs font-mono text-indigo-300 bg-slate-950 px-2 py-1 rounded block select-all border border-slate-800">${p.remediation_cmd}</code>
+                </div>
+              ` : ''}
+            `;
+            probesList.appendChild(card);
+          });
+        }
+
+        if (resultsContainer) {
+          resultsContainer.classList.remove('hidden');
+        }
+      } catch (err) {
+        alert('Could not parse JSON. Please check format: ' + (err as Error).message);
+      }
+    }
+  </script>
+</Layout>

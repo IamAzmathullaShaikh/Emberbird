@@ -59,6 +59,16 @@
       "type": "string",
       "minLength": 1
     },
+    "tested_channel": {
+      "type": "string",
+      "enum": [
+        "retail",
+        "stable",
+        "RP",
+        "WIS",
+        "WIF"
+      ]
+    },
     "last_tested_date": {
       "type": "string"
     },

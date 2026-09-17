@@ -134,6 +134,16 @@ class TestCompatibilitySchema(unittest.TestCase):
         finally:
             Path(temp_path).unlink(missing_ok=True)
 
+    def test_tested_channel_validation(self):
+        for ch in ["retail", "stable", "RP", "WIS", "WIF"]:
+            record = dict(self.valid_sample, tested_channel=ch)
+            errors = vc.validate_record_data(record, "test_file.json")
+            self.assertEqual(errors, [], f"Valid channel '{ch}' should pass")
+
+        invalid_record = dict(self.valid_sample, tested_channel="nightly_canary")
+        errors = vc.validate_record_data(invalid_record, "test_file.json")
+        self.assertTrue(any("tested_channel" in err for err in errors))
+
 
 if __name__ == "__main__":
     unittest.main()

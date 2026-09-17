@@ -55,7 +55,7 @@ export const ReleaseCard: React.FC<ReleaseCardProps> = ({ status, updateStatus, 
             <div className="p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-between">
               <div>
                 <span className="font-bold text-indigo-300 block">New WSA Release Available!</span>
-                <span className="text-[11px] text-slate-400">Upgrade pipeline will be activated in Sprint 7.</span>
+                <span className="text-[11px] text-slate-400">Upgrade Coordinator ready. Switch to the Updates tab to preflight and deploy with safety backup.</span>
               </div>
               <span className="px-3 py-1 rounded-lg bg-indigo-600 text-white font-medium text-xs">
                 Update Ready

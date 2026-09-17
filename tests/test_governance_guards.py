@@ -86,6 +86,12 @@ class TestHistoricalIdentityPreservation(unittest.TestCase):
             "the Microsoft WSA lineage must stay documented for provenance",
         )
 
+    def test_trusted_signing_governance_documented(self):
+        license_audit = read("docs/LICENSE_AUDIT.md")
+        self.assertIn("Trusted Signing & Key Governance Addendum", license_audit)
+        self.assertIn("Hardware Security Module (HSM)", license_audit)
+        self.assertIn("Authenticode & RFC 3161 Timestamping", license_audit)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EmberbirdDoctorReport",
+  "description": "Output schema for Emberbird Project Doctor host diagnostics",
+  "type": "object",
+  "required": [
+    "platform_name",
+    "version",
+    "system_os",
+    "os_release",
+    "architecture",
+    "overall_status",
+    "exit_code",
+    "total_probes",
+    "passed_count",
+    "warn_count",
+    "fail_count",
+    "probes"
+  ],
+  "properties": {
+    "platform_name": { "type": "string" },
+    "version": { "type": "string" },
+    "system_os": { "type": "string" },
+    "os_release": { "type": "string" },
+    "architecture": { "type": "string" },
+    "overall_status": { "type": "string", "enum": ["PASS", "WARN", "FAIL", "UNKNOWN", "N/A"] },
+    "exit_code": { "type": "integer", "enum": [0, 1, 2] },
+    "total_probes": { "type": "integer", "minimum": 1 },
+    "passed_count": { "type": "integer", "minimum": 0 },
+    "warn_count": { "type": "integer", "minimum": 0 },
+    "fail_count": { "type": "integer", "minimum": 0 },
+    "probes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "probe_id",
+          "domain",
+          "title",
+          "status",
+          "severity",
+          "summary",
+          "details",
+          "remediation_cmd",
+          "can_autofix"
+        ],
+        "properties": {
+          "probe_id": { "type": "string" },
+          "domain": { "type": "string" },
+          "title": { "type": "string" },
+          "status": { "type": "string", "enum": ["PASS", "WARN", "FAIL", "UNKNOWN", "N/A"] },
+          "severity": { "type": "string", "enum": ["INFO", "WARNING", "CRITICAL"] },
+          "summary": { "type": "string" },
+          "details": { "type": "string" },
+          "remediation_cmd": { "type": ["string", "null"] },
+          "can_autofix": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

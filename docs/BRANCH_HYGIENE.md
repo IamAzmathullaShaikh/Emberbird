@@ -66,3 +66,46 @@ probing** (reality wins over this report):
 
 Rollback: deleted branch names can be re-pushed from `main` history or the archive tags at any
 time; the default-branch switch is a single API call.
+
+## Stewardship Edition Branch Classification Report (September 2026)
+
+**Auditor**: Repository Steward  
+**Status**: All remote deletions previously ratified; local tracking branch assessment completed.  
+**Classification Rules**:
+- **KEEP**: Must remain in the repository permanently (infrastructure, release triggers, active deployment).
+- **ARCHIVE**: Contains unique commits not reachable from `main`; must be tagged before deletion.
+- **DELETE CANDIDATE**: Fully merged into `main` with 0 unique commits, no workflow references, and safe to delete.
+
+### Remote Branches (origin)
+
+| Remote Branch | Commit | Classification | Evidence & Justification | Action Permitted |
+|---|---|---|---|---|
+| `origin/main` | Current HEAD | **KEEP** | Primary default integration branch, target for all PRs, active CI workflows. | NO DELETION |
+| `origin/master` | Historical HEAD | **KEEP** | Historical default branch; referenced in workflow branch triggers (`build.yml`, `security.yml`). | NO DELETION |
+| `origin/experimental` | `b5b1707` | **KEEP** | Referenced in workflow triggers (`compatibility-validation.yml`, `docs-validation.yml`, `manager-build.yml`). | NO DELETION |
+| `origin/gh-pages` | `075c684` | **KEEP** | Active live GitHub Pages deployment source branch (`build_type: legacy`). | NO DELETION |
+
+### Local Branches (Local Clone Workspace)
+
+| Local Branch | Containment in `main` | Unique Commits | Classification | Justification |
+|---|---|---|---|---|
+| `main` | Self | 0 | **KEEP** | Active working branch. |
+| `master` | Containment checked | 0 | **KEEP** | Local mirror of remote protected branch. |
+| `experimental` | Containment checked | 0 | **KEEP** | Local mirror of remote protected branch. |
+| `gh-pages` | Containment checked | 0 | **KEEP** | Local mirror of remote protected branch. |
+| `feature/documentation-and-onboarding-hardening` | Fully merged into `main` | 0 | **DELETE CANDIDATE** | Remote deleted; all commits in `main`. Local cleanup safe. |
+| `feature/production-stabilisation` | Fully merged into `main` | 0 | **DELETE CANDIDATE** | Remote deleted; all commits in `main`. Local cleanup safe. |
+| `feature/readme-ux-parity` | Fully merged into `main` | 0 | **DELETE CANDIDATE** | Remote deleted; all commits in `main`. Local cleanup safe. |
+| `feature/sprint-1-foundation` | Fully merged into `main` | 0 | **DELETE CANDIDATE** | Remote deleted; all commits in `main`. Local cleanup safe. |
+| `feature/sprint-2-website` | Fully merged into `main` | 0 | **DELETE CANDIDATE** | Remote deleted; all commits in `main`. Local cleanup safe. |
+| `feature/sprint-3-data-and-release` | Fully merged into `main` | 0 | **DELETE CANDIDATE** | Remote deleted; all commits in `main`. Local cleanup safe. |
+| `feature/sprint-4-compatibility` | Fully merged into `main` | 0 | **DELETE CANDIDATE** | Remote deleted; all commits in `main`. Local cleanup safe. |
+| `feature/sprint-5-wizard` | Fully merged into `main` | 0 | **DELETE CANDIDATE** | Remote deleted; all commits in `main`. Local cleanup safe. |
+| `feature/sprint-6-manager` | Fully merged into `main` | 0 | **DELETE CANDIDATE** | Remote deleted; all commits in `main`. Local cleanup safe. |
+| `feature/sprint-7-install-and-backup` | Fully merged into `main` | 0 | **DELETE CANDIDATE** | Remote deleted; all commits in `main`. Local cleanup safe. |
+| `feature/sprint-8-winget-and-distribution` | Fully merged into `main` | 0 | **DELETE CANDIDATE** | Remote deleted; all commits in `main`. Local cleanup safe. |
+| `feature/sprint-9-analytics-and-transparency` | Fully merged into `main` | 0 | **DELETE CANDIDATE** | Remote deleted; all commits in `main`. Local cleanup safe. |
+| `feature/tier-1-multi-config` | Fully merged into `main` | 0 | **DELETE CANDIDATE** | Remote deleted; all commits in `main`. Local cleanup safe. |
+| `fix/gapps-crashes-and-issues` | Fully merged into `main` | 0 | **DELETE CANDIDATE** | Remote deleted; all commits in `main`. Local cleanup safe. |
+| `refactor/modernize-and-audit` | Fully merged into `main` | 0 | **DELETE CANDIDATE** | Remote deleted; all commits in `main`. Local cleanup safe. |
+

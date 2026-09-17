@@ -30,28 +30,31 @@ const {
     <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur sticky top-0 z-40">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <a href="/" class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-          <span class="text-indigo-400">WSA</span>Builds
+          <span class="text-indigo-400">Ember</span>bird
         </a>
-        <nav class="flex items-center gap-6 text-sm font-medium text-slate-300">
+        <nav class="flex items-center gap-4 lg:gap-6 text-xs sm:text-sm font-medium text-slate-300 overflow-x-auto py-2">
           <button
             id="header-search-btn"
             type="button"
-            class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-400 hover:text-white transition-colors border border-slate-700"
+            class="hidden md:flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-400 hover:text-white transition-colors border border-slate-700 shrink-0"
           >
             <span>Search docs...</span>
             <kbd class="px-1.5 py-0.5 rounded bg-slate-900 text-slate-400 font-mono text-[10px]">Ctrl+K</kbd>
           </button>
-          <a href="/" class="hover:text-white transition-colors">Home</a>
-          <a href="/downloads" class="hover:text-white transition-colors">Downloads</a>
-          <a href="/docs" class="hover:text-white transition-colors">Documentation</a>
-          <a href="/compatibility" class="hover:text-white transition-colors">Compatibility</a>
-          <a href="/troubleshoot/wizard" class="hover:text-white transition-colors">Troubleshoot</a>
-          <a href="/analytics" class="hover:text-white transition-colors">Transparency</a>
+          <a href="/" class="hover:text-white transition-colors whitespace-nowrap">Home</a>
+          <a href="/downloads" class="hover:text-white transition-colors whitespace-nowrap">Downloads</a>
+          <a href="/registry" class="hover:text-white transition-colors whitespace-nowrap">Registry</a>
+          <a href="/arm64" class="hover:text-white transition-colors whitespace-nowrap text-cyan-400">ARM64</a>
+          <a href="/compatibility" class="hover:text-white transition-colors whitespace-nowrap">Compatibility</a>
+          <a href="/troubleshoot/wizard" class="hover:text-white transition-colors whitespace-nowrap">Troubleshoot</a>
+          <a href="/troubleshoot/doctor" class="hover:text-white transition-colors whitespace-nowrap text-indigo-400">Doctor</a>
+          <a href="/analytics" class="hover:text-white transition-colors whitespace-nowrap">Observatory</a>
+          <a href="/docs" class="hover:text-white transition-colors whitespace-nowrap">Docs</a>
           <a
             href={githubUrl}
             target="_blank"
             rel="noopener noreferrer"
-            class="text-slate-400 hover:text-white transition-colors"
+            class="text-slate-400 hover:text-white transition-colors whitespace-nowrap"
           >
             GitHub
           </a>
@@ -66,7 +69,7 @@ const {
     <footer class="border-t border-slate-800 bg-slate-900/40 mt-16 py-8">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-slate-500">
         <p>Emberbird is a community open-source project — a lifecycle platform for Android on Windows. Not affiliated with Microsoft or Google.</p>
-        <p class="mt-2">Licensed under AGPL-3.0. Evolved from <a href="https://github.com/MustardChef/WSABuilds" class="underline hover:text-slate-300">WSABuilds</a> (MustardChef) and the MagiskOnWSA lineage — <a href="https://github.com/IamAzmathullaShaikh/Emberbird/blob/master/docs/ATTRIBUTION.md" class="underline hover:text-slate-300">full attribution</a> · <a href="https://github.com/IamAzmathullaShaikh/Emberbird/blob/master/docs/HISTORICAL_PRESERVATION.md" class="underline hover:text-slate-300">historical lineage</a>.</p>
+        <p class="mt-2">Licensed under AGPL-3.0. Evolved from <a href="https://github.com/MustardChef/WSABuilds" class="underline hover:text-slate-300">WSABuilds</a> (MustardChef) and the MagiskOnWSA lineage — <a href="https://github.com/IamAzmathullaShaikh/Emberbird/blob/main/docs/ATTRIBUTION.md" class="underline hover:text-slate-300">full attribution</a> · <a href="https://github.com/IamAzmathullaShaikh/Emberbird/blob/main/docs/HISTORICAL_PRESERVATION.md" class="underline hover:text-slate-300">historical lineage</a>.</p>
       </div>
     </footer>
     <SearchModal />

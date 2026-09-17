@@ -71,3 +71,24 @@ identity and checksums; new distribution identity ships as new packages
 rather than by mutating published artifacts. Enforcement:
 `tests/test_governance_guards.py` (clauses 13–14) plus the E1.5
 attribution preservation tests.
+
+## 5. Trusted Signing & Key Governance Addendum (Phase P6)
+
+Emberbird binary distributions (Desktop Manager and packaged tooling) are governed
+by the following cryptographic code-signing policy:
+
+1. **Hardware Security Module (HSM) Isolation**: Private signing keys are never
+   held in software on developer workstations, CI runners, or repository secrets.
+   All production signing operates through Azure Trusted Signing with keys isolated
+   in Microsoft FIPS 140-2 Level 3 Hardware Security Modules.
+2. **Short-Lived Workload Identity (OIDC)**: CI automation initiates code-signing
+   via OpenID Connect (OIDC) federated credentials. Zero long-lived private keys
+   or client secrets exist in repository configuration.
+3. **Authenticode & RFC 3161 Timestamping**: All binary artifacts (`.exe`, `.msix`, `.dll`)
+   carry an Authenticode signature coupled with an RFC 3161 compliant cryptographic
+   timestamp counter-signature, ensuring continuous validity after certificate rotation.
+4. **Revocation & Key Rotation Governance**: In the event of a signing certificate
+   rotation or revocation, historical releases verified by their timestamp remain valid
+   (Rule M4). New certificates are registered in `data/contracts/release-contract.md`
+   and validated against published SHA-256 digests in the Release Registry vault.
+

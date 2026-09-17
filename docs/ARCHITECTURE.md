@@ -104,3 +104,30 @@ ro.build.fingerprint=google/redfin/redfin:13/TQ3A.230901.001/10750766:user/relea
 ro.build.version.release=13
 ro.build.version.sdk=33
 ```
+
+---
+
+## 5. Architecture Support Matrix
+
+WSABuilds builds against two target architectures. The x64 pipeline is fully
+validated; **arm64 is experimental** and may fail at any stage depending on
+upstream artifact availability.
+
+| Component | x64 (stable) | arm64 (experimental) |
+|---|---|---|
+| WSA msixbundle | Ships per-arch MSIX in every bundle | Present in retail bundles; not independently validated upstream |
+| VCLibs / UI.Xaml dependencies | Published per-arch by Microsoft | Published per-arch; availability follows the x64 feed |
+| Magisk binaries | `lib/x86_64` in every stable ZIP | `lib/arm64-v8a` shipped since Magisk 24+; dual-ABI layout may vary |
+| GApps overlay image | `gapps-13.0-x86_64.img` (WSA-Addon) | `gapps-13.0-arm64.img` when published; builder falls back to arch-agnostic `gapps-13.0.img` assets |
+| `bin/` build tools (`lspinit`, `makepri.exe`) | `bin/x64/` | `bin/arm64/` |
+| CI release matrix | Standard + Banking editions | Not yet built or published on Releases |
+
+**Why `TARGET_ARCH` and `TARGET_ARCH_NATIVE` are separate:** the WSA CLI name
+(`x64` / `arm64`) drives MSIX selection and output naming, while GApps / OpenGApps
+artifacts use machine names (`x86_64` / `arm64`). WSA x64 packages always pair
+with x86_64 GApps images, so the two variables cannot be collapsed.
+
+Selecting arm64 (`./build.sh --arch arm64` or `python build_local.py --arch arm64`)
+downloads arm64 dependencies and produces a `WSA_<version>_arm64_...` artifact,
+but prebuilt arm64 packages are **not** published on the Releases page (see
+`docs/getting-started/quick-start.md`).

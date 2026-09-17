@@ -1,0 +1,320 @@
+---
+import Layout from '../layouts/Layout.astro';
+import releasesData from '../../../data/releases/releases.json';
+
+const releases = releasesData.releases || [];
+
+const formatBytes = (bytes: number) => {
+  if (!bytes) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+};
+
+const totalReleases = releases.length;
+const totalAssets = releases.reduce((sum, r) => sum + (r.assets ? r.assets.length : 0), 0);
+---
+
+<Layout
+  title="Ember Release Registry Explorer - Emberbird"
+  description="Explore authoritative published releases, cryptographic hashes, asset provenance, and vault metadata from the Ember Release Registry."
+>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+    <!-- Header -->
+    <div class="max-w-3xl mb-10">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-4">
+        Authoritative Registry &bull; Truth Level 1
+      </div>
+      <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+        Ember Release Registry Explorer
+      </h1>
+      <p class="mt-4 text-slate-300 leading-relaxed text-sm sm:text-base">
+        Browse the authoritative release catalog (<code class="text-indigo-300 font-mono text-xs">data/releases/releases.json</code>). Every asset, SHA-256 checksum, file size, and download link is verified through immutable cryptographic provenance guards.
+      </p>
+    </div>
+
+    <!-- Registry Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-10">
+      <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800">
+        <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Published Releases</div>
+        <div class="text-2xl font-bold text-white mt-1">{totalReleases}</div>
+        <p class="text-xs text-slate-500 mt-1">Subsystem &amp; Manager cuts</p>
+      </div>
+      <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800">
+        <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Verified Assets</div>
+        <div class="text-2xl font-bold text-indigo-400 mt-1">{totalAssets}</div>
+        <p class="text-xs text-slate-500 mt-1">100% published SHA-256 sidecars</p>
+      </div>
+      <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800">
+        <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Architecture Support</div>
+        <div class="text-2xl font-bold text-emerald-400 mt-1">x64 / arm64</div>
+        <p class="text-xs text-slate-500 mt-1">Intel, AMD, Qualcomm Snapdragon</p>
+      </div>
+      <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800">
+        <div class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Registry Schema</div>
+        <div class="text-2xl font-bold text-cyan-400 mt-1">v{releasesData.schema_version}</div>
+        <p class="text-xs text-slate-500 mt-1">Migration Level {releasesData.migration_version}</p>
+      </div>
+    </div>
+
+    <!-- Controls: Filter & Search Bar -->
+    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 mb-8 backdrop-blur">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Search -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Search Releases</label>
+          <input
+            type="text"
+            id="registry-search"
+            placeholder="Search by tag, ID, or filename..."
+            class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        <!-- Channel Filter -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Channel</label>
+          <select
+            id="filter-channel"
+            class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+          >
+            <option value="all">All Channels</option>
+            <option value="retail">Retail</option>
+            <option value="stable">Stable</option>
+            <option value="preview">Release Preview</option>
+          </select>
+        </div>
+
+        <!-- Kind Filter -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Package Kind</label>
+          <select
+            id="filter-kind"
+            class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+          >
+            <option value="all">All Kinds</option>
+            <option value="subsystem">Subsystem (WSA)</option>
+            <option value="manager">Manager Desktop</option>
+          </select>
+        </div>
+
+        <!-- Architecture Filter -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Architecture</label>
+          <select
+            id="filter-arch"
+            class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+          >
+            <option value="all">All Architectures</option>
+            <option value="x64">x64 (AMD64)</option>
+            <option value="arm64">arm64 (AArch64)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Release List -->
+    <div id="releases-container" class="space-y-6">
+      {releases.map((rel) => (
+        <div
+          class="release-card bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 transition-all hover:border-slate-700"
+          data-release-id={rel.release_id}
+          data-tag={rel.tag}
+          data-channel={rel.channel}
+          data-kind={rel.kind}
+          data-arch={rel.architectures ? rel.architectures.join(' ') : ''}
+        >
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+            <div>
+              <div class="flex flex-wrap items-center gap-2 mb-2">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  {rel.kind === 'subsystem' ? 'WSA Subsystem' : 'Desktop Manager'}
+                </span>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+                  Channel: {rel.channel}
+                </span>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  {rel.status}
+                </span>
+                {rel.edition && (
+                  <span class="px-2.5 py-0.5 rounded-full text-xs font-mono bg-slate-800/80 text-slate-400">
+                    {rel.edition}
+                  </span>
+                )}
+              </div>
+              <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+                <span>{rel.tag}</span>
+                <span class="text-xs font-mono font-normal text-slate-400">({rel.release_id})</span>
+              </h2>
+              <div class="mt-1 text-xs text-slate-400 flex flex-wrap items-center gap-3">
+                <span>Published: <strong class="text-slate-200">{rel.published_at ? rel.published_at.slice(0, 10) : 'N/A'}</strong></span>
+                <span>•</span>
+                <span>Architectures: <strong class="text-slate-200">{rel.architectures ? rel.architectures.join(', ') : 'N/A'}</strong></span>
+                {rel.provenance?.commit && (
+                  <>
+                    <span>•</span>
+                    <span>Commit: <code class="text-indigo-400 font-mono">{rel.provenance.commit.slice(0, 8)}</code></span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div class="text-right">
+              <span class="text-xs text-slate-500 block">Release Package Count</span>
+              <span class="text-lg font-bold text-white font-mono">{rel.assets ? rel.assets.length : 0} assets</span>
+            </div>
+          </div>
+
+          <!-- Assets Table -->
+          <div class="mt-6 overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead class="bg-slate-950 text-slate-400 uppercase font-mono text-[11px] border-b border-slate-800">
+                <tr>
+                  <th class="py-2.5 px-3">Filename</th>
+                  <th class="py-2.5 px-3">Arch</th>
+                  <th class="py-2.5 px-3">Size</th>
+                  <th class="py-2.5 px-3">SHA-256 Checksum</th>
+                  <th class="py-2.5 px-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/60 font-mono">
+                {(rel.assets || []).map((asset) => (
+                  <tr class="hover:bg-slate-800/30 transition-colors">
+                    <td class="py-3 px-3 text-white font-bold max-w-xs truncate" title={asset.filename}>
+                      {asset.filename}
+                    </td>
+                    <td class="py-3 px-3">
+                      <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px]">
+                        {asset.arch || 'x64'}
+                      </span>
+                    </td>
+                    <td class="py-3 px-3 text-slate-400">
+                      {formatBytes(asset.size_bytes)}
+                    </td>
+                    <td class="py-3 px-3 max-w-sm">
+                      <div class="flex items-center gap-2">
+                        <span class="truncate text-[10px] text-slate-400" title={asset.sha256}>
+                          {asset.sha256}
+                        </span>
+                        <button
+                          type="button"
+                          class="copy-hash-btn p-1 rounded hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+                          data-hash={asset.sha256}
+                          title="Copy SHA-256 hash"
+                        >
+                          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                    <td class="py-3 px-3 text-right space-x-2 whitespace-nowrap">
+                      <button
+                        type="button"
+                        class="copy-ps-btn px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors text-[10px]"
+                        data-filename={asset.filename}
+                        title="Copy PowerShell Get-FileHash command"
+                      >
+                        Copy Verify Cmd
+                      </button>
+                      <a
+                        href={asset.source_url}
+                        class="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors text-[10px] inline-block"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Download
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div id="no-results" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center my-10">
+      <h3 class="text-base font-bold text-white">No Matching Releases Found</h3>
+      <p class="text-xs text-slate-400 mt-1">Try relaxing your search terms or filter selections above.</p>
+    </div>
+  </div>
+
+  <script>
+    const searchInput = document.getElementById('registry-search') as HTMLInputElement;
+    const channelSelect = document.getElementById('filter-channel') as HTMLSelectElement;
+    const kindSelect = document.getElementById('filter-kind') as HTMLSelectElement;
+    const archSelect = document.getElementById('filter-arch') as HTMLSelectElement;
+    const cards = document.querySelectorAll('.release-card') as NodeListOf<HTMLElement>;
+    const noResults = document.getElementById('no-results');
+
+    function filterCards() {
+      const query = (searchInput?.value || '').toLowerCase().trim();
+      const channel = channelSelect?.value || 'all';
+      const kind = kindSelect?.value || 'all';
+      const arch = archSelect?.value || 'all';
+
+      let visibleCount = 0;
+
+      cards.forEach((card) => {
+        const text = card.textContent?.toLowerCase() || '';
+        const cardChannel = card.dataset.channel || '';
+        const cardKind = card.dataset.kind || '';
+        const cardArch = card.dataset.arch || '';
+
+        const matchesQuery = !query || text.includes(query);
+        const matchesChannel = channel === 'all' || cardChannel === channel;
+        const matchesKind = kind === 'all' || cardKind === kind;
+        const matchesArch = arch === 'all' || cardArch.includes(arch);
+
+        if (matchesQuery && matchesChannel && matchesKind && matchesArch) {
+          card.style.display = '';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      if (noResults) {
+        noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+      }
+    }
+
+    searchInput?.addEventListener('input', filterCards);
+    channelSelect?.addEventListener('change', filterCards);
+    kindSelect?.addEventListener('change', filterCards);
+    archSelect?.addEventListener('change', filterCards);
+
+    // Copy Hash
+    document.querySelectorAll('.copy-hash-btn').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        const target = e.currentTarget as HTMLElement;
+        const hash = target.dataset.hash;
+        if (hash) {
+          await navigator.clipboard.writeText(hash);
+          target.classList.add('text-emerald-400');
+          setTimeout(() => target.classList.remove('text-emerald-400'), 1500);
+        }
+      });
+    });
+
+    // Copy PowerShell Verify Cmd
+    document.querySelectorAll('.copy-ps-btn').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        const target = e.currentTarget as HTMLElement;
+        const filename = target.dataset.filename || 'filename';
+        const cmd = `Get-FileHash -Algorithm SHA256 .\\${filename}`;
+        await navigator.clipboard.writeText(cmd);
+        const orig = target.textContent;
+        target.textContent = 'Copied!';
+        target.classList.add('text-emerald-400');
+        setTimeout(() => {
+          target.textContent = orig;
+          target.classList.remove('text-emerald-400');
+        }, 1500);
+      });
+    });
+  </script>
+</Layout>

@@ -22,6 +22,8 @@ export const Header: React.FC<HeaderProps> = ({
     { id: 'updates', label: 'Updates' },
     { id: 'backups', label: 'Backups' },
     { id: 'restore', label: 'Restore' },
+    { id: 'doctor', label: 'Doctor' },
+    { id: 'licenses', label: 'Licenses' },
   ];
 
   return (
@@ -29,14 +31,14 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/30">
-            W
+            E
           </div>
           <div>
             <h1 className="text-sm font-bold text-white leading-tight">
               Emberbird Manager
             </h1>
             <span className="text-[11px] text-slate-400 font-mono">
-              v0.2.0 (Lifecycle Engine)
+              v0.2.2 (Lifecycle Engine)
             </span>
           </div>
         </div>

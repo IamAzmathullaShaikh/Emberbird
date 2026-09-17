@@ -2,19 +2,20 @@
 # =============================================================================
 # generateGappsLink.py — Download Pico-equivalent GApps for WSABuilds
 #
-# Fetches the latest minimal GApps image (gapps-13.0-x86_64.img) and the
+# Fetches the latest minimal GApps image (e.g. gapps-13.0-x86_64.img) and the
 # corresponding initrd mount script (gapps-13.0.rc) from LSPosed/WSA-Addon.
 #
 # This image contains the minimal GApps package (Play Store, Play Services,
 # Services Framework) packaged as a ready-to-mount ext4 image for WSA Android 13.
 #
 # Usage:
-#   python3 generateGappsLink.py <download_dir> <aria2_list_file> <android_api>
+#   python3 generateGappsLink.py <download_dir> <aria2_list_file> <android_api> [arch]
 #
 # Arguments:
 #   download_dir      Directory where downloaded files will be stored.
 #   aria2_list_file   Path to the aria2c input file to append entries to.
 #   android_api       Android API level integer, e.g. 33
+#   arch              GApps image machine arch: x86_64 (default) or arm64
 #
 # Environment:
 #   GITHUB_TOKEN (optional)   GitHub PAT. Falls back to ./token file.
@@ -67,7 +68,12 @@ _ANDROID_API_TO_RELEASE: dict[str, str] = {
     "33": "13.0",
 }
 
-_GAPPS_ARCH = "x86_64"
+_GAPPS_ARCHS = ("x86_64", "arm64")
+_DEFAULT_GAPPS_ARCH = "x86_64"
+# Tokens that mark an asset as built for a *specific* machine arch. A fallback
+# candidate must contain none of these, otherwise we would silently download a
+# wrong-arch image (e.g. x86_64 when arm64 was requested).
+_ARCH_TOKENS = ("x86_64", "x86", "arm64", "armeabi", "arm")
 _WSA_ADDON_OWNER = "LSPosed"
 _WSA_ADDON_REPO = "WSA-Addon"
 
@@ -76,10 +82,10 @@ _WSA_ADDON_REPO = "WSA-Addon"
 # Argument parsing
 # ---------------------------------------------------------------------------
 
-def _parse_args() -> tuple[Path, str, str]:
+def _parse_args() -> tuple[Path, str, str, str]:
     if len(sys.argv) < 3:
         print(
-            "Usage: generateGappsLink.py <download_dir> <aria2_list_file> [android_api]",
+            "Usage: generateGappsLink.py <download_dir> <aria2_list_file> [android_api] [arch]",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -87,13 +93,22 @@ def _parse_args() -> tuple[Path, str, str]:
     raw_dir = sys.argv[1]
     list_file = sys.argv[2]
     android_api = sys.argv[3] if len(sys.argv) > 3 else "33"
+    gapps_arch = sys.argv[4] if len(sys.argv) > 4 and sys.argv[4] else _DEFAULT_GAPPS_ARCH
+
+    if gapps_arch not in _GAPPS_ARCHS:
+        print(
+            f"generateGappsLink: ERROR — unsupported GApps arch '{gapps_arch}'. "
+            f"Expected one of: {list(_GAPPS_ARCHS)}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
     download_dir = Path(raw_dir) if raw_dir else Path.cwd().parent / "download"
 
     if android_api not in _ANDROID_API_TO_RELEASE:
         android_api = "33"
 
-    return download_dir, list_file, android_api
+    return download_dir, list_file, android_api, gapps_arch
 
 
 # ---------------------------------------------------------------------------
@@ -151,7 +166,7 @@ def _write_env(key: str, value: str) -> None:
 # ---------------------------------------------------------------------------
 
 def main() -> None:
-    download_dir, aria2_list_file, android_api = _parse_args()
+    download_dir, aria2_list_file, android_api, gapps_arch = _parse_args()
     download_dir.mkdir(parents=True, exist_ok=True)
 
     auth = _load_github_auth()
@@ -159,7 +174,7 @@ def main() -> None:
     release_str = _ANDROID_API_TO_RELEASE[android_api]
 
     print(
-        f"generateGappsLink: fetching GApps artifacts for android={release_str}, arch={_GAPPS_ARCH} …",
+        f"generateGappsLink: fetching GApps artifacts for android={release_str}, arch={gapps_arch} …",
         flush=True,
     )
 
@@ -169,8 +184,13 @@ def main() -> None:
 
     img_found = False
     rc_found = False
+    img_fallback_candidate: tuple[str, str] | None = None
 
-    img_pattern = re.compile(rf"gapps.*{re.escape(release_str)}.*{re.escape(_GAPPS_ARCH)}.*\.img$", re.I)
+    # Preferred pattern is arch-specific (gapps-13.0-arm64.img). Some WSA-Addon
+    # releases publish a single arch-agnostic image instead, so fall back to a
+    # generic gapps-<ver>-*.img match before giving up.
+    img_pattern = re.compile(rf"gapps.*{re.escape(release_str)}.*{re.escape(gapps_arch)}.*\.img$", re.I)
+    img_fallback_pattern = re.compile(rf"gapps.*{re.escape(release_str)}.*\.img$", re.I)
     rc_pattern = re.compile(rf"gapps.*{re.escape(release_str)}.*\.rc$", re.I)
 
     for asset in assets:
@@ -181,11 +201,29 @@ def main() -> None:
             _write_env("GAPPS_IMAGE_NAME", name)
             img_found = True
             print(f"generateGappsLink: found GApps image: {name}", flush=True)
+        elif img_fallback_candidate is None and img_fallback_pattern.search(name):
+            name_lower = name.lower()
+            if not any(token in name_lower for token in _ARCH_TOKENS):
+                # Truly arch-agnostic image (e.g. gapps-13.0.img) — remember it
+                # as a fallback but keep scanning in case an arch-specific
+                # image appears later in the asset list.
+                img_fallback_candidate = (name, url)
         elif rc_pattern.search(name):
             _append_aria2_entry(list_path, url, download_dir, name)
             _write_env("GAPPS_RC_NAME", name)
             rc_found = True
             print(f"generateGappsLink: found GApps RC: {name}", flush=True)
+
+    if not img_found and img_fallback_candidate:
+        name, url = img_fallback_candidate
+        print(
+            f"generateGappsLink: no {gapps_arch} GApps image in release {tag}; "
+            f"using arch-agnostic asset: {name}",
+            flush=True,
+        )
+        _append_aria2_entry(list_path, url, download_dir, name)
+        _write_env("GAPPS_IMAGE_NAME", name)
+        img_found = True
 
     if not img_found or not rc_found:
         print(

@@ -131,4 +131,32 @@ export interface UpgradeResult {
   message: string;
 }
 
-export type NavigationTab = 'dashboard' | 'updates' | 'backups' | 'restore';
+export interface DoctorProbe {
+  probe_id: string;
+  domain: string;
+  title: string;
+  status: 'PASS' | 'WARN' | 'FAIL' | 'UNKNOWN' | 'N/A';
+  severity: 'INFO' | 'WARNING' | 'CRITICAL';
+  summary: string;
+  details: string;
+  remediation_cmd?: string | null;
+  can_autofix: boolean;
+}
+
+export interface DoctorReportData {
+  platform_name: string;
+  version: string;
+  system_os: string;
+  os_release: string;
+  architecture: string;
+  overall_status: 'PASS' | 'WARN' | 'FAIL' | 'UNKNOWN' | 'N/A';
+  exit_code: number;
+  total_probes: number;
+  passed_count: number;
+  warn_count: number;
+  fail_count: number;
+  probes: DoctorProbe[];
+}
+
+export type NavigationTab = 'dashboard' | 'updates' | 'backups' | 'restore' | 'doctor' | 'licenses';
+

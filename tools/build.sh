@@ -2,13 +2,13 @@
 # =============================================================================
 # build.sh — WSABuilds core build script
 #
-# Target (locked):
-#   Architecture  : x64
+# Target:
+#   Architecture  : x64 | arm64 (arm64 is experimental — see docs/ARCHITECTURE.md)
 #   WSA channel   : retail (stable)
 #   Root solution : Magisk Stable (≥ 26.0)
-#   GApps         : OpenGApps Pico (x86_64, Android 13 / API 33)
+#   GApps         : OpenGApps Pico (x86_64 / arm64, Android 13 / API 33)
 #   Amazon        : kept (not removed)
-#   Output        : Windows 11 x64 7z artifact
+#   Output        : Windows 11 7z artifact
 #
 # Usage:
 #   ./build.sh [options]
@@ -150,7 +150,7 @@ trap 'abort "Interrupted by user"' INT TERM
 
 usage() {
     cat <<'EOF'
-WSABuilds — Tier 1 Core Build System (Retail x64)
+WSABuilds — Tier 1 Core Build System (Retail x64 / arm64)
 
 Usage:
   ./build.sh [options]
@@ -158,9 +158,13 @@ Usage:
 Options:
   --root-sol            Root solution: magisk | none  (default: magisk)
   --gapps               Google Apps variant: pico  (default: pico)
-  --arch                Architecture: x64  (default: x64)
+  --arch                Architecture: x64 | arm64  (default: x64;
+                        arm64 is EXPERIMENTAL — WSA ARM64 msixbundle, ARM64
+                        GApps image and ARM64 CI validation are not yet
+                        guaranteed upstream. See docs/ARCHITECTURE.md)
   --offline             Skip all downloads; use cached files in ../download/
   --skip-download-wsa   Skip WSA download only; still download dependencies
+  --wsa-file            Use local WSA package / archive (skips WSA download)
   --magisk-custom       Use a custom Magisk already in ../download/
                           Named:  magisk-stable.zip  OR  app-stable.apk
   --compress-format     Output compression: 7z | zip | none  (default: 7z)
@@ -171,13 +175,15 @@ Examples:
   ./build.sh                                      # Standard Edition (Magisk + Pico)
   ./build.sh --root-sol none                      # Banking Edition (Vanilla + Pico)
   ./build.sh --root-sol none --compress-format 7z
+  ./build.sh --arch arm64                         # ARM64 build (EXPERIMENTAL)
+  ./build.sh --arch arm64 --wsa-file path/to/wsa.zip
 EOF
 }
 
 parse_args() {
     local opts
     opts=$(getopt \
-        --longoptions "offline,skip-download-wsa,magisk-custom,compress-format:,root-sol:,gapps:,arch:,debug,help" \
+        --longoptions "offline,skip-download-wsa,wsa-file:,magisk-custom,compress-format:,root-sol:,gapps:,arch:,debug,help" \
         --name "$(basename "$0")" \
         --options "" \
         -- "$@") || {
@@ -205,8 +211,8 @@ parse_args() {
                 ;;
             --arch)
                 case "$2" in
-                    x64) TARGET_ARCH="$2" ;;
-                    *) echo "ERROR: Invalid --arch '$2'. Valid: x64" >&2; exit 1 ;;
+                    x64|arm64) TARGET_ARCH="$2" ;;
+                    *) echo "ERROR: Invalid --arch '$2'. Valid: x64, arm64 (experimental)" >&2; exit 1 ;;
                 esac
                 shift 2
                 ;;
@@ -217,6 +223,11 @@ parse_args() {
             --skip-download-wsa)
                 SKIP_DOWN_WSA=1
                 shift
+                ;;
+            --wsa-file)
+                CUSTOM_WSA_FILE="$2"
+                SKIP_DOWN_WSA=1
+                shift 2
                 ;;
             --magisk-custom)
                 CUSTOM_MAGISK=1
@@ -302,7 +313,11 @@ UWPVCLibs_PATH=""
 xaml_PATH=""
 
 resolve_paths() {
-    WSA_ZIP_PATH="$DOWNLOAD_DIR/wsa-${TARGET_RELEASE_TYPE}.zip"
+    if [ -n "$CUSTOM_WSA_FILE" ]; then
+        WSA_ZIP_PATH="$CUSTOM_WSA_FILE"
+    else
+        WSA_ZIP_PATH="$DOWNLOAD_DIR/wsa-${TARGET_RELEASE_TYPE}.zip"
+    fi
     vclibs_PATH="$DOWNLOAD_DIR/Microsoft.VCLibs.140.00_${TARGET_ARCH}.appx"
     UWPVCLibs_PATH="$DOWNLOAD_DIR/Microsoft.VCLibs.140.00.UWPDesktop_${TARGET_ARCH}.appx"
     xaml_PATH="$DOWNLOAD_DIR/Microsoft.UI.Xaml.2.8_${TARGET_ARCH}.appx"
@@ -418,6 +433,7 @@ download_magisk_and_gapps() {
     echo "build: fetching OpenGApps Pico link …"
     python3 generateGappsLink.py \
         "$DOWNLOAD_DIR" "$DOWNLOAD_CONF_NAME" "$ANDROID_API" \
+        "$TARGET_ARCH_NATIVE" \
         || abort "generateGappsLink.py failed"
 
     # Reload env to pick up OPENGAPPS_ZIP_NAME / GAPPS_RC_NAME

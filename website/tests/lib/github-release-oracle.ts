@@ -9,7 +9,8 @@
 import type {
   ReleaseProvider,
   UnifiedRelease,
-  GitHubRelease
+  GitHubRelease,
+  NormalizedAsset
 } from '../../src/lib/types.ts';
 import { parseNormalizedAsset, formatDate } from '../../src/lib/parser.ts';
 import { classifyReleaseTag } from '../../src/lib/release-service.ts';

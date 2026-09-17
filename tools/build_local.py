@@ -132,7 +132,7 @@ def compress_xz(data: bytes) -> bytes:
 def patch_initrd(initrd_path: Path, magisk_zip_path: Path | None, gapps_img_path: Path,
                  gapps_rc_path: Path, cust_img_path: Path, lspinit_path: Path,
                  post_fs_path: Path | None = None, init_lsp_rc_path: Path | None = None,
-                 root_sol: str = "magisk") -> None:
+                 root_sol: str = "magisk", magisk_abi: str = "x86_64") -> None:
     bak_path = initrd_path.with_suffix(".img.bak")
     source_initrd = bak_path if bak_path.exists() else initrd_path
 
@@ -173,9 +173,9 @@ def patch_initrd(initrd_path: Path, magisk_zip_path: Path | None, gapps_img_path
 
         with zipfile.ZipFile(magisk_zip_path, "r") as mz:
             stub_data = mz.read("stub.apk") if "stub.apk" in mz.namelist() else magisk_zip_path.read_bytes()
-            magisk_data = mz.read("lib/x86_64/libmagisk.so")
-            init_ld_data = mz.read("lib/x86_64/libinit-ld.so")
-            magiskinit_data = mz.read("lib/x86_64/libmagiskinit.so")
+            magisk_data = mz.read(f"lib/{magisk_abi}/libmagisk.so")
+            init_ld_data = mz.read(f"lib/{magisk_abi}/libinit-ld.so")
+            magiskinit_data = mz.read(f"lib/{magisk_abi}/libmagiskinit.so")
 
         post_fs_data = post_fs_path.read_bytes()
         init_lsp_rc_data = init_lsp_rc_path.read_bytes()
@@ -220,7 +220,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="WSABuilds Native Local Builder (Windows / Pure Python)")
     parser.add_argument("--root-sol", choices=["magisk", "none"], default="magisk", help="Root solution: magisk (default) or none (Vanilla)")
     parser.add_argument("--gapps", choices=["pico"], default="pico", help="Google Apps variant: pico (default)")
-    parser.add_argument("--arch", choices=["x64"], default="x64", help="Architecture: x64 (default)")
+    parser.add_argument("--arch", choices=["x64", "arm64"], default="x64", help="Architecture: x64 (default) or arm64 (experimental)")
+    parser.add_argument("--wsa-file", type=Path, default=None, help="Path to local WSA package or archive (zip, msix, or msixbundle)")
     args = parser.parse_args()
 
     script_dir = Path(__file__).resolve().parent
@@ -233,15 +234,20 @@ def main() -> int:
     installer_dir = upstream / "installer"
     xml_dir = upstream / "xml"
 
+    # Magisk APK lib dir uses Android ABI names (x86_64 / arm64-v8a) while
+    # GApps images use machine names (x86_64 / arm64) — keep them distinct.
+    magisk_abi = "arm64-v8a" if args.arch == "arm64" else "x86_64"
+    gapps_arch = "arm64" if args.arch == "arm64" else "x86_64"
+
     edition = "Banking/Enterprise Edition (Vanilla / No Root) + OpenGApps Pico" if args.root_sol == "none" else "Standard Edition (Magisk Stable + OpenGApps Pico)"
     print("====================================================")
     print(f" WSABuilds Native Local Builder ({edition})")
     print(f" Arch: {args.arch} | Root: {args.root_sol} | GApps: {args.gapps}")
     print("====================================================")
 
-    wsa_zip = download_dir / "wsa-retail.zip"
+    wsa_zip = Path(args.wsa_file).resolve() if args.wsa_file else (download_dir / "wsa-retail.zip")
     magisk_zip = download_dir / "magisk-stable.zip"
-    gapps_img = download_dir / "gapps-13.0-x86_64.img"
+    gapps_img = download_dir / f"gapps-13.0-{gapps_arch}.img"
     gapps_rc = download_dir / "gapps-13.0.rc"
     cust_img = download_dir / "cust.img"
     lspinit = bin_dir / "lspinit"
@@ -249,7 +255,7 @@ def main() -> int:
     init_lsp_rc = script_dir / "init.lsp.magisk.rc"
 
     required_checks = [
-        (wsa_zip, "WSA Retail Archive"),
+        (wsa_zip, "WSA Package / Archive"),
         (gapps_img, "GApps Image"),
         (gapps_rc, "GApps RC"),
         (cust_img, "Cust Image"),
@@ -268,22 +274,33 @@ def main() -> int:
             return 1
 
     print(f"[*] Inspecting {wsa_zip.name} ...")
+    is_direct_msix = wsa_zip.name.lower().endswith(".msix") and not wsa_zip.name.lower().endswith(".msixbundle")
     wsa_msix_name = ""
     wsa_ver = "2407.40000.4.0"
-    with zipfile.ZipFile(wsa_zip, "r") as z:
-        for name in z.namelist():
-            if "x64" in name.lower() and name.endswith(".msix"):
-                wsa_msix_name = name
-                m = re.search(r'WsaPackage_([0-9.]+)_', name)
-                if m:
-                    wsa_ver = m.group(1)
-                break
+    msix_token = args.arch.lower()  # x64 / arm64
+
+    if is_direct_msix:
+        wsa_msix_name = wsa_zip.name
+        m = re.search(r'WsaPackage_([0-9.]+)_', wsa_zip.name)
+        if m:
+            wsa_ver = m.group(1)
+        else:
+            wsa_ver = "custom"
+    else:
+        with zipfile.ZipFile(wsa_zip, "r") as z:
+            for name in z.namelist():
+                if msix_token in name.lower() and name.endswith(".msix"):
+                    wsa_msix_name = name
+                    m = re.search(r'WsaPackage_([0-9.]+)_', name)
+                    if m:
+                        wsa_ver = m.group(1)
+                    break
 
     if not wsa_msix_name:
-        print("[-] ERROR: Could not locate x64 MSIX package inside wsa-retail.zip")
+        print(f"[-] ERROR: Could not locate {msix_token} MSIX package inside {wsa_zip.name}")
         return 1
 
-    print(f"    Target x64 package: {wsa_msix_name}")
+    print(f"    Target {msix_token} package: {wsa_msix_name}")
     print(f"    Detected WSA version: {wsa_ver}")
 
     folder_suffix = "_vanilla" if args.root_sol == "none" else ""
@@ -295,10 +312,14 @@ def main() -> int:
     bak_path = target_initrd.with_suffix(".img.bak")
     if not target_initrd.exists() or not bak_path.exists():
         print(f"[*] Extracting {wsa_msix_name} directly to {output_dir} ...")
-        with zipfile.ZipFile(wsa_zip, "r") as z:
-            msix_bytes = z.read(wsa_msix_name)
-            with zipfile.ZipFile(io.BytesIO(msix_bytes)) as msix:
+        if is_direct_msix:
+            with zipfile.ZipFile(wsa_zip, "r") as msix:
                 msix.extractall(output_dir)
+        else:
+            with zipfile.ZipFile(wsa_zip, "r") as z:
+                msix_bytes = z.read(wsa_msix_name)
+                with zipfile.ZipFile(io.BytesIO(msix_bytes)) as msix:
+                    msix.extractall(output_dir)
 
     print("[*] Stripping Microsoft AppX signature metadata ...")
     for sig in ["[Content_Types].xml", "AppxBlockMap.xml", "AppxSignature.p7x", "AppxMetadata"]:
@@ -322,6 +343,7 @@ def main() -> int:
         post_fs_path=post_fs if args.root_sol == "magisk" else None,
         init_lsp_rc_path=init_lsp_rc if args.root_sol == "magisk" else None,
         root_sol=args.root_sol,
+        magisk_abi=magisk_abi,
     )
 
     print("[*] Staging Windows runtime dependencies and installer scripts ...")

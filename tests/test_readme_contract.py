@@ -17,25 +17,26 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 README = REPO_ROOT / "README.md"
 
 MANDATED_SECTIONS = [
+    "Hero & Project Introduction",
+    "Mission",
+    "Why Emberbird Exists",
     "Project Story",
+    "Architecture Diagram",
+    "Registry Overview",
+    "Release Lifecycle",
+    "Features & Supported Editions",
+    "Installation Guide",
+    "Quick Start",
     "Learning Path",
-    "Getting Started",
-    "Architecture Overview",
-    "Supported Build Types",
-    "Release Architecture",
-    "Registry",
-    "Repository Structure",
-    "Windows 11 Build Guide",
-    "Dependency Installation",
-    "Developer Setup",
-    "Build Instructions",
-    "Validation Instructions",
-    "Troubleshooting",
-    "Contributing",
-    "Credits, Attribution & Historical Lineage",
-    "License",
-    "Security & Support",
-    "Release Workflow",
+    "Developer Guide",
+    "Contributor Guide",
+    "Registry Consumers",
+    "Distribution & Package Managers",
+    "Security & Integrity Posture",
+    "Attribution & Ancestry",
+    "Historical Lineage & Preservation",
+    "Support Channels & Diagnostics",
+    "License & Third-Party Notices",
 ]
 
 SECTION_RE = re.compile(r"^## (.+)$", re.MULTILINE)
@@ -47,9 +48,9 @@ def readme_text() -> str:
 
 
 class TestMandatedSections(unittest.TestCase):
-    def test_exactly_19_top_level_sections(self):
+    def test_exactly_20_top_level_sections(self):
         titles = SECTION_RE.findall(readme_text())
-        self.assertEqual(len(titles), 19, f"expected 19 sections, found {len(titles)}: {titles}")
+        self.assertEqual(len(titles), 20, f"expected 20 sections, found {len(titles)}: {titles}")
 
     def test_sections_match_mandated_order(self):
         titles = SECTION_RE.findall(readme_text())

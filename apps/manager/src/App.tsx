@@ -5,6 +5,8 @@ import { ReleaseCard } from './components/ReleaseCard';
 import { BackupView } from './components/BackupView';
 import { RestoreView } from './components/RestoreView';
 import { UpdateView } from './components/UpdateView';
+import { LicensesView } from './components/LicensesView';
+import { DoctorView } from './components/DoctorView';
 import { detectWsaStatus, checkForUpdates } from './lib/ipc';
 import { normalizeStatusPayload } from './lib/state';
 import type { WsaStatus, UpdateStatus, NavigationTab } from './lib/types';
@@ -79,6 +81,14 @@ export const App: React.FC = () => {
 
         {activeTab === 'restore' && (
           <RestoreView status={status} onRestoreComplete={refreshStatus} />
+        )}
+
+        {activeTab === 'doctor' && (
+          <DoctorView />
+        )}
+
+        {activeTab === 'licenses' && (
+          <LicensesView />
         )}
 
         <div className="p-4 rounded-xl bg-slate-900/30 border border-slate-800/80 flex items-center justify-between text-xs text-slate-500">

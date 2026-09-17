@@ -36,7 +36,7 @@ REPO_SLUG = "IamAzmathullaShaikh/Emberbird"
 
 WSA_VER_RE = re.compile(r"[0-9]+[.][0-9]{5}[.][0-9]+[.][0-9]+")
 MANAGER_VER_RE = re.compile(r"^v([0-9]+[.][0-9]+[.][0-9]+)$")
-PACKAGE_RE = re.compile(r"^(WSA_[0-9.]+_x64(_vanilla)?[.]7z)$")
+PACKAGE_RE = re.compile(r"^(WSA_[0-9.]+_(x64|arm64)(_vanilla)?[.]7z)$")
 
 
 def _git_commit() -> str:
@@ -286,12 +286,15 @@ def classify_release(rel, prev_registry) -> list:
         suffix = "" if tag.startswith("wsa-v") else "-alt"
         for edition, pkgs in sorted(by_edition.items()):
             reg_assets = []
+            arch_set = set()
             for a in sorted(pkgs, key=lambda x: x["name"]):
+                pkg_arch = "arm64" if "_arm64" in a["name"] else "x64"
+                arch_set.add(pkg_arch)
                 digest, hash_source = resolve_hash(a, manifest, sidecars)
                 reg_assets.append({
                     "filename": a["name"],
                     "sha256": digest,
-                    "arch": "x64",
+                    "arch": pkg_arch,
                     "role": "package",
                     "source_url": a["browser_download_url"],
                     "source_type": "derived",
@@ -299,6 +302,7 @@ def classify_release(rel, prev_registry) -> list:
                     "verified_at": verified_at_for(prev_registry, a["name"], digest, now_iso),
                     "size_bytes": a["size"],
                 })
+            arch_list = sorted(list(arch_set)) if arch_set else ["x64"]
             entries.append({
                 "release_id": f"wsa-{tag_epoch}-{edition}{suffix}",
                 "tag": tag,
@@ -306,7 +310,7 @@ def classify_release(rel, prev_registry) -> list:
                 "wsa_version": wsa_version,
                 "channel": "retail",
                 "edition": edition,
-                "architectures": ["x64"],
+                "architectures": arch_list,
                 "root_solution": "none" if edition == "banking" else "magisk",
                 "gapps_variant": "pico",
                 "status": "published",
