@@ -503,7 +503,7 @@ confirmation), full battery green, CI ratification, cycle record.
 
 ---
 
-### E5 — Distribution Identity: new winget package + truthful licensing (ACTIVE)
+### E5 — Distribution Identity: new winget package + truthful licensing (COMPLETE)
 
 Per BRAND §3/§4: the Emberbird distribution identity ships as a **new package**
 (`Emberbird.Manager`, publisher `Emberbird`) — historical package IDs and
@@ -529,6 +529,34 @@ hash are published reality; nothing is fabricated.
 - [x] **E5.4 — Docs + guards**: GOVERNANCE checklist generalized,
   BRAND §8 distribution record, guard tests pinning the boundary.
   → `tests/test_e5_distribution_identity.py`, `docs/HISTORICAL_PRESERVATION.md` (G3).
+
+**Exit checklist**: E5.1–E5.5 checked, full battery green, CI ratification,
+cycle record, rollback tag.
+
+**Cycle record (E5 — September 17, 2026)**
+- **STATUS**: COMPLETE — CI-ratified on `0f8a401` (5/5 workflows green).
+- **DEPENDENCIES**: E4 slug contract closed; G1 freeze satisfied (only metamorphosis
+  tasks merged since E2); M4/S1 boundaries verified before any manifest work.
+- **FILES CHANGED**: `deployment/version.json` + schema; 3 new manifests under
+  `manifests/e/Emberbird/Manager/0.2.2/`; `validate_distribution.py` +
+  `bootstrap_winget.py` parametrized; `winget-release.yml` build chain;
+  Manager identity files (package.json, Cargo.toml/lock, tauri.conf.json,
+  main.rs, capabilities, UI strings); GOVERNANCE.md; BRAND §8;
+  `docs/HISTORICAL_PRESERVATION.md` (G3).
+- **TESTS ADDED**: `tests/test_e5_distribution_identity.py` (9 guards);
+  Manager distribution pins updated; bootstrap fixtures derive from the seam.
+- **VALIDATION**: 284/284 Python tests OK, 39/39 website, 30/30 Manager,
+  `tsc --noEmit` clean, registry+schema OK, actionlint OK, inventory OK.
+- **LEGAL REVIEW**: truthful AGPL-3.0 claims in all living metadata; historical
+  manifests keep their published (erroneous) claims verbatim — recorded in the
+  G3 manifest, never rewritten; trademark-hygienic descriptions.
+- **RISKS**: low — new identity is additive; historical package untouched;
+  next publication flows through the seam. Deferred: Manager backup data dir
+  rename (needs a real migration path; BRAND §8 rule 5).
+- **ROLLBACK**: single revert of `0f8a401`; tag `post-e5-distribution-identity`.
+- **FOLLOW-UP**: first `EmberbirdManager-*` publication happens at the next
+  Manager release; `emberbird-manager-0.2.2` registry row will be born from
+  reality-sync at that publication (never hand-authored).
 
 ## Part IV — Future phases (LOCKED — not active, listed for direction only)
 
