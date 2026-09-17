@@ -5114,7 +5114,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "wsabuilds-manager"
+name = "emberbird-manager"
 version = "0.2.2"
 dependencies = [
  "chrono",

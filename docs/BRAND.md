@@ -107,3 +107,34 @@ historical URL truth — frozen URLs keep working forever through the redirect.
 
 **Guard:** `tests/test_e4_slug_contract.py` pins this table: rewritten surfaces stay
 rewritten, pinned surfaces carry flip markers, frozen truth keeps the historical slug.
+
+## 8. Distribution identity (E5)
+
+**Active distribution identity (from `deployment/version.json` — the seam):**
+
+| Field | Value |
+|---|---|
+| Winget package | `Emberbird.Manager` |
+| Publisher | `Emberbird` |
+| Product name | `Emberbird Manager` |
+| Artifact prefix | `EmberbirdManager-` (Setup / Portable / checksums) |
+| License claim | `AGPL-3.0` (truthful — Legal Compliance Gate) |
+
+**Rules:**
+
+1. **New identity ships as a new package.** `WSABuilds.WSABuildsManager` and its
+   manifests under `manifests/w/WSABuilds/` are frozen history (M4) — never mutated,
+   never re-licensed, never re-pointed. Guard: `tests/test_e5_distribution_identity.py`.
+2. **Published artifact filenames are observed reality.** The new package's manifests
+   reference the artifacts that were actually published (e.g. `WSABuildsManager-Setup-0.2.2-x64.exe`)
+   with the exact published hashes. Future releases built by this repository publish
+   `EmberbirdManager-*` artifacts and manifests derive from `version.json`.
+3. **License claims must be truthful.** The repository is AGPL-3.0; any Apache-2.0 claim
+   in *living* metadata is a fabrication defect. Historical manifests keep their original
+   (erroneous) claims verbatim — that is what was published, and history is not rewritten.
+4. **Trademark hygiene** in all new identity surfaces: describe the product as a
+   lifecycle platform for Android on Windows / a modified Windows Subsystem for Android
+   distribution; never imply Microsoft affiliation.
+5. **Data-directory continuity:** the Manager's real backup directory
+   (`%LOCALAPPDATA%\WSABuilds\backups`) keeps its name until a real migration path
+   exists — renaming it would orphan existing users' verified backups.

@@ -19,10 +19,10 @@
 
 - [ ] `deployment/version.json` `manager.version` = new version
 - [ ] `apps/manager/package.json`, `src-tauri/Cargo.toml`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.lock` all bumped to the same version
-- [ ] `manifests/w/WSABuilds/WSABuildsManager/<new-version>/` exists with all three manifests; installer manifest references the new release URL; SHA256 carries the **documented bootstrap placeholder** (previous hash) if the real hash does not exist yet — never zeros
+- [ ] `manifests/<first-char>/<Publisher>/<Package>/<new-version>/` (per `deployment/version.json` `winget_package_id`; e.g. `manifests/e/Emberbird/Manager/`) exists with all three manifests; installer manifest references the new release URL; SHA256 carries the **documented bootstrap placeholder** (previous hash) if the real hash does not exist yet — never zeros. Historical packages (e.g. `manifests/w/WSABuilds/WSABuildsManager/`) are frozen history (M4) and are never updated.
 - [ ] `python3 scripts/validate_distribution.py` → SUCCESS
 - [ ] `python3 -m unittest discover -s tests` → OK
-- [ ] `winget validate manifests/w/WSABuilds/WSABuildsManager/<new-version>` (local winget CLI) → succeeded
+- [ ] `winget validate manifests/<first-char>/<Publisher>/<Package>/<new-version>` (per active identity; local winget CLI) → succeeded
 - [ ] Target tag does not exist locally or on remote (`git tag -l`, `git ls-remote --tags`)
 - [ ] Working tree clean; all hardening commits pushed to `main`
 - [ ] **WSA cuts only:** `deployment/version.json` `subsystem_baseline.wsa_version` + `subsystem_baseline.release_tag` updated together; tag named `wsa-v<shipped-version>` per §3.1

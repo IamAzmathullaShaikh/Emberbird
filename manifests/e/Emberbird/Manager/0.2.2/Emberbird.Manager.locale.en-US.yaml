@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
+
+PackageIdentifier: Emberbird.Manager
+PackageVersion: 0.2.2
+PackageLocale: en-US
+Publisher: Emberbird
+PublisherUrl: https://github.com/IamAzmathullaShaikh/Emberbird
+PublisherSupportUrl: https://github.com/IamAzmathullaShaikh/Emberbird/issues
+PackageName: Emberbird Manager
+PackageUrl: https://github.com/IamAzmathullaShaikh/Emberbird
+License: AGPL-3.0
+LicenseUrl: https://github.com/IamAzmathullaShaikh/Emberbird/blob/master/LICENSE
+Copyright: Copyright (c) 2026 Emberbird contributors
+ShortDescription: Emberbird Manager — a lifecycle platform for Android on Windows (modified Windows Subsystem for Android distribution).
+Description: Emberbird Manager is a lightweight native desktop application to manage the Android-on-Windows lifecycle, perform verified cold VHDX backups, restore containers with rollback safety, and coordinate build upgrades. Emberbird is an independent platform evolved from the WSABuilds project (AGPL-3.0); it is not affiliated with Microsoft. Windows Subsystem for Android and Windows are trademarks of Microsoft Corporation.
+Tags:
+  - wsa
+  - android
+  - subsystem
+  - magisk
+  - backup
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0

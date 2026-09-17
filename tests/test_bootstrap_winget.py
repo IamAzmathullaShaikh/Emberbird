@@ -111,7 +111,7 @@ class TestAssetPicking(FakeTransports):
         with tempfile.TemporaryDirectory() as td:
             manifest_dir = Path(td) / "0.2.3"
             manifest_dir.mkdir()
-            (manifest_dir / "WSABuilds.WSABuildsManager.installer.yaml").write_text(
+            (manifest_dir / "Emberbird.Manager.installer.yaml").write_text(
                 "PackageIdentifier: WSABuilds.WSABuildsManager\n"
                 "PackageVersion: 0.2.3\n"
                 "  - Architecture: x64\n"
@@ -120,13 +120,26 @@ class TestAssetPicking(FakeTransports):
                 encoding="utf-8",
             )
             orig_dir = bw.MANIFESTS_DIR
+            orig_pkg = bw.PACKAGE_ID
             bw.MANIFESTS_DIR = Path(td)
+            bw.PACKAGE_ID = "Emberbird.Manager"
+            manifest_dir = Path(td) / "0.2.3"
+            manifest_dir.mkdir(parents=True, exist_ok=True)
             try:
+                (manifest_dir / f"{bw.PACKAGE_ID}.installer.yaml").write_text(
+                    "PackageIdentifier: Emberbird.Manager\n"
+                    "PackageVersion: 0.2.3\n"
+                    "  - Architecture: x64\n"
+                    f"    InstallerUrl: https://x/{SETUP_NAME}\n"
+                    '    InstallerSha256: "' + "0" * 64 + """\n""",
+                    encoding="utf-8",
+                )
                 with self.assertRaises(bw.BootstrapError) as ctx:
                     bw.bootstrap("0.2.3", expected_hash=None, allow_download=True)
                 self.assertIn("suspiciously small", str(ctx.exception))
             finally:
                 bw.MANIFESTS_DIR = orig_dir
+                bw.PACKAGE_ID = orig_pkg
 
 
 class TestManifestPatching(FakeTransports):
@@ -154,7 +167,7 @@ class TestHonestyContract(FakeTransports):
         with tempfile.TemporaryDirectory() as td:
             manifest_dir = Path(td) / "0.2.3"
             manifest_dir.mkdir()
-            (manifest_dir / "WSABuilds.WSABuildsManager.installer.yaml").write_text(
+            (manifest_dir / "Emberbird.Manager.installer.yaml").write_text(
                 "PackageIdentifier: WSABuilds.WSABuildsManager\n"
                 "PackageVersion: 0.2.3\n"
                 "  - Architecture: x64\n"
@@ -177,7 +190,7 @@ class TestSubmissionPackageChecks(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             base = Path(td) / "0.2.3"
             base.mkdir()
-            (base / "WSABuilds.WSABuildsManager.installer.yaml").write_text(
+            (base / "Emberbird.Manager.installer.yaml").write_text(
                 "PackageIdentifier: WSABuilds.WSABuildsManager\n"
                 "PackageVersion: 0.2.3\n"
                 "ManifestType: installer\n"
@@ -187,21 +200,21 @@ class TestSubmissionPackageChecks(unittest.TestCase):
                 '    InstallerSha256: "' + "0" * 64 + '"\n',
                 encoding="utf-8",
             )
-            (base / "WSABuilds.WSABuildsManager.yaml").write_text(
+            (base / "Emberbird.Manager.yaml").write_text(
                 "PackageIdentifier: WSABuilds.WSABuildsManager\n"
                 "PackageVersion: 0.2.3\n"
                 "ManifestType: version\n"
                 "ManifestVersion: 1.6.0\n",
                 encoding="utf-8",
             )
-            (base / "WSABuilds.WSABuildsManager.locale.en-US.yaml").write_text(
+            (base / "Emberbird.Manager.locale.en-US.yaml").write_text(
                 "PackageIdentifier: WSABuilds.WSABuildsManager\n"
                 "PackageVersion: 0.2.3\n"
                 "ManifestType: defaultLocale\n"
                 "ManifestVersion: 1.6.0\n",
                 encoding="utf-8",
             )
-            installer = (base / "WSABuilds.WSABuildsManager.installer.yaml").read_text(encoding="utf-8")
+            installer = (base / "Emberbird.Manager.installer.yaml").read_text(encoding="utf-8")
             h = bw.read_manifest_field(installer, "InstallerSha256")
             self.assertEqual(h, "0" * 64)
             # The structural check must reject the all-zero placeholder hash.

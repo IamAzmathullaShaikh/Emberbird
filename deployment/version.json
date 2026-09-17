@@ -4,13 +4,14 @@
     "version": "0.2.2",
     "channel": "stable",
     "release_date": "2026-09-14",
-    "winget_package_id": "WSABuilds.WSABuildsManager",
+    "winget_package_id": "Emberbird.Manager",
+    "product_name": "Emberbird Manager",
     "min_windows_build": "10.0.19045.0",
     "target_architectures": [
       "x64"
     ],
-    "publisher": "WSABuilds",
-    "license": "Apache-2.0"
+    "publisher": "Emberbird",
+    "license": "AGPL-3.0"
   },
   "subsystem_baseline": {
     "wsa_version": "2407.40000.4.0",

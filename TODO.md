@@ -503,6 +503,33 @@ confirmation), full battery green, CI ratification, cycle record.
 
 ---
 
+### E5 — Distribution Identity: new winget package + truthful licensing (ACTIVE)
+
+Per BRAND §3/§4: the Emberbird distribution identity ships as a **new package**
+(`Emberbird.Manager`, publisher `Emberbird`) — historical package IDs and
+manifests stay frozen (M4). Published artifact filenames are observed reality
+and are carried verbatim into the new manifests. The new package's first
+authored version is **0.2.2** — the only version whose artifacts, URL, and
+hash are published reality; nothing is fabricated.
+
+- [x] **E5.1 — Identity seam**: `deployment/version.json` carries the new
+  package id, publisher, and a truthful `AGPL-3.0` license claim (the
+  Apache-2.0 claim is a fabrication defect — Legal Compliance Gate).
+  → schema gains `product_name` + license enum.
+- [x] **E5.2 — New-package manifests**: author
+  `manifests/e/Emberbird/Manager/0.2.2/` from published reality only
+  (InstallerUrl + InstallerSha256 = the published v0.2.2 bytes).
+- [x] **E5.3 — Tooling parametrization**: `validate_distribution.py`,
+  `bootstrap_winget.py`, `prepare-winget` job, and Manager package metadata
+  derive identity from `version.json` instead of hardcoding the old package.
+  → Manager renamed: `emberbird-manager`, `emberbird_manager_lib`, Tauri
+  product/identifier/window title, UI strings. Artifact chain
+  `EmberbirdManager-*`. Manager backup data dir intentionally keeps its
+  historical name (data continuity; BRAND §8 rule 5).
+- [x] **E5.4 — Docs + guards**: GOVERNANCE checklist generalized,
+  BRAND §8 distribution record, guard tests pinning the boundary.
+  → `tests/test_e5_distribution_identity.py`, `docs/HISTORICAL_PRESERVATION.md` (G3).
+
 ## Part IV — Future phases (LOCKED — not active, listed for direction only)
 
 Per the Execution Contract, no phase may receive implementation work before

@@ -30,7 +30,7 @@ const PRESENTATIONS: Record<SubsystemState, SubsystemStatePresentation> = {
     dotClass: 'bg-slate-500',
     usable: false,
     mayShowVersion: false,
-    guidance: 'Deploy a WSABuilds edition to begin.',
+    guidance: 'Deploy a Emberbird edition to begin.',
   },
   PARTIALLY_INSTALLED: {
     label: 'Partially Installed',

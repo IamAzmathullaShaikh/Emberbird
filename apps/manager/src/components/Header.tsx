@@ -33,7 +33,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
           <div>
             <h1 className="text-sm font-bold text-white leading-tight">
-              WSABuilds Manager
+              Emberbird Manager
             </h1>
             <span className="text-[11px] text-slate-400 font-mono">
               v0.2.0 (Lifecycle Engine)

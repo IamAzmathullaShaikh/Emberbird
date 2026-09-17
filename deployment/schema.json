@@ -11,13 +11,13 @@
       "required": [
         "version",
         "channel",
-        "release_date",
-        "winget_package_id",
+        "release_date",        "winget_package_id",
         "min_windows_build",
         "target_architectures",
         "publisher",
-        "license"
-      ],
+        "license",
+        "product_name"
+    ],
       "additionalProperties": false,
       "properties": {
         "version": {
@@ -45,7 +45,8 @@
           "minItems": 1
         },
         "publisher": { "type": "string" },
-        "license": { "type": "string" }
+        "license": { "type": "string", "enum": ["AGPL-3.0"] },
+        "product_name": { "type": "string" }
       }
     },
     "subsystem_baseline": {

@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """
-WSABuilds Distribution and Winget Manifest Validator
+Emberbird Distribution and Winget Manifest Validator
 Validates version consistency, packaging specifications, and Winget manifest structure.
+
+Identity (E5.3): the active package identity derives from deployment/version.json
+(single source of truth). Historical packages under manifests/w/WSABuilds/ are
+frozen published history (M4) and are never mutated — only sanity-checked.
 """
 
 import json
@@ -13,13 +17,13 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 INSTALLER_NAME_PATTERN = re.compile(
-    r"^WSABuildsManager-Setup-(?P<version>[0-9]+\.[0-9]+\.[0-9]+)-(?P<arch>x64|arm64)\.exe$"
+    r"^(?P<prefix>[A-Za-z0-9]+)-Setup-(?P<version>[0-9]+\.[0-9]+\.[0-9]+)-(?P<arch>x64|arm64)\.exe$"
 )
 PORTABLE_NAME_PATTERN = re.compile(
-    r"^WSABuildsManager-Portable-(?P<version>[0-9]+\.[0-9]+\.[0-9]+)-(?P<arch>x64|arm64)\.zip$"
+    r"^(?P<prefix>[A-Za-z0-9]+)-Portable-(?P<version>[0-9]+\.[0-9]+\.[0-9]+)-(?P<arch>x64|arm64)\.zip$"
 )
 CHECKSUM_NAME_PATTERN = re.compile(
-    r"^WSABuildsManager-(?P<version>[0-9]+\.[0-9]+\.[0-9]+)-checksums\.txt$"
+    r"^(?P<prefix>[A-Za-z0-9]+)-(?P<version>[0-9]+\.[0-9]+\.[0-9]+)-checksums\.txt$"
 )
 SHA256_HEX_PATTERN = re.compile(r"^[a-fA-F0-9]{64}$")
 
@@ -172,6 +176,37 @@ def validate_winget_manifests(
     return errors
 
 
+def _artifact_prefix(product_name: str) -> str:
+    """Emberbird Manager -> EmberbirdManager (published-artifact naming rule)."""
+    return "".join(part for part in product_name.split() if part)
+
+
+def _validate_historic_manifests(repo_root: Path) -> list:
+    """Frozen-history sanity (M4): every historic package keeps its three
+    manifests with a real-format hash. Historic manifests are never mutated."""
+    errors = []
+    base = repo_root / "manifests"
+    # Layout: manifests/<first-char>/<Publisher>/<Package>/<version>/ (winget convention).
+    for bucket in sorted(p for p in base.iterdir() if p.is_dir()):
+        for publisher_dir in sorted(p for p in bucket.iterdir() if p.is_dir()):
+            for pkg_dir in sorted(p for p in publisher_dir.iterdir() if p.is_dir()):
+                for ver_dir in sorted(p for p in pkg_dir.iterdir() if p.is_dir()):
+                    pkg_id = f"{publisher_dir.name}.{pkg_dir.name}"
+                    for suffix in (".yaml", ".installer.yaml", ".locale.en-US.yaml"):
+                        if not (ver_dir / f"{pkg_id}{suffix}").exists():
+                            errors.append(f"historic manifest missing: {pkg_id}{suffix} under {ver_dir.name}")
+                    inst = ver_dir / f"{pkg_id}.installer.yaml"
+                    if inst.exists():
+                        try:
+                            data = yaml.safe_load(inst.read_text(encoding="utf-8"))
+                            for entry in data.get("Installers", []):
+                                if not SHA256_HEX_PATTERN.match(str(entry.get("InstallerSha256", ""))):
+                                    errors.append(f"historic hash format invalid: {inst}")
+                        except Exception as e:
+                            errors.append(f"historic manifest parse error: {inst}: {e}")
+    return errors
+
+
 def is_valid_installer_name(
     filename: str, expected_version: str = None, expected_arch: str = None
 ) -> bool:
@@ -210,7 +245,7 @@ def is_valid_checksum_name(
 
 
 def main():
-    print("[*] WSABuilds Distribution & Winget Manifest Validator")
+    print("[*] Emberbird Distribution & Winget Manifest Validator")
     version_file = REPO_ROOT / "deployment" / "version.json"
 
     try:
@@ -247,15 +282,25 @@ def main():
         sys.exit(1)
     print("[+] All Winget manifest YAML files validated successfully.")
 
-    # Validate sample artifact names
-    sample_installer = f"WSABuildsManager-Setup-{target_version}-x64.exe"
-    sample_portable = f"WSABuildsManager-Portable-{target_version}-x64.zip"
-    sample_checksums = f"WSABuildsManager-{target_version}-checksums.txt"
+    # Validate sample artifact names (prefix derives from the active identity)
+    artifact_prefix = _artifact_prefix(data["manager"]["product_name"])
+    sample_installer = f"{artifact_prefix}-Setup-{target_version}-x64.exe"
+    sample_portable = f"{artifact_prefix}-Portable-{target_version}-x64.zip"
+    sample_checksums = f"{artifact_prefix}-{target_version}-checksums.txt"
 
     assert is_valid_installer_name(sample_installer, target_version, "x64")
     assert is_valid_portable_name(sample_portable, target_version, "x64")
     assert is_valid_checksum_name(sample_checksums, target_version)
     print("[+] Release packaging naming conventions verified.")
+
+    # Frozen-history sanity: never mutated, only checked (M4)
+    historic_errors = _validate_historic_manifests(REPO_ROOT)
+    if historic_errors:
+        print("[-] Historic manifest sanity check failed:")
+        for err in historic_errors:
+            print(f"    - {err}")
+        sys.exit(1)
+    print("[+] Historic winget manifests intact (frozen history, M4).")
 
     print(
         "[+] SUCCESS: Distribution metadata and Winget manifests are fully valid."

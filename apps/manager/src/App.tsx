@@ -82,7 +82,7 @@ export const App: React.FC = () => {
         )}
 
         <div className="p-4 rounded-xl bg-slate-900/30 border border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
-          <span>WSABuilds Desktop Subsystem Lifecycle Engine</span>
+          <span>Emberbird Desktop Subsystem Lifecycle Engine</span>
           <span>Sprint 7 Deliverable • Architecture v5.0</span>
         </div>
       </main>

@@ -129,7 +129,7 @@ The version of WSABuilds Manager must remain strictly synchronized across all pr
 2. `apps/manager/package.json` (`version`)
 3. `apps/manager/src-tauri/Cargo.toml` (`package.version`)
 4. `apps/manager/src-tauri/tauri.conf.json` (`version`)
-5. `manifests/w/WSABuilds/WSABuildsManager/[version]/`
+5. `manifests/e/Emberbird/Manager/[version]/` (active identity; historical `manifests/w/WSABuilds/WSABuildsManager/` is frozen history)
 
 Enforce version consistency before submitting changes by running:
 ```powershell

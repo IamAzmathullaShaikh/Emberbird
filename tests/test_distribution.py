@@ -26,7 +26,14 @@ class TestDistributionAndWinget(unittest.TestCase):
         data = validate_version_json(self.version_file)
 
         mgr = data["manager"]
-        self.assertEqual(mgr["winget_package_id"], "WSABuilds.WSABuildsManager")
+        # E5: the active distribution identity is the NEW Emberbird package;
+        # the historical WSABuilds.WSABuildsManager manifests stay frozen (M4).
+        self.assertEqual(mgr["winget_package_id"], "Emberbird.Manager")
+        self.assertEqual(mgr["publisher"], "Emberbird")
+        self.assertEqual(mgr["product_name"], "Emberbird Manager")
+        # License claims must be truthful: the repository is AGPL-3.0
+        # (Legal Compliance Gate — no fabricated Apache-2.0 claims).
+        self.assertEqual(mgr["license"], "AGPL-3.0")
         self.assertIn(mgr["channel"], ["stable", "beta", "nightly"])
         # Declared architectures must be real build targets, never aspirational:
         # every architecture here must have an installer manifest with a

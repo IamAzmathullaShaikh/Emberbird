@@ -5,25 +5,25 @@
     "m4": "Release History Is Immutable",
     "s1": "Historical Identity Preservation — Emberbird may replace branding; it may not erase history"
   },
-  "generated_at": "2026-09-16T20:38:22Z",
+  "generated_at": "2026-09-17T02:32:03Z",
   "totals": {
-    "files": 151,
-    "occurrences": 960,
+    "files": 147,
+    "occurrences": 923,
     "by_token": {
-      "MagiskOnWSA": 109,
+      "MagiskOnWSA": 110,
       "MagiskOnWSALocal": 67,
-      "WSABuilds": 784
+      "WSABuilds": 746
     },
     "by_class": {
-      "doc-prose": 81,
+      "doc-prose": 99,
       "historical-doc": 345,
-      "identifier": 211,
-      "package-name": 48,
-      "path-reference": 122,
+      "identifier": 184,
+      "package-name": 51,
+      "path-reference": 117,
       "upstream-attribution": 55,
-      "url": 48,
+      "url": 51,
       "user-facing": 12,
-      "workflow-name": 38
+      "workflow-name": 9
     },
     "protected_occurrences": 400
   },
@@ -126,128 +126,8 @@
     },
     {
       "path": ".github/workflows/winget-release.yml",
-      "count": 32,
+      "count": 3,
       "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "\"$portableHash *WSABuildsManager-Portable-$ver-x64.zip\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "\"$portableHash *WSABuildsManager-Portable-$ver-x64.zip\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "\"$portableHash *WSABuildsManager-Portable-$ver-x64.zip\" | Out-File -Encoding ascii \"dist_artifacts/WSABuildsManager-Portable-$ver-x64.zip.sha256\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "\"$portableHash *WSABuildsManager-Portable-$ver-x64.zip\" | Out-File -Encoding ascii \"dist_artifacts/WSABuildsManager-Portable-$ver-x64.zip.sha256\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "\"$portableHash *WSABuildsManager-Portable-$ver-x64.zip\" | Out-File -Encoding ascii \"sign_assets/WSABuildsManager-Portable-$ver-x64.zip.sha256\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "\"$portableHash *WSABuildsManager-Portable-$ver-x64.zip\" | Out-File -Encoding ascii \"sign_assets/WSABuildsManager-Portable-$ver-x64.zip.sha256\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "\"$setupHash *WSABuildsManager-Setup-$ver-x64.exe\" | Out-File -Encoding ascii \"dist_artifacts/WSABuildsManager-Setup-$ver-x64.exe.sha256\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "\"$setupHash *WSABuildsManager-Setup-$ver-x64.exe\" | Out-File -Encoding ascii \"dist_artifacts/WSABuildsManager-Setup-$ver-x64.exe.sha256\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "\"$setupHash *WSABuildsManager-Setup-$ver-x64.exe\" | Out-File -Encoding ascii \"sign_assets/WSABuildsManager-Setup-$ver-x64.exe.sha256\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "\"$setupHash *WSABuildsManager-Setup-$ver-x64.exe\" | Out-File -Encoding ascii \"sign_assets/WSABuildsManager-Setup-$ver-x64.exe.sha256\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "\"$setupHash *WSABuildsManager-Setup-$ver-x64.exe\","
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "\"$setupHash *WSABuildsManager-Setup-$ver-x64.exe\","
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "$portable = \"sign_assets/WSABuildsManager-Portable-$ver-x64.zip\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "$portableHash = (Get-FileHash \"dist_artifacts/WSABuildsManager-Portable-$ver-x64.zip\" -Algorithm SHA256).Hash.ToLower()"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "$setup = \"dist_artifacts/WSABuildsManager-Setup-$ver-x64.exe\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "$setup = \"sign_assets/WSABuildsManager-Setup-$ver-x64.exe\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "$setupHash = (Get-FileHash \"dist_artifacts/WSABuildsManager-Setup-$ver-x64.exe\" -Algorithm SHA256).Hash.ToLower()"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": ") | Out-File -Encoding ascii \"dist_artifacts/WSABuildsManager-$ver-checksums.txt\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": ") | Out-File -Encoding ascii \"sign_assets/WSABuildsManager-$ver-checksums.txt\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "Compress-Archive -Path \"dist_artifacts/wsabuilds-manager.exe\", \"LICENSE\" -DestinationPath \"dist_artifacts/WSABuildsManager-Portable-$ver-x64.zip\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "Copy-Item $nsisInstaller.FullName \"dist_artifacts/WSABuildsManager-Setup-$ver-x64.exe\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "Copy-Item -Recurse \"manifests/w/WSABuilds/WSABuildsManager/$ver\" \"winget_bundle/\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "Copy-Item -Recurse \"manifests/w/WSABuilds/WSABuildsManager/$ver\" \"winget_bundle/\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "Get-Content release_assets/WSABuildsManager-*-checksums.txt | ForEach-Object {"
-        },
         {
           "token": "WSABuilds",
           "class": "workflow-name",
@@ -262,31 +142,6 @@
           "token": "WSABuilds",
           "class": "workflow-name",
           "context": "VITE_PUBLIC_RELEASES_URL: https://github.com/IamAzmathullaShaikh/WSABuilds/releases"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "name: WSABuilds Manager ${{ github.ref_name }}"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "release_assets/WSABuildsManager-*.exe"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "release_assets/WSABuildsManager-*.sha256"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "release_assets/WSABuildsManager-*.txt"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "release_assets/WSABuildsManager-*.zip"
         }
       ]
     },
@@ -448,7 +303,7 @@
     },
     {
       "path": "GOVERNANCE.md",
-      "count": 8,
+      "count": 6,
       "occurrences": [
         {
           "token": "WSABuilds",
@@ -468,12 +323,7 @@
         {
           "token": "WSABuilds",
           "class": "doc-prose",
-          "context": "- [ ] `manifests/w/WSABuilds/WSABuildsManager/<new-version>/` exists with all three manifests; installer manifest references the new release URL; SHA256 carries the **documented bo"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "doc-prose",
-          "context": "- [ ] `winget validate manifests/w/WSABuilds/WSABuildsManager/<new-version>` (local winget CLI) → succeeded"
+          "context": "- [ ] `manifests/<first-char>/<Publisher>/<Package>/<new-version>/` (per `deployment/version.json` `winget_package_id`; e.g. `manifests/e/Emberbird/Manager/`) exists with all three"
         },
         {
           "token": "WSABuilds",
@@ -483,12 +333,7 @@
         {
           "token": "WSABuilds",
           "class": "path-reference",
-          "context": "- [ ] `manifests/w/WSABuilds/WSABuildsManager/<new-version>/` exists with all three manifests; installer manifest references the new release URL; SHA256 carries the **documented bo"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "path-reference",
-          "context": "- [ ] `winget validate manifests/w/WSABuilds/WSABuildsManager/<new-version>` (local winget CLI) → succeeded"
+          "context": "- [ ] `manifests/<first-char>/<Publisher>/<Package>/<new-version>/` (per `deployment/version.json` `winget_package_id`; e.g. `manifests/e/Emberbird/Manager/`) exists with all three"
         }
       ]
     },
@@ -969,7 +814,7 @@
         {
           "token": "WSABuilds",
           "class": "doc-prose",
-          "context": "5. `manifests/w/WSABuilds/WSABuildsManager/[version]/`"
+          "context": "5. `manifests/e/Emberbird/Manager/[version]/` (active identity; historical `manifests/w/WSABuilds/WSABuildsManager/` is frozen history)"
         },
         {
           "token": "WSABuilds",
@@ -984,7 +829,7 @@
         {
           "token": "WSABuilds",
           "class": "path-reference",
-          "context": "5. `manifests/w/WSABuilds/WSABuildsManager/[version]/`"
+          "context": "5. `manifests/e/Emberbird/Manager/[version]/` (active identity; historical `manifests/w/WSABuilds/WSABuildsManager/` is frozen history)"
         }
       ]
     },
@@ -996,71 +841,6 @@
           "token": "WSABuilds",
           "class": "identifier",
           "context": "<title>WSABuilds Manager</title>"
-        }
-      ]
-    },
-    {
-      "path": "apps/manager/src-tauri/Cargo.toml",
-      "count": 2,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "authors = [\"WSABuilds Community\"]"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "description = \"WSABuilds Manager Native Desktop Client\""
-        }
-      ]
-    },
-    {
-      "path": "apps/manager/src-tauri/capabilities/default.json",
-      "count": 1,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "\"description\": \"Default capability set for WSABuilds Manager\","
-        }
-      ]
-    },
-    {
-      "path": "apps/manager/src-tauri/tauri.conf.json",
-      "count": 2,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "\"productName\": \"WSABuilds Manager\","
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "\"title\": \"WSABuilds Manager\","
-        }
-      ]
-    },
-    {
-      "path": "apps/manager/src/App.tsx",
-      "count": 1,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "<span>WSABuilds Desktop Subsystem Lifecycle Engine</span>"
-        }
-      ]
-    },
-    {
-      "path": "apps/manager/src/components/Header.tsx",
-      "count": 1,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "WSABuilds Manager"
         }
       ]
     },
@@ -1087,83 +867,6 @@
           "token": "WSABuilds",
           "class": "identifier",
           "context": "backup_path: '%LOCALAPPDATA%\\\\WSABuilds\\\\backups\\\\mock\\\\userdata.vhdx',"
-        }
-      ]
-    },
-    {
-      "path": "apps/manager/src/lib/state.ts",
-      "count": 1,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "guidance: 'Deploy a WSABuilds edition to begin.',"
-        }
-      ]
-    },
-    {
-      "path": "apps/manager/tests/distribution.test.mjs",
-      "count": 12,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "'WSABuilds',"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "'WSABuilds.WSABuildsManager.installer.yaml'"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "'WSABuilds.WSABuildsManager.locale.en-US.yaml'"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "'WSABuildsManager',"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "assert.equal(cmd, 'winget install WSABuilds.WSABuildsManager');"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "assert.equal(data.manager.winget_package_id, 'WSABuilds.WSABuildsManager');"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "const versionYaml = path.join(manifestDir, 'WSABuilds.WSABuildsManager.yaml');"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "path-reference",
-          "context": "'WSABuilds.WSABuildsManager.installer.yaml'"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "path-reference",
-          "context": "'WSABuilds.WSABuildsManager.locale.en-US.yaml'"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "path-reference",
-          "context": "assert.equal(cmd, 'winget install WSABuilds.WSABuildsManager');"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "path-reference",
-          "context": "assert.equal(data.manager.winget_package_id, 'WSABuilds.WSABuildsManager');"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "path-reference",
-          "context": "const versionYaml = path.join(manifestDir, 'WSABuilds.WSABuildsManager.yaml');"
         }
       ]
     },
@@ -1582,27 +1285,6 @@
       ]
     },
     {
-      "path": "deployment/version.json",
-      "count": 3,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "\"publisher\": \"WSABuilds\","
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "\"winget_package_id\": \"WSABuilds.WSABuildsManager\","
-        },
-        {
-          "token": "WSABuilds",
-          "class": "path-reference",
-          "context": "\"winget_package_id\": \"WSABuilds.WSABuildsManager\","
-        }
-      ]
-    },
-    {
       "path": "docs/ARCHITECTURE.md",
       "count": 4,
       "occurrences": [
@@ -1676,7 +1358,7 @@
     },
     {
       "path": "docs/BRAND.md",
-      "count": 5,
+      "count": 10,
       "occurrences": [
         {
           "token": "MagiskOnWSA",
@@ -1696,12 +1378,37 @@
         {
           "token": "WSABuilds",
           "class": "doc-prose",
+          "context": "(`%LOCALAPPDATA%\\WSABuilds\\backups`) keeps its name until a real migration path"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "1. **New identity ships as a new package.** `WSABuilds.WSABuildsManager` and its"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
           "context": "4. **Published winget manifests** — `manifests/w/WSABuilds/**` are frozen"
         },
         {
           "token": "WSABuilds",
           "class": "doc-prose",
           "context": "`grep -rl \"E4.3-FLIP\" --include=\"*.yml\" --include=\"*.ts\" . | xargs sed -i 's/IamAzmathullaShaikh\\/WSABuilds/IamAzmathullaShaikh\\/Emberbird/g'`"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "manifests under `manifests/w/WSABuilds/` are frozen history (M4) — never mutated,"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "reference the artifacts that were actually published (e.g. `WSABuildsManager-Setup-0.2.2-x64.exe`)"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "1. **New identity ships as a new package.** `WSABuilds.WSABuildsManager` and its"
         }
       ]
     },
@@ -1749,6 +1456,117 @@
           "token": "WSABuilds",
           "class": "upstream-attribution",
           "context": "March 2025. The upstream community build project (WSABuilds) carries that"
+        }
+      ]
+    },
+    {
+      "path": "docs/HISTORICAL_PRESERVATION.md",
+      "count": 21,
+      "occurrences": [
+        {
+          "token": "MagiskOnWSA",
+          "class": "doc-prose",
+          "context": "MagiskOnWSA / WSABuilds lineage (see `docs/archive/` and `docs/BRAND.md` §6)."
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "MagiskOnWSA / WSABuilds lineage (see `docs/archive/` and `docs/BRAND.md` §6)."
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| 0.2.0 | `v0.2.0` | `WSABuildsManager-Setup-0.2.0-x64.exe`, portable + checksums sidecars | see `manifests/w/WSABuilds/WSABuildsManager/0.2.0/` |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| 0.2.0 | `v0.2.0` | `WSABuildsManager-Setup-0.2.0-x64.exe`, portable + checksums sidecars | see `manifests/w/WSABuilds/WSABuildsManager/0.2.0/` |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| 0.2.1 | `v0.2.1` | `WSABuildsManager-Setup-0.2.1-x64.exe`, portable + checksums sidecars | see `manifests/w/WSABuilds/WSABuildsManager/0.2.1/` |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| 0.2.1 | `v0.2.1` | `WSABuildsManager-Setup-0.2.1-x64.exe`, portable + checksums sidecars | see `manifests/w/WSABuilds/WSABuildsManager/0.2.1/` |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| 0.2.2 | `v0.2.2` | `WSABuildsManager-Setup-0.2.2-x64.exe`, `WSABuildsManager-Portable-0.2.2-x64.zip`, `WSABuildsManager-0.2.2-checksums.txt` | `887443bad0aeb3eec04ff367b4768edad2"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| 0.2.2 | `v0.2.2` | `WSABuildsManager-Setup-0.2.2-x64.exe`, `WSABuildsManager-Portable-0.2.2-x64.zip`, `WSABuildsManager-0.2.2-checksums.txt` | `887443bad0aeb3eec04ff367b4768edad2"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| 0.2.2 | `v0.2.2` | `WSABuildsManager-Setup-0.2.2-x64.exe`, `WSABuildsManager-Portable-0.2.2-x64.zip`, `WSABuildsManager-0.2.2-checksums.txt` | `887443bad0aeb3eec04ff367b4768edad2"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| Artifact prefix | `WSABuildsManager-` (Setup / Portable / checksums) | Frozen — published asset filenames are immutable |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| Package identifier | `WSABuilds.WSABuildsManager` | Frozen — manifests preserved under `manifests/w/WSABuilds/WSABuildsManager/` |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| Package identifier | `WSABuilds.WSABuildsManager` | Frozen — manifests preserved under `manifests/w/WSABuilds/WSABuildsManager/` |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| Product name | `WSABuilds Manager` | Frozen |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| Publisher | `WSABuilds` | Frozen |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| `manifests/w/WSABuilds/WSABuildsManager/*/…locale.en-US.yaml` | `License: Apache-2.0` (the repository was and is AGPL-3.0) | Frozen verbatim — what was published is what was publ"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "| 0.2.0 | `v0.2.0` | `WSABuildsManager-Setup-0.2.0-x64.exe`, portable + checksums sidecars | see `manifests/w/WSABuilds/WSABuildsManager/0.2.0/` |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "| 0.2.1 | `v0.2.1` | `WSABuildsManager-Setup-0.2.1-x64.exe`, portable + checksums sidecars | see `manifests/w/WSABuilds/WSABuildsManager/0.2.1/` |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "| Package identifier | `WSABuilds.WSABuildsManager` | Frozen — manifests preserved under `manifests/w/WSABuilds/WSABuildsManager/` |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "| Package identifier | `WSABuilds.WSABuildsManager` | Frozen — manifests preserved under `manifests/w/WSABuilds/WSABuildsManager/` |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "| `manifests/w/WSABuilds/WSABuildsManager/*/…locale.en-US.yaml` | `License: Apache-2.0` (the repository was and is AGPL-3.0) | Frozen verbatim — what was published is what was publ"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "url",
+          "context": "Release URLs (redirect-safe): `https://github.com/IamAzmathullaShaikh/WSABuilds/releases/tag/v<version>`."
         }
       ]
     },
@@ -3876,6 +3694,33 @@
       ]
     },
     {
+      "path": "manifests/e/Emberbird/Manager/0.2.2/Emberbird.Manager.installer.yaml",
+      "count": 2,
+      "occurrences": [
+        {
+          "token": "WSABuilds",
+          "class": "package-name",
+          "context": "InstallerUrl: https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.2/WSABuildsManager-Setup-0.2.2-x64.exe"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "package-name",
+          "context": "InstallerUrl: https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.2/WSABuildsManager-Setup-0.2.2-x64.exe"
+        }
+      ]
+    },
+    {
+      "path": "manifests/e/Emberbird/Manager/0.2.2/Emberbird.Manager.locale.en-US.yaml",
+      "count": 1,
+      "occurrences": [
+        {
+          "token": "WSABuilds",
+          "class": "package-name",
+          "context": "Description: Emberbird Manager is a lightweight native desktop application to manage the Android-on-Windows lifecycle, perform verified cold VHDX backups, restore containers with r"
+        }
+      ]
+    },
+    {
       "path": "manifests/w/WSABuilds/WSABuildsManager/0.2.0/WSABuilds.WSABuildsManager.installer.yaml",
       "count": 4,
       "occurrences": [
@@ -4171,32 +4016,12 @@
     },
     {
       "path": "scripts/bootstrap_winget.py",
-      "count": 8,
+      "count": 3,
       "occurrences": [
         {
           "token": "WSABuilds",
           "class": "identifier",
           "context": "\"User-Agent\": \"WSABuilds-WingetBootstrap\","
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "MANIFESTS_DIR = ROOT / \"manifests\" / \"w\" / \"WSABuilds\" / \"WSABuildsManager\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "MANIFESTS_DIR = ROOT / \"manifests\" / \"w\" / \"WSABuilds\" / \"WSABuildsManager\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "PACKAGE_ID = \"WSABuilds.WSABuildsManager\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "PUBLISHER_DIR = \"WSABuilds\""
         },
         {
           "token": "WSABuilds",
@@ -4207,11 +4032,6 @@
           "token": "WSABuilds",
           "class": "identifier",
           "context": "req = urllib.request.Request(url, headers={\"User-Agent\": \"WSABuilds-WingetBootstrap\"})"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "path-reference",
-          "context": "PACKAGE_ID = \"WSABuilds.WSABuildsManager\""
         }
       ]
     },
@@ -4647,47 +4467,12 @@
     },
     {
       "path": "scripts/validate_distribution.py",
-      "count": 8,
+      "count": 1,
       "occurrences": [
         {
           "token": "WSABuilds",
           "class": "identifier",
-          "context": "WSABuilds Distribution and Winget Manifest Validator"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "print(\"[*] WSABuilds Distribution & Winget Manifest Validator\")"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "r\"^WSABuildsManager-(?P<version>[0-9]+\\.[0-9]+\\.[0-9]+)-checksums\\.txt$\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "r\"^WSABuildsManager-Portable-(?P<version>[0-9]+\\.[0-9]+\\.[0-9]+)-(?P<arch>x64|arm64)\\.zip$\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "r\"^WSABuildsManager-Setup-(?P<version>[0-9]+\\.[0-9]+\\.[0-9]+)-(?P<arch>x64|arm64)\\.exe$\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "sample_checksums = f\"WSABuildsManager-{target_version}-checksums.txt\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "sample_installer = f\"WSABuildsManager-Setup-{target_version}-x64.exe\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "sample_portable = f\"WSABuildsManager-Portable-{target_version}-x64.zip\""
+          "context": "(single source of truth). Historical packages under manifests/w/WSABuilds/ are"
         }
       ]
     },
@@ -4824,7 +4609,7 @@
     },
     {
       "path": "tests/test_bootstrap_winget.py",
-      "count": 27,
+      "count": 15,
       "occurrences": [
         {
           "token": "WSABuilds",
@@ -4859,42 +4644,12 @@
         {
           "token": "WSABuilds",
           "class": "identifier",
-          "context": "(base / \"WSABuilds.WSABuildsManager.installer.yaml\").write_text("
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "(base / \"WSABuilds.WSABuildsManager.locale.en-US.yaml\").write_text("
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "(base / \"WSABuilds.WSABuildsManager.yaml\").write_text("
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "(manifest_dir / \"WSABuilds.WSABuildsManager.installer.yaml\").write_text("
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "(manifest_dir / \"WSABuilds.WSABuildsManager.installer.yaml\").write_text("
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
           "context": "SETUP_NAME = \"WSABuildsManager-Setup-0.2.3-x64.exe\""
         },
         {
           "token": "WSABuilds",
           "class": "identifier",
           "context": "body = f\"{HASH_A} *{SETUP_NAME}\\n{HASH_B} *WSABuildsManager-Portable-0.2.3-x64.zip\".encode()"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "installer = (base / \"WSABuilds.WSABuildsManager.installer.yaml\").read_text(encoding=\"utf-8\")"
         },
         {
           "token": "WSABuilds",
@@ -4930,36 +4685,6 @@
           "token": "WSABuilds",
           "class": "path-reference",
           "context": "\"PackageIdentifier: WSABuilds.WSABuildsManager\\n\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "path-reference",
-          "context": "(base / \"WSABuilds.WSABuildsManager.installer.yaml\").write_text("
-        },
-        {
-          "token": "WSABuilds",
-          "class": "path-reference",
-          "context": "(base / \"WSABuilds.WSABuildsManager.locale.en-US.yaml\").write_text("
-        },
-        {
-          "token": "WSABuilds",
-          "class": "path-reference",
-          "context": "(base / \"WSABuilds.WSABuildsManager.yaml\").write_text("
-        },
-        {
-          "token": "WSABuilds",
-          "class": "path-reference",
-          "context": "(manifest_dir / \"WSABuilds.WSABuildsManager.installer.yaml\").write_text("
-        },
-        {
-          "token": "WSABuilds",
-          "class": "path-reference",
-          "context": "(manifest_dir / \"WSABuilds.WSABuildsManager.installer.yaml\").write_text("
-        },
-        {
-          "token": "WSABuilds",
-          "class": "path-reference",
-          "context": "installer = (base / \"WSABuilds.WSABuildsManager.installer.yaml\").read_text(encoding=\"utf-8\")"
         }
       ]
     },
@@ -4970,7 +4695,7 @@
         {
           "token": "WSABuilds",
           "class": "identifier",
-          "context": "self.assertEqual(mgr[\"winget_package_id\"], \"WSABuilds.WSABuildsManager\")"
+          "context": "# the historical WSABuilds.WSABuildsManager manifests stay frozen (M4)."
         },
         {
           "token": "WSABuilds",
@@ -5015,7 +4740,7 @@
         {
           "token": "WSABuilds",
           "class": "path-reference",
-          "context": "self.assertEqual(mgr[\"winget_package_id\"], \"WSABuilds.WSABuildsManager\")"
+          "context": "# the historical WSABuilds.WSABuildsManager manifests stay frozen (M4)."
         }
       ]
     },
@@ -5047,6 +4772,72 @@
           "token": "WSABuilds",
           "class": "path-reference",
           "context": "\"manifests/w/WSABuilds/WSABuildsManager/0.2.2/WSABuilds.WSABuildsManager.installer.yaml\","
+        }
+      ]
+    },
+    {
+      "path": "tests/test_e5_distribution_identity.py",
+      "count": 12,
+      "occurrences": [
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "- The HISTORICAL package (WSABuilds.WSABuildsManager) is frozen history:"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "OLD_MANIFEST_DIR = REPO_ROOT / \"manifests\" / \"w\" / \"WSABuilds\" / \"WSABuildsManager\""
+        },
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "OLD_MANIFEST_DIR = REPO_ROOT / \"manifests\" / \"w\" / \"WSABuilds\" / \"WSABuildsManager\""
+        },
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "OLD_PKG = \"WSABuilds.WSABuildsManager\""
+        },
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "self.assertIn(\"IamAzmathullaShaikh/WSABuilds\", locale + installer)"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "self.assertIn(\"WSABuilds.WSABuildsManager\", hp)"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "self.assertNotIn(\"WSABuildsManager-\", wf)"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "- The HISTORICAL package (WSABuilds.WSABuildsManager) is frozen history:"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "OLD_PKG = \"WSABuilds.WSABuildsManager\""
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "self.assertIn(\"WSABuilds.WSABuildsManager\", hp)"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "url",
+          "context": "\"https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.2/WSABuildsManager-Setup-0.2.2-x64.exe\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "url",
+          "context": "\"https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.2/WSABuildsManager-Setup-0.2.2-x64.exe\","
         }
       ]
     },

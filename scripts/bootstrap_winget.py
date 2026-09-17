@@ -38,9 +38,22 @@ import urllib.error
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-MANIFESTS_DIR = ROOT / "manifests" / "w" / "WSABuilds" / "WSABuildsManager"
-PACKAGE_ID = "WSABuilds.WSABuildsManager"
-PUBLISHER_DIR = "WSABuilds"
+
+
+def _load_identity() -> dict:
+    """Active package identity comes from deployment/version.json (E5.3) —
+    the single source of truth. Historic manifests are never touched."""
+    return json.loads((ROOT / "deployment" / "version.json").read_text(encoding="utf-8"))["manager"]
+
+
+_IDENTITY = _load_identity()
+PACKAGE_ID = _IDENTITY["winget_package_id"]
+PUBLISHER_DIR = _IDENTITY["publisher"]
+MANIFESTS_DIR = (
+    ROOT / "manifests" / PACKAGE_ID.split(".")[0][0].lower() / PACKAGE_ID.split(".")[0] / PACKAGE_ID.split(".")[1]
+)
+# E4.3-FLIP: slug below stays on the historical repository
+# until IamAzmathullaShaikh/Emberbird exists (docs/BRAND.md §7).
 REPO = "IamAzmathullaShaikh/Emberbird"
 OUT_DIR = ROOT / "dist_winget_submission"
 
