@@ -5,14 +5,14 @@
     "m4": "Release History Is Immutable",
     "s1": "Historical Identity Preservation — Emberbird may replace branding; it may not erase history"
   },
-  "generated_at": "2026-09-17T02:48:15Z",
+  "generated_at": "2026-09-17T02:58:39Z",
   "totals": {
     "files": 147,
-    "occurrences": 935,
+    "occurrences": 934,
     "by_token": {
       "MagiskOnWSA": 111,
       "MagiskOnWSALocal": 70,
-      "WSABuilds": 754
+      "WSABuilds": 753
     },
     "by_class": {
       "doc-prose": 99,
@@ -23,7 +23,7 @@
       "upstream-attribution": 64,
       "url": 51,
       "user-facing": 14,
-      "workflow-name": 9
+      "workflow-name": 8
     },
     "protected_occurrences": 409
   },
@@ -84,17 +84,12 @@
     },
     {
       "path": ".github/workflows/manager-build.yml",
-      "count": 2,
+      "count": 1,
       "occurrences": [
         {
           "token": "WSABuilds",
           "class": "workflow-name",
           "context": "echo \"[+] WSABuilds Manager validation suite passed successfully.\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "workflow-name",
-          "context": "name: WSABuilds Manager CI"
         }
       ]
     },
