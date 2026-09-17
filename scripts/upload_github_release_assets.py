@@ -12,6 +12,7 @@ import base64
 import json
 import mimetypes
 import os
+import shutil
 import subprocess
 import sys
 import urllib.error
@@ -98,7 +99,34 @@ def upload_asset(
     upload_headers["Content-Type"] = content_type
     upload_headers["Content-Length"] = str(size_bytes)
 
-    print(f"  [*] Uploading '{filename}' ({size_bytes} bytes, {content_type})...")
+    print(f"  [*] Uploading '{filename}' ({size_bytes} bytes, {content_type})...", flush=True)
+
+    # Use curl.exe for streaming large binary files (>10MB) to prevent OpenSSL socket buffer saturation
+    curl_bin = shutil.which("curl")
+    if size_bytes > 10 * 1024 * 1024 and curl_bin:
+        print(f"  [*] Using {curl_bin} for high-performance streaming upload...", flush=True)
+        curl_cmd = [
+            curl_bin,
+            "-s", "-S",
+            "-X", "POST",
+            "-H", f"Authorization: {headers['Authorization']}",
+            "-H", f"Content-Type: {content_type}",
+            "-H", f"Accept: application/vnd.github.v3+json",
+            "--data-binary", f"@{file_path}",
+            upload_url,
+        ]
+        res = subprocess.run(curl_cmd, capture_output=True, text=True)
+        if res.returncode != 0:
+            raise RuntimeError(f"curl upload failed: {res.stderr}")
+        try:
+            data = json.loads(res.stdout)
+            if "browser_download_url" in data:
+                print(f"  [+] Uploaded '{filename}' successfully -> {data.get('browser_download_url', '')}", flush=True)
+                return data
+            raise RuntimeError(f"GitHub upload failed response: {res.stdout[:300]}")
+        except json.JSONDecodeError:
+            raise RuntimeError(f"Failed to parse GitHub response: {res.stdout[:300]}")
+
     with open(file_path, "rb") as f:
         file_bytes = f.read()
 
@@ -106,7 +134,7 @@ def upload_asset(
     try:
         with urllib.request.urlopen(req) as resp:
             data = json.loads(resp.read().decode())
-            print(f"  [+] Uploaded '{filename}' successfully -> {data.get('browser_download_url', '')}")
+            print(f"  [+] Uploaded '{filename}' successfully -> {data.get('browser_download_url', '')}", flush=True)
             return data
     except urllib.error.HTTPError as err:
         err_msg = err.read().decode() if err.fp else str(err)
