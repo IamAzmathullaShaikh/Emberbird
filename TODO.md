@@ -1122,6 +1122,48 @@ VALIDATION: 338 Python tests pass offline, 5/5 mirror tests pass ·
 RISKS: none — offline manifest generation; does not push to external package repositories ·
 RESULT: Phase P7 is COMPLETE.
 
+### Phase RI1 — Release Integrity: Publication Gate & Publish Guard (COMPLETE)
+
+Audit finding (reality, not assumption): the local release path could *fabricate*.
+`build_release_candidates.py` staged mock payloads (`MZ_EMBERBIRD_..._PAYLOAD_V0.2.2`,
+`MAGISK_BOOT_IMG_HEADER`) and marked them `status: READY`; `package_release.py`
+certified them `validation_status: VERIFIED`; `publish_release.py` registered them with
+`hash_source: published-manifest`; `upload_github_release_assets.py` would have pushed
+them to a public GitHub Release whose default target tag was the **historical**
+`Windows_11_2407.40000.4.0` release (silently overwriting published assets). Verified
+by computing the actual hashes of `dist/release-all/*`: 56-byte "installers", 1.3 KB
+manifest-only "subsystem archives", and a `release-metadata.json` claiming VERIFIED.
+
+**Deliverables**
+
+- [x] **RI1.1 — Publication Integrity Gate** — new `scripts/release_integrity.py` classifies every candidate `REAL` / `PLACEHOLDER` / `UNVERIFIABLE` using container signatures (MZ+PE, ZIP, 7z), plausible-size floors per artifact kind, scaffold-marker detection at byte 0 **and hidden inside archives**, and checksum-manifest placeholder detection.
+- [x] **RI1.2 — Publish refusal wired end-to-end** — `upload_github_release_assets.py` gates *before* authentication (credential-free refusal), `publish_release.py` refuses to register non-real artifacts, `package_release.py` reports truthful status + a `publication_integrity` block, `release_pipeline.py` fails instead of reporting a fabricated 100.0/100 PASS.
+- [x] **RI1.3 — Release-history guard** — `release.yml` gains explicit `tag_name`/`release_title` dispatch inputs plus a **Publish Guard** that refuses to publish over a tag that already carries assets (M4 immutability). Published assets are no longer overwritten by default anywhere (the uploader's replace default flipped OFF).
+- [x] **RI1.4 — Identity hygiene in the release path** — Manager candidates derive their artifact prefix from `deployment/version.json` (`EmberbirdManager-*`), `release_pipeline.py`/`publish_release.py` defaults moved to the canonical Emberbird slug, and new registry entries record `hash_source: computed`.
+- [x] **RI1.5 — Test battery** — `tests/test_release_integrity.py` (32 tests) plus rewritten fixtures in `test_publish_release.py`, `test_package_release.py`, `test_release_pipeline.py` that assert the refusal instead of the old fabricated success.
+
+**Exit checklist (RI1 complete when every line is `[x]`)**
+
+- [x] No publication path can emit a `PLACEHOLDER`/`UNVERIFIABLE` artifact
+- [x] Scaffold builds report `PLACEHOLDER`, never `VERIFIED`/`READY`
+- [x] Release-history overwrite requires an explicit, audited opt-in
+- [x] Full Python battery green (437 tests)
+- [x] `docs/RELEASE_OPERATIONS.md` documents the gate and the pre-flight checklist
+- [x] Cycle RI1 recorded in Part V
+
+### Cycle RI1 — Release Integrity: Publication Gate & Publish Guard (September 18, 2026)
+
+- [x] **Root-cause repair, not symptom masking** — the defect was not "a bad artifact"; it was a pipeline that manufactured certainty it had not earned. The gate now decides publishability from bytes and containers, so any future builder change is covered automatically.
+- [x] **Refusal-by-default** — every path that can reach GitHub (uploader, publisher, CLI, continuous pipeline, release workflow) refuses rather than warns-and-continues.
+- [x] **Evidence** — `python scripts/release_integrity.py --dir dist/release-all` now reports `Gate FAILED: 5/10 artifacts are NOT publishable` on the artifacts previously certified `VERIFIED`.
+
+  STATUS: COMPLETE · BLOCKERS: none · DEPENDENCIES: `data/releases/releases.json`, `.github/workflows/release.yml`
+  FILES: `scripts/release_integrity.py` (new), `scripts/upload_github_release_assets.py`, `scripts/publish_release.py`, `scripts/package_release.py`, `scripts/build_release_candidates.py`, `scripts/release_pipeline.py`, `scripts/audit_release_pipeline.py`, `.github/workflows/release.yml`, `tests/release_fixtures.py` (new), `tests/test_release_integrity.py` (new), `tests/test_publish_release.py`, `tests/test_package_release.py`, `tests/test_release_pipeline.py`, `docs/RELEASE_OPERATIONS.md`, `TODO.md`
+  TESTS ADDED: 32 (`tests/test_release_integrity.py`); suite 405 → 437
+  VALIDATION: 437 Python tests OK (3 skipped) · gate reproduces the refusal on the real local artifacts · actionlint clean on `release.yml`
+  RISKS: `release_pipeline.py` now reports FAIL where it previously reported PASS for scaffold builds — this is the intended correction; genuine CI builds are unaffected because they stage real artifacts
+  RESULT: Phase RI1 is COMPLETE.
+
 ## Part IV — Future phases (LOCKED — completed & governed roadmap)
 
 Per the Execution Contract, all historical and post-metamorphosis roadmap phases
@@ -1140,6 +1182,7 @@ programme ratified by the Programme Board.
 - **P6 — Trusted signing**: COMPLETE (Cycle P6) — Key governance addendum specifying Azure Trusted Signing and FIPS 140-2 Level 3 HSM isolation.
 - **P7 — Distribution automation**: COMPLETE (Cycle P7) — Automated Winget, Scoop, and Chocolatey manifest generation from registry truth.
 - **P8 — ARM64 (Project Snapdragon)**: COMPLETE (Cycle A1) — Native ARM64 build toolchain and BYOB pipeline operational.
+- **RI1 — Release integrity**: COMPLETE (Cycle RI1) — Publication Integrity Gate blocks fabricated artifacts; publishing any build requires a new tag, and published release history can no longer be overwritten by accident.
 
 ---
 

@@ -14,6 +14,17 @@ on:
         description: 'Target Variant Name'
         required: false
         default: 'Magisk_GApps_Retail_x64'
+      tag_name:
+        description: 'Target Release Tag Name (REQUIRED to publish a NEW release safely, e.g. Windows_11_2407.40000.4.0_Emberbird_1)'
+        required: false
+      release_title:
+        description: 'Release title override (optional)'
+        required: false
+      allow_history_overwrite:
+        description: 'DANGEROUS: allow publishing over an existing release that already has assets (violates release-history immutability)'
+        required: false
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       wsa_ver:
@@ -33,6 +44,11 @@ on:
         description: 'Target Release Tag Name'
         type: string
         required: false
+      allow_history_overwrite:
+        description: 'DANGEROUS: allow publishing over an existing release that already has assets'
+        type: boolean
+        required: false
+        default: false
 
 concurrency:
   group: release-${{ github.ref }}
@@ -264,6 +280,7 @@ jobs:
           INPUT_TAG_NAME: ${{ inputs.tag_name }}
           INPUT_WSA_VER: ${{ inputs.wsa_ver }}
           INPUT_WSA_MESSAGE: ${{ inputs.wsa_message }}
+          INPUT_RELEASE_TITLE: ${{ inputs.release_title }}
         run: |
           # Extract WSA version from deployment/version.json if not provided
           DEFAULT_WSA_VER=$(python3 -c "import json; print(json.load(open('deployment/version.json'))['subsystem_baseline']['wsa_version'])" 2>/dev/null || echo "2311.40000.5.0")
@@ -280,7 +297,9 @@ jobs:
           fi
 
           TITLE=""
-          if [ -n "$INPUT_WSA_MESSAGE" ]; then
+          if [ -n "$INPUT_RELEASE_TITLE" ]; then
+            TITLE="$INPUT_RELEASE_TITLE"
+          elif [ -n "$INPUT_WSA_MESSAGE" ]; then
             TITLE="$INPUT_WSA_MESSAGE"
           elif [ -n "$INPUT_WSA_VER" ]; then
             TITLE="Windows Subsystem For Android ${INPUT_WSA_VER} for Windows 11 x64"
@@ -290,6 +309,32 @@ jobs:
 
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "title=${TITLE}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish Guard - Release History Is Immutable 🔒
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET_TAG: ${{ steps.release-info.outputs.tag }}
+          ALLOW_OVERWRITE: ${{ inputs.allow_history_overwrite }}
+        run: |
+          set -euo pipefail
+          echo "[*] Target release tag: $TARGET_TAG"
+          if [ "$ALLOW_OVERWRITE" = "true" ]; then
+            echo "[!] WARNING: allow_history_overwrite=true — published assets may be replaced. Audited as a governance violation."
+            exit 0
+          fi
+          if gh release view "$TARGET_TAG" --json assets > /tmp/existing-release.json 2>/dev/null; then
+            EXISTING=$(python3 -c "import json;print(len(json.load(open('/tmp/existing-release.json')).get('assets') or []))")
+            if [ "$EXISTING" -gt 0 ]; then
+              echo "[!] REALITY GATE REFUSAL: tag '$TARGET_TAG' already has $EXISTING published asset(s)."
+              echo "    Published release history is immutable (Execution Contract M4)."
+              echo "    Re-run with an explicit NEW tag_name to publish a new release."
+              exit 1
+            fi
+            echo "[+] Existing release has no assets; publishing is safe."
+          else
+            echo "[+] No existing release for '$TARGET_TAG'; a new release will be created."
+          fi
 
       - name: Publish GitHub Release 🚀
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.4.2

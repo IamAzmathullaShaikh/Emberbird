@@ -236,7 +236,7 @@ def audit_manager(repo_root: Path = REPO_ROOT) -> PathwayAuditResult:
         status=status,
         primary_tool="npm --prefix apps/manager run build",
         inputs_required=["Node.js >= 18", "Rust / Cargo (for native Tauri compilation)"],
-        outputs_expected=["WSABuildsManager-Setup-<ver>-x64.exe", "WSABuildsManager-Portable-<ver>-x64.zip"],
+        outputs_expected=["EmberbirdManager-Setup-<ver>-x64.exe", "EmberbirdManager-Portable-<ver>-x64.zip"],
         readiness_notes=notes,
         remediation="Run 'npm install --prefix apps/manager' if dependencies are missing." if status == PipelineStatus.PARTIAL else None,
     )

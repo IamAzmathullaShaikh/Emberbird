@@ -37,6 +37,11 @@ if str(RELEASE_ENGINE_DIR) not in sys.path:
     sys.path.insert(0, str(RELEASE_ENGINE_DIR))
 
 from release_engine import validate_against_schema  # noqa: E402
+from release_integrity import audit_artifacts, format_report, gate_report  # noqa: E402
+
+# Canonical repository slug for NEW publications (post-rename identity).
+# Historical registry entries keep their generation-time URLs verbatim.
+DEFAULT_REPO_SLUG = "IamAzmathullaShaikh/Emberbird"
 
 
 def utc_now_iso() -> str:
@@ -103,9 +108,14 @@ def build_release_entry(
     channel: Optional[str] = None,
     edition: Optional[str] = None,
     wsa_version: Optional[str] = None,
-    repo_slug: str = "IamAzmathullaShaikh/WSABuilds",
+    repo_slug: str = DEFAULT_REPO_SLUG,
 ) -> dict[str, Any]:
-    """Constructs a complete, schema-compliant release object from dist_dir."""
+    """Constructs a complete, schema-compliant release object from dist_dir.
+
+    Publication Integrity Gate: refuses to construct a release entry from
+    artifacts that are not genuine build outputs, so a fabricated asset can
+    never be registered in the registry or uploaded to a GitHub Release.
+    """
     meta_path = dist_dir / "release-metadata.json"
     meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.is_file() else {}
 
@@ -119,6 +129,15 @@ def build_release_entry(
     )
     if not package_files:
         raise ValueError(f"No package archives (.7z, .zip, .exe) found in {dist_dir}")
+
+    verdicts = audit_artifacts(package_files)
+    integrity = gate_report(verdicts)
+    if not integrity["passed"]:
+        raise ValueError(
+            "Publication Integrity Gate FAILED — refusing to register "
+            f"{integrity['blocking']}/{integrity['total']} artifact(s) that are not "
+            "genuine build outputs.\n" + format_report(verdicts)
+        )
 
     filenames = [f.name for f in package_files]
     inferred_kind, inferred_edition, default_channel = infer_release_kind_and_edition(filenames)
@@ -157,7 +176,7 @@ def build_release_entry(
                 "role": "package",
                 "source_url": f"https://github.com/{repo_slug}/releases/download/{rel_tag}/{f.name}",
                 "source_type": "derived" if rel_kind == "subsystem" else "generated",
-                "hash_source": "published-manifest",
+                "hash_source": "computed",
                 "verified_at": now_iso,
                 "size_bytes": f.stat().st_size,
             }
@@ -211,7 +230,7 @@ def prepare_publication(
     wsa_version: Optional[str] = None,
     dry_run: bool = False,
     sync_manifests: bool = True,
-    repo_slug: str = "IamAzmathullaShaikh/WSABuilds",
+    repo_slug: str = DEFAULT_REPO_SLUG,
     registry_dict: Optional[dict[str, Any]] = None,
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     """Validates and applies release publication, returning (release_entry, updated_registry, pub_manifest)."""

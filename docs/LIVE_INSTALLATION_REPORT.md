@@ -1,6 +1,6 @@
 # Emberbird Live Installation Validation Report
 
-**Generated**: `2026-09-17T18:15:21Z`  
+**Generated**: `2026-09-17T18:43:09Z`  
 **Target Host**: `Windows 11 (AMD64)`  
 **Overall Status**: `REQUIRES TARGET ENVIRONMENT VALIDATION`  
 

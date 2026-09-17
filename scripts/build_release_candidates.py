@@ -26,6 +26,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from release_integrity import audit_artifacts  # noqa: E402
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 VERSION_JSON = REPO_ROOT / "deployment" / "version.json"
 
@@ -54,6 +57,22 @@ class CandidateEntry:
             "is_mock": self.is_mock,
             "status": self.status,
         }
+
+
+def artifact_prefix() -> str:
+    """Published Manager artifact prefix, derived from the identity seam
+    (deployment/version.json ``manager.product_name``) — never hardcoded.
+
+    "Emberbird Manager" -> "EmberbirdManager".
+    """
+    product_name = "Emberbird Manager"
+    if VERSION_JSON.is_file():
+        try:
+            data = json.loads(VERSION_JSON.read_text(encoding="utf-8"))
+            product_name = data.get("manager", {}).get("product_name", product_name)
+        except Exception:
+            pass
+    return "".join(part for part in product_name.split() if part)
 
 
 def get_default_versions() -> tuple[str, str]:
@@ -146,9 +165,11 @@ def build_manager_candidate(output_base: Path, version: str) -> CandidateEntry:
         except Exception:
             pass
 
-    # Stage mock/real desktop binaries
-    exe_name = f"WSABuildsManager-Setup-{version}-x64.exe"
-    zip_name = f"WSABuildsManager-Portable-{version}-x64.zip"
+    # Stage mock/real desktop binaries under the active published identity
+    prefix = artifact_prefix()
+    exe_name = f"{prefix}-Setup-{version}-x64.exe"
+    zip_name = f"{prefix}-Portable-{version}-x64.zip"
+    real_binaries = False
 
     exe_file = manager_dir / exe_name
     zip_file = manager_dir / zip_name
@@ -157,6 +178,12 @@ def build_manager_candidate(output_base: Path, version: str) -> CandidateEntry:
         exe_file.write_bytes(b"MZ_EMBERBIRD_MANAGER_DESKTOP_SETUP_BINARY_PAYLOAD_V" + version.encode())
     if not zip_file.exists():
         zip_file.write_bytes(b"PK_EMBERBIRD_MANAGER_DESKTOP_PORTABLE_ZIP_PAYLOAD_V" + version.encode())
+
+    # Truth is decided by the Publication Integrity Gate, not by the fact that a
+    # file happens to exist on disk.
+    real_binaries = all(
+        v.publishable for v in audit_artifacts([exe_file, zip_file])
+    )
 
     count, size = dir_stats(manager_dir)
     return CandidateEntry(
@@ -167,8 +194,8 @@ def build_manager_candidate(output_base: Path, version: str) -> CandidateEntry:
         directory=str(manager_dir.relative_to(output_base)),
         file_count=count,
         total_size_bytes=size,
-        is_mock=False,
-        status="READY",
+        is_mock=not real_binaries,
+        status="BUILT" if real_binaries else "PLACEHOLDER",
     )
 
 
@@ -209,7 +236,9 @@ def build_wsa_candidate(
         file_count=count,
         total_size_bytes=size,
         is_mock=not built_real,
-        status="READY",
+        # Truthful staging status: a scaffold candidate is never "READY" to
+        # publish, and the Publication Integrity Gate refuses it downstream.
+        status="BUILT" if built_real else "PLACEHOLDER",
     )
 
 

@@ -122,7 +122,7 @@ python scripts/package_release.py --input-dir output --output-dir dist/release -
   - `dist/release/RELEASE_NOTES.md`
 
 ### Stage 3: Release Publication Flow (Task PR1.3)
-Validate schema compliance, register the release into authoritative registry truth, and generate distribution descriptors:
+Validate schema compliance, register the release into authoritative registry truth, and generate distribution descriptors. Registration is gated: artifacts that are not `REAL` build outputs abort the flow with a Publication Integrity Gate report:
 ```powershell
 # Validate and test release publication without committing
 python scripts/publish_release.py --dist-dir dist/release --dry-run
@@ -134,6 +134,47 @@ python scripts/publish_release.py --dist-dir dist/release
 - Registers published assets, SHA-256 hashes, and verification reports into `data/releases/releases.json`.
 - Automatically syncs Manager package manager descriptors in `dist/manifests/`.
 - Generates `dist/release/github-release.json`, `publish-github.sh`, and `publish-github.bat`.
+
+---
+
+## 6. Publication Integrity Gate (Release Artifact Truth)
+
+Nothing that is not a genuine build output may reach the public Releases section. The gate in `scripts/release_integrity.py` is the machine that enforces this, and it runs **before** any network call, so a refusal never depends on credentials.
+
+Every candidate artifact is classified into exactly three verdicts:
+
+| Verdict | Meaning | Publishable |
+| :--- | :--- | :--- |
+| `REAL` | Container/executable signature matches the declared artifact kind, the payload clears the plausible-size floor, and no scaffold bytes are present | Yes |
+| `PLACEHOLDER` | Staging scaffold bytes (mock WSA package or mock Manager payload written by `build_release_candidates.py`) — detected at byte 0 **or hidden inside an archive** | No |
+| `UNVERIFIABLE` | Missing/invalid container signature, implausibly small payload (e.g. a 56-byte "installer"), or a checksum manifest carrying a placeholder hash | No |
+
+Audit artifacts at any time:
+```powershell
+# Audit explicit files
+python scripts/release_integrity.py dist/release-standard/*
+
+# Audit a whole packaged release directory (machine-readable)
+python scripts/release_integrity.py --dir dist/release-standard --json
+```
+
+Publication is refused automatically by every path that can reach GitHub:
+```powershell
+# Refuses scaffold artifacts, exits 1 (safe, credential-free)
+python scripts/upload_github_release_assets.py --dist-dir dist/release-standard --gate-only
+
+# Publishing requires a genuinely built release directory
+python scripts/upload_github_release_assets.py --dist-dir dist/release-standard --tag <new-tag>
+```
+
+Enforcement points:
+- `scripts/upload_github_release_assets.py` — refuses to upload anything that is not `REAL` (`--force-placeholder` exists and is audited as a governance violation; it does **not** exist to publish stubs).
+- `scripts/publish_release.py` — refuses to register a release whose artifacts are not `REAL`; new entries use the canonical `IamAzmathullaShaikh/Emberbird` slug and `hash_source: computed`.
+- `scripts/package_release.py` — never certifies scaffolds: `release-metadata.json` records `validation_status: PLACEHOLDER`/`UNVERIFIABLE` plus a `publication_integrity` block.
+- `scripts/release_pipeline.py` — the continuous pipeline reports `FAIL` (non-zero exit, reduced health score) when it cannot publish, and emits no `publish-github.*` payload.
+- `.github/workflows/release.yml` — the **Publish Guard** refuses to publish over a release tag that already carries assets, so published release history stays immutable.
+
+> Reality note: a local build without the WSL/MSIX toolchain produces scaffold candidates. Those candidates are never publishable. Genuine subsystem artifacts are produced by CI (`.github/workflows/release.yml`) or by a machine with the [Windows 11 build prerequisites](../WINDOWS11_BUILD_GUIDE.md).
 
 ---
 
@@ -190,6 +231,7 @@ python scripts/release_pipeline.py --check-only
 
 Before announcing any production release, verify:
 - [ ] Pipeline audit has 0 `BLOCKED` pathways (`python scripts/audit_release_pipeline.py`).
+- [ ] The target release tag does **not** already carry assets (published release history is immutable; use a new tag).
 - [ ] Continuous Release Pipeline completes with 7/7 steps `PASS` (`python scripts/release_pipeline.py --dry-run`).
 - [ ] Release candidates staged successfully (`python scripts/build_release_candidates.py`).
 - [ ] Release packages compressed and checksummed (`python scripts/package_release.py`).
@@ -197,6 +239,7 @@ Before announcing any production release, verify:
 - [ ] Live Release Validation returns 100.0% PASS (`python scripts/validate_live_release.py --check`).
 - [ ] Release validation report returns `overall_readiness: READY` (`python scripts/generate_release_validation_report.py --release-id <id>`).
 - [ ] Release notes contain all 4 mandated sections (`python scripts/generate_release_notes.py --release-id <id>`).
+- [ ] Publication Integrity Gate reports every artifact `REAL` (`python scripts/release_integrity.py --dir <release-dir>`).
 - [ ] Distribution manifests match release hashes (`python -m unittest tests/test_distribution_manifests.py`).
 - [ ] Python, Manager, and Website test batteries are green.
 - [ ] Programme Intelligence remains 10.0 / 10.0 (`python scripts/programme_intelligence.py --check`).

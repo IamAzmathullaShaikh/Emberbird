@@ -464,6 +464,12 @@ def execute_release_pipeline(
     passed_count = sum(1 for s in steps if s.status == "PASS")
     overall_status = "PASS" if passed_count == len(steps) else ("WARN" if any(s.status == "WARN" for s in steps) else "FAIL")
 
+    # Reality Gate: step 7 scores the *published registry*, not this run. An
+    # incomplete pipeline must never report full health, or a refusal to
+    # publish would still look like a 100.0/100 release.
+    if passed_count < len(steps):
+        final_health_score = round(final_health_score * passed_count / len(steps), 1)
+
     return ContinuousReleaseSummary(
         timestamp=now_iso,
         target=target,

@@ -3,6 +3,12 @@
 
 Utilizes authenticated GitHub REST API (using credentials from git credential helper).
 Uploads WSA artifacts (Standard, Banking, ARM64, and reports) to the target GitHub release.
+
+Publication Integrity Gate (see scripts/release_integrity.py): every candidate
+is classified REAL / PLACEHOLDER / UNVERIFIABLE before any network call. Only
+REAL artifacts may be published, so scaffold or stub bytes can never reach the
+public Releases section. Already-published assets are never overwritten unless
+--replace-existing is passed explicitly.
 """
 
 from __future__ import annotations
@@ -20,6 +26,14 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Any, Optional
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from release_integrity import (  # noqa: E402
+    audit_artifacts,
+    collect_directory_artifacts,
+    format_report,
+    gate_report,
+)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -141,28 +155,41 @@ def upload_asset(
         raise RuntimeError(f"Failed to upload '{filename}': HTTP {err.code} — {err_msg}")
 
 
-def main() -> int:
+def main(argv: Optional[list[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Upload release artifacts to GitHub Releases")
     parser.add_argument("--repo-slug", default="IamAzmathullaShaikh/Emberbird", help="Target GitHub repo (owner/repo)")
     parser.add_argument("--tag", default="Windows_11_2407.40000.4.0", help="Release tag to upload to")
     parser.add_argument("--files", nargs="+", help="Paths to files to upload")
     parser.add_argument("--all-dist", action="store_true", help="Automatically upload all built packages from dist/")
-    parser.add_argument("--no-replace", action="store_true", help="Do not overwrite existing assets")
+    parser.add_argument(
+        "--dist-dir",
+        action="append",
+        type=Path,
+        default=[],
+        help="Upload every artifact in a packaged release directory (repeatable)",
+    )
+    parser.add_argument(
+        "--replace-existing",
+        action="store_true",
+        help="Overwrite a published asset with the same name (OFF by default: "
+        "published release history is immutable)",
+    )
+    parser.add_argument(
+        "--force-placeholder",
+        action="store_true",
+        help="Bypass the Publication Integrity Gate (publishes unverified bytes; "
+        "audited as a governance violation)",
+    )
+    parser.add_argument(
+        "--gate-only",
+        action="store_true",
+        help="Run the Publication Integrity Gate and exit without uploading",
+    )
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
-    owner, repo = args.repo_slug.split("/", 1)
-    username, password = get_github_auth()
-    headers = get_api_headers(username, password)
-
-    print(f"[*] Authenticated as GitHub user: {username}")
-    print(f"[*] Resolving release for {owner}/{repo} (tag: {args.tag})...")
-
-    rel_info = get_release_by_tag(owner, repo, args.tag, headers)
-    upload_url = rel_info["upload_url"]
-    existing_assets = rel_info.get("assets", [])
-    print(f"[+] Found release: {rel_info.get('name')} (ID: {rel_info['id']}, existing assets: {len(existing_assets)})")
-
+    # Integrity is checked BEFORE authentication: refusing to publish fabricated
+    # bytes must never depend on having credentials.
     files_to_upload: list[Path] = []
     if args.files:
         for f in args.files:
@@ -171,6 +198,9 @@ def main() -> int:
                 files_to_upload.append(p)
             else:
                 print(f"[!] Warning: file not found: {f}", file=sys.stderr)
+    elif args.dist_dir:
+        for d in args.dist_dir:
+            files_to_upload.extend(collect_directory_artifacts(d))
     elif args.all_dist:
         candidates = [
             REPO_ROOT / "dist" / "release-all" / "WSA_2407.40000.4.0_x64.zip",
@@ -190,6 +220,42 @@ def main() -> int:
         print("[-] No files to upload.", file=sys.stderr)
         return 1
 
+    # Publication Integrity Gate — the Releases section never receives
+    # fabricated or unverifiable bytes.
+    verdicts = audit_artifacts(files_to_upload)
+    print(format_report(verdicts))
+    if not gate_report(verdicts)["passed"]:
+        if not args.force_placeholder:
+            print(
+                "[-] REFUSING TO PUBLISH: one or more artifacts are not genuine "
+                "build outputs. Build them through the CI release pipeline "
+                "(.github/workflows/release.yml) instead of staging scaffolds.",
+                file=sys.stderr,
+            )
+            return 1
+        print(
+            "[!] WARNING: --force-placeholder supplied. Publishing non-verified "
+            "artifacts to a public release. This is recorded as a governance "
+            "violation.",
+            file=sys.stderr,
+        )
+
+    if args.gate_only:
+        print("[+] Gate-only run complete; nothing uploaded.")
+        return 0
+
+    owner, repo = args.repo_slug.split("/", 1)
+    username, password = get_github_auth()
+    headers = get_api_headers(username, password)
+
+    print(f"[*] Authenticated as GitHub user: {username}")
+    print(f"[*] Resolving release for {owner}/{repo} (tag: {args.tag})...")
+
+    rel_info = get_release_by_tag(owner, repo, args.tag, headers)
+    upload_url = rel_info["upload_url"]
+    existing_assets = rel_info.get("assets", [])
+    print(f"[+] Found release: {rel_info.get('name')} (ID: {rel_info['id']}, existing assets: {len(existing_assets)})")
+
     print(f"[*] Uploading {len(files_to_upload)} artifacts to release '{args.tag}'...")
     uploaded = 0
     for fpath in files_to_upload:
@@ -201,7 +267,7 @@ def main() -> int:
                 existing_assets=existing_assets,
                 owner=owner,
                 repo=repo,
-                replace_existing=not args.no_replace,
+                replace_existing=args.replace_existing,
             )
             uploaded += 1
         except Exception as err:

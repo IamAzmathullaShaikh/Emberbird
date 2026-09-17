@@ -14,8 +14,11 @@ sys_path = REPO_ROOT / "scripts"
 if str(sys_path) not in sys.path:
     sys.path.insert(0, str(sys_path))
 
+sys.path.insert(0, str(REPO_ROOT / "tests"))
+
 import build_release_candidates as brc  # noqa: E402
 import package_release as pr  # noqa: E402
+from release_fixtures import relaxed_floors, stage_standard_candidate  # noqa: E402
 
 
 class TestPackageRelease(unittest.TestCase):
@@ -45,7 +48,10 @@ class TestPackageRelease(unittest.TestCase):
 
             self.assertGreaterEqual(len(artifacts), 2)
             self.assertEqual(meta["version"], "2407.40000.4.0")
-            self.assertEqual(meta["validation_status"], "VERIFIED")
+            # Scaffold candidates are never certified: the Publication Integrity
+            # Gate classifies them and the metadata must tell the truth.
+            self.assertEqual(meta["validation_status"], "PLACEHOLDER")
+            self.assertFalse(meta["publication_integrity"]["passed"])
 
             # Check files created in dist_dir
             self.assertTrue((dist_dir / "checksums.sha256").is_file())
@@ -69,6 +75,24 @@ class TestPackageRelease(unittest.TestCase):
             self.assertTrue(any(f.startswith("WSA_") and f.endswith(".zip") for f in filenames))
             editions = [a["edition"] for a in meta_json["artifacts"]]
             self.assertIn("standard", editions)
+
+    def test_genuine_candidates_are_certified_verified(self):
+        """The pass path: real staged content packages into a VERIFIED release."""
+        with tempfile.TemporaryDirectory() as staging_tmp, tempfile.TemporaryDirectory() as dist_tmp, relaxed_floors():
+            staging_dir = Path(staging_tmp)
+            dist_dir = Path(dist_tmp)
+            stage_standard_candidate(staging_dir)
+
+            artifacts, meta = pr.package_release_candidates(
+                input_dir=staging_dir,
+                output_dir=dist_dir,
+                format_choice="zip",
+                version="2407.40000.4.0",
+            )
+
+            self.assertGreaterEqual(len(artifacts), 1)
+            self.assertEqual(meta["validation_status"], "VERIFIED")
+            self.assertTrue(meta["publication_integrity"]["passed"])
 
     def test_package_existing_archives(self):
         """Test packager handling when archives already exist in input_dir."""

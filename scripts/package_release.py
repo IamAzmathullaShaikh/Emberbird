@@ -31,6 +31,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 from generate_release_metadata import compute_hashes, detect_edition, detect_edition_label  # noqa: E402
+from release_integrity import audit_artifacts, gate_report  # noqa: E402
 from generate_release_notes import build_release_notes, format_markdown_release_notes, load_registry  # noqa: E402
 from generate_release_validation_report import generate_validation_report, format_markdown_validation_report  # noqa: E402
 
@@ -175,14 +176,34 @@ def package_release_candidates(
     (output_dir / "checksums.txt").write_text("\n".join(txt_lines) + "\n", encoding="utf-8")
 
     # 4. Generate release-metadata.json
+    # Reality Gate: the metadata may only claim VERIFIED when every packaged
+    # artifact is a genuine build output. Local scaffold builds are classified
+    # PLACEHOLDER and are refused by the publication path.
     now_iso = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    verdicts = audit_artifacts([output_dir / a.filename for a in artifacts])
+    integrity = gate_report(verdicts)
+    if integrity["passed"]:
+        integrity_status = "VERIFIED"
+    elif any(v["verdict"] == "PLACEHOLDER" for v in integrity["artifacts"]):
+        integrity_status = "PLACEHOLDER"
+    else:
+        integrity_status = "UNVERIFIABLE"
+    if not integrity["passed"]:
+        print(
+            f"[!] Publication Integrity Gate: {integrity['blocking']}/{integrity['total']} "
+            f"artifact(s) are not publishable (status: {integrity_status}). "
+            "These bytes must NOT be uploaded to a GitHub Release.",
+            file=sys.stderr,
+        )
+
     meta = {
         "version": version,
         "build_date": now_iso,
         "variant": "Production_Release_Package",
-        "validation_status": "VERIFIED",
-        "package_integrity_status": "VERIFIED",
+        "validation_status": integrity_status,
+        "package_integrity_status": integrity_status,
         "total_artifacts": len(artifacts),
+        "publication_integrity": integrity,
         "artifacts": [a.to_dict() for a in artifacts],
     }
     (output_dir / "release-metadata.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
