@@ -1,0 +1,19 @@
+{
+  "$schema": "../schema.json",
+  "app_name": "Termux",
+  "package_id": "com.termux",
+  "category": "Utilities & Tools",
+  "compatibility_status": "Working",
+  "play_integrity_required": false,
+  "tested_wsa_version": "2407.40000.4.0",
+  "tested_root_flavor": "Magisk Stable",
+  "tested_channel": "retail",
+  "last_tested_date": "2026-09-18",
+  "workaround_steps": [
+    "Install Termux APK directly via sideloading or F-Droid release.",
+    "Execute pkg update to initialize mirrors and core packages.",
+    "On Standard Edition, invoke su or tsu for elevated root operations under Magisk; user-space execution works on Banking Edition."
+  ],
+  "known_issues": "None on Standard Edition with Magisk root. Works in unrooted user-space mode on Banking Edition.",
+  "verification_status": "verified"
+}

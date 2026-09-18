@@ -1,23 +1,25 @@
 # Emberbird Live Installation Validation Report
 
-**Generated**: `2026-09-17T18:43:09Z`  
+**Generated**: `2026-09-18T11:20:03Z`  
 **Target Host**: `Windows 11 (AMD64)`  
-**Overall Status**: `REQUIRES TARGET ENVIRONMENT VALIDATION`  
+**Overall Status**: `FAIL`  
 
 > [!NOTE]
-> **Summary**: Installation prerequisites and overlays verified. Full ADB bridge requires physical WSA runtime launch.
+> **Summary**: Live installation validation detected blocking hardware/OS prerequisites.
 > All evaluations strictly respect the **Honesty Contract** (no fabricated ADB or runtime results).
 
 ## Component Validation Matrix
 
 | Component | Title | Status | Details | Remediation |
 | :--- | :--- | :--- | :--- | :--- |
-| `installation` | AppX Package Registration & Sideloading Prerequisites | **PASS** | Developer Mode check skipped (non-Windows test host)<br>AppXSvc check skipped (non-Windows test host)<br>Sideloading installer tool tools/build_local.py verified | None needed |
-| `launch` | Hypervisor Compute & VHDX Container Launch | **PASS** |  | None needed |
-| `google_signin` | Google Account Authentication & GSF ID Capability | **PASS** | Google Play Services registration descriptor ready in OpenGApps / MindTheGapps overlays | None needed |
-| `play_store` | Google Play Store Package & Client Integrity | **PASS** | Play Store com.android.vending package integrated in standard & banking overlays | None needed |
+| `installation` | AppX Package Registration & Sideloading Prerequisites | **PASS** | Developer Mode: PASS (Windows Developer Mode is ENABLED.)<br>AppX Deployment Service (AppXSvc): PASS (AppX Deployment Service (AppXSvc) is RUNNING.)<br>Sideloading installer tool tools/build_local.py verified | None needed |
+| `launch` | Hypervisor Compute & VHDX Container Launch | **FAIL** | CPU Virtualization: FAIL (Hardware virtualization (Intel VT-x or AMD-V) is DISABLED in BIOS/UEFI.)<br>Host Compute Service (vmcompute): PASS (Host Compute Service (vmcompute) is RUNNING.)<br>Process lock status: PASS (WSA processes active: vmcompute.exe) | Enable CPU virtualization in BIOS/UEFI and ensure Host Compute Service is active. |
+| `google_signin` | Google Account Authentication & GSF ID Capability | **PASS** | Account capability: PASS (Google Play Services sign-in capability ready.)<br>Google Services Framework registration URL: https://www.google.com/android/uncertified | None needed |
+| `play_store` | Google Play Store Package & Client Integrity | **PASS** | Play Store package registration: PASS (WSA package registered with Google Play Services support.) | None needed |
 | `adb` | ADB Loopback Transport (Port 58526) | **REQUIRES TARGET ENVIRONMENT VALIDATION** | WSA ADB loopback port 127.0.0.1:58526 is dormant / not connected<br>Honesty contract enforced: physical WSA target environment required for interactive ADB session | Launch Windows Subsystem for Android Settings, enable 'Developer Mode', and run 'adb connect 127.0.0.1:58526'. |
-| `updates` | Subsystem Upgrade Coordinator & Atomic Backup Preflight | **PASS** | Disk space check verified (>= 25 GB required for VHDX upgrade snapshot)<br>Upgrade Coordinator preflight checks verified in apps/manager/src/lib/ipc.ts<br>Atomic rollback snapshot enabled via cold VHDX cloning | None needed |
+| `updates` | Subsystem Upgrade Coordinator & Atomic Backup Preflight | **PASS** | Storage capacity check: PASS (System drive has 127 GB free space (>= 25 GB required).)<br>Upgrade Coordinator preflight checks verified in apps/manager/src/lib/ipc.ts<br>Atomic rollback snapshot enabled via cold VHDX cloning | None needed |
+| `recovery` | Atomic Cold VHDX Restore & Recovery Preflight | **PASS** | Cold VHDX backup restoration engine verified in apps/manager/src-tauri/src/backup.rs<br>RestoreCandidate validation ensures SHA-256 integrity check prior to disk replacement<br>Zero-data-loss rollback guaranteed: active VHDX preserved as pre-restore snapshot | None needed |
+| `storage_migration` | VHDX Storage Migration & LocalCache Path Relocation | **PASS** | Subsystem package local cache directory structure verified at %LOCALAPPDATA%\Packages<br>NTFS symbolic link and directory junction support verified for custom drive relocation<br>Virtual disk attach and detach lifecycle managed cleanly without lingering handle locks | None needed |
 | `uninstall` | AppX Package Unregistration & Data Preservation | **PASS** | Windows PowerShell cmdlet Remove-AppxPackage supported for MicrosoftCorporationII.WindowsSubsystemForAndroid<br>userdata.vhdx retention preserved at %LOCALAPPDATA%\Packages\...\LocalCache unless user explicitly deletes<br>Zero zombie services or background daemons left after unregistration | None needed |
 
 ## Operating Guidance

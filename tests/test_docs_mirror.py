@@ -60,6 +60,9 @@ ALLOWLIST_UNMIRRORED = {
     "RELEASE_HEALTH_REPORT.md",  # Epic PR2 Release Health Report
     "LIVE_INSTALLATION_REPORT.md",  # Epic PR4 Live Installation Validation Report
     "COMPATIBILITY_REPORT.md",  # Epic PR4 Compatibility Operations Report
+    "DOCTOR_TELEMETRY_REPORT.md",  # Epic PR4 Doctor Telemetry Loop Report
+    "WEBSITE_CONVERSION_AUDIT.md",  # Epic PR4 Website Conversion & Journey Audit
+    "COMMUNITY_FEEDBACK_LOOP.md",  # Epic PR4 Closed-Loop Community Feedback Architecture
 }
 
 FRONTMATTER_RE = re.compile(r"\A---\s*\n.*?\n---\s*\n", re.DOTALL)

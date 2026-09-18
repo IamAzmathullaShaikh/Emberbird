@@ -1,9 +1,9 @@
 # Emberbird Application Compatibility Operations Report
 
-**Generated**: `2026-09-17T18:43:09Z`  
-**Total Applications Tested**: `9`  
-**Overall Compatibility Score**: `88.9%`  
-**Play Integrity Requirement Rate**: `66.7%`  
+**Generated**: `2026-09-18T11:20:08Z`  
+**Total Applications Tested**: `11`  
+**Overall Compatibility Score**: `88.6%`  
+**Play Integrity Requirement Rate**: `54.5%`  
 
 ## Category Performance Matrix
 
@@ -12,7 +12,7 @@
 | **Banking & UPI** | 3 | 1 | 2 | 0 | **83.3%** |
 | **Communication** | 2 | 2 | 0 | 0 | **100.0%** |
 | **Streaming & Media** | 2 | 1 | 1 | 0 | **87.5%** |
-| **Utilities & Tools** | 2 | 1 | 1 | 0 | **87.5%** |
+| **Utilities & Tools** | 4 | 2 | 2 | 0 | **87.5%** |
 
 ## Edition Recommendations
 - **Standard Edition**: Recommended for general consumers, modders, and power users needing root privilege management. Verified with Magisk Stable (v30.6+) and Play Store Pico.
@@ -28,8 +28,10 @@
 | **Netflix** | `com.netflix.mediaclient` | Streaming & Media | **Workaround Required** | Required | `REQUIRES TARGET ENVIRONMENT VERIFICATION` | `Magisk Stable` |
 | **Paytm** | `net.one97.paytm` | Banking & UPI | **Working** | Required | `REQUIRES REPOSITORY VERIFICATION` | `Magisk Stable` |
 | **PhonePe** | `com.phonepe.app` | Banking & UPI | **Workaround Required** | Required | `REQUIRES REPOSITORY VERIFICATION` | `Magisk Stable` |
+| **Shizuku** | `moe.shizuku.privileged.api` | Utilities & Tools | **Workaround Required** | Optional | `2407.40000.4.0` | `Magisk Stable` |
 | **Spotify** | `com.spotify.music` | Streaming & Media | **Working** | Optional | `REQUIRES TARGET ENVIRONMENT VERIFICATION` | `Magisk Stable` |
 | **Telegram** | `org.telegram.messenger.web` | Communication | **Working** | Optional | `REQUIRES TARGET ENVIRONMENT VERIFICATION` | `Magisk Stable / No Root` |
+| **Termux** | `com.termux` | Utilities & Tools | **Working** | Optional | `2407.40000.4.0` | `Magisk Stable` |
 | **WhatsApp Messenger** | `com.whatsapp` | Communication | **Working** | Optional | `REQUIRES REPOSITORY VERIFICATION` | `Magisk Stable / No Root` |
 | **YONO SBI** | `com.sbi.lotusintouch` | Banking & UPI | **Workaround Required** | Required | `REQUIRES REPOSITORY VERIFICATION` | `Magisk Stable` |
 

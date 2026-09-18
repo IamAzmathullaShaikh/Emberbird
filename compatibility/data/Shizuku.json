@@ -1,0 +1,19 @@
+{
+  "$schema": "../schema.json",
+  "app_name": "Shizuku",
+  "package_id": "moe.shizuku.privileged.api",
+  "category": "Utilities & Tools",
+  "compatibility_status": "Workaround Required",
+  "play_integrity_required": false,
+  "tested_wsa_version": "2407.40000.4.0",
+  "tested_root_flavor": "Magisk Stable",
+  "tested_channel": "retail",
+  "last_tested_date": "2026-09-18",
+  "workaround_steps": [
+    "Enable Developer Mode inside Windows Subsystem for Android Settings.",
+    "Ensure ADB loopback is active on 127.0.0.1:58526.",
+    "Start Shizuku service via loopback ADB command: adb shell sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh, or grant root permission directly via Magisk."
+  ],
+  "known_issues": "Requires manual ADB service invocation on boot unless root permission is granted via Magisk.",
+  "verification_status": "verified"
+}

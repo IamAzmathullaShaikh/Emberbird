@@ -21,10 +21,10 @@ class TestLiveInstallationValidation(unittest.TestCase):
         report = vli.run_live_installation_validation()
         self.assertIsInstance(report, vli.LiveInstallationReport)
         self.assertIn(report.overall_status, [vli.STATUS_PASS, vli.STATUS_WARN, vli.STATUS_FAIL, vli.STATUS_REQUIRES_VALIDATION])
-        self.assertEqual(len(report.components), 7)
+        self.assertEqual(len(report.components), 9)
 
         component_names = [c.component for c in report.components]
-        expected = ["installation", "launch", "google_signin", "play_store", "adb", "updates", "uninstall"]
+        expected = ["installation", "launch", "google_signin", "play_store", "adb", "updates", "recovery", "storage_migration", "uninstall"]
         self.assertEqual(component_names, expected)
 
     def test_honesty_contract_dormant_adb(self):
@@ -58,7 +58,7 @@ class TestLiveInstallationValidation(unittest.TestCase):
             self.assertEqual(res.returncode, 0, f"CLI execution error: {res.stderr}")
 
             data = json.loads(res.stdout)
-            self.assertEqual(len(data["components"]), 7)
+            self.assertEqual(len(data["components"]), 9)
             self.assertTrue((out_dir / "live-installation-validation-report.json").is_file())
 
 
