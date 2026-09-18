@@ -8,6 +8,7 @@ import type {
   UpgradePreflight,
   UpgradeOptions,
   UpgradeResult,
+  InstallResult,
 } from './types';
 
 declare global {
@@ -164,6 +165,15 @@ function mockInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> 
         message: 'Upgrade completed successfully',
       } as unknown as T);
 
+    case 'install_wsa_package':
+      return Promise.resolve({
+        success: true,
+        package_path:
+          (args?.package_path as string) ||
+          'C:\\WSABuilds\\WSA_2407.40000.4.0_x64_Release-Magisk\\AppxManifest.xml',
+        message: 'WSA package registered successfully via AppX deployment API',
+      } as unknown as T);
+
     default:
       return Promise.reject(new Error(`Unknown Tauri command: ${cmd}`));
   }
@@ -218,3 +228,12 @@ export async function executeUpgrade(
 ): Promise<UpgradeResult> {
   return invokeTauri<UpgradeResult>('execute_upgrade', { options });
 }
+
+export async function installWsaPackage(
+  packagePath: string
+): Promise<InstallResult> {
+  return invokeTauri<InstallResult>('install_wsa_package', {
+    package_path: packagePath,
+  });
+}
+

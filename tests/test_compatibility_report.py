@@ -20,9 +20,9 @@ class TestCompatibilityReport(unittest.TestCase):
     def test_generate_compatibility_report_structure(self):
         report = gcr.generate_compatibility_report()
         self.assertIsInstance(report, gcr.CompatibilityReport)
-        self.assertEqual(report.total_apps_tested, 11)
+        self.assertEqual(report.total_apps_tested, 15)
         self.assertGreater(report.overall_compatibility_score, 80.0)
-        self.assertGreater(report.play_integrity_rate, 50.0)
+        self.assertGreater(report.play_integrity_rate, 35.0)
 
         # Ensure categories exist
         cats = [cs.category for cs in report.category_scores]
@@ -30,6 +30,8 @@ class TestCompatibilityReport(unittest.TestCase):
         self.assertIn("Communication", cats)
         self.assertIn("Streaming & Media", cats)
         self.assertIn("Utilities & Tools", cats)
+        self.assertIn("Productivity & Office", cats)
+        self.assertIn("Gaming", cats)
 
         # Ensure edition recommendations exist
         self.assertIn("standard_edition", report.edition_recommendations)
@@ -57,7 +59,7 @@ class TestCompatibilityReport(unittest.TestCase):
             self.assertEqual(res.returncode, 0, f"CLI error: {res.stderr}")
 
             data = json.loads(res.stdout)
-            self.assertEqual(data["total_apps_tested"], 11)
+            self.assertEqual(data["total_apps_tested"], 15)
             self.assertTrue((out_dir / "compatibility-report.json").is_file())
 
 

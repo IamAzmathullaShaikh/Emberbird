@@ -131,6 +131,12 @@ export interface UpgradeResult {
   message: string;
 }
 
+export interface InstallResult {
+  success: boolean;
+  package_path: string;
+  message: string;
+}
+
 export interface DoctorProbe {
   probe_id: string;
   domain: string;

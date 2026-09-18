@@ -77,3 +77,14 @@ pub fn preflight_upgrade(package_path: Option<String>) -> Result<UpgradePrefligh
 pub fn execute_upgrade(options: UpgradeOptions) -> Result<UpgradeResult, String> {
     execute_upgrade_orchestration(options)
 }
+
+#[tauri::command]
+pub fn install_wsa_package(package_path: String) -> Result<crate::installer::InstallResult, String> {
+    let p = std::path::Path::new(&package_path);
+    let manifest = if p.is_file() {
+        p.to_path_buf()
+    } else {
+        crate::installer::find_appx_manifest(p)?
+    };
+    crate::installer::register_wsa_package(&manifest)
+}

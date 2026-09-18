@@ -1,0 +1,18 @@
+{
+  "$schema": "../schema.json",
+  "app_name": "Amazon Prime Video",
+  "package_id": "com.amazon.avod.thirdpartyclient",
+  "category": "Streaming & Media",
+  "compatibility_status": "Workaround Required",
+  "play_integrity_required": false,
+  "tested_wsa_version": "REQUIRES TARGET ENVIRONMENT VERIFICATION",
+  "tested_root_flavor": "Magisk Stable",
+  "last_tested_date": "REQUIRES TARGET ENVIRONMENT VERIFICATION",
+  "workaround_steps": [
+    "Playback streams successfully at Standard Definition (SD/480p) resolution under Widevine L3 software CDM.",
+    "If black screen occurs during video playback, disable hardware accelerated decoding inside Prime Video application settings.",
+    "On Standard Edition (Magisk), enable Magisk DenyList for Prime Video to prevent DRM initialization errors."
+  ],
+  "known_issues": "Widevine L1 hardware security is not present in Windows Subsystem for Android; maximum streaming resolution is capped at 480p SD.",
+  "verification_status": "unverified"
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "../schema.json",
+  "app_name": "Google Chrome",
+  "package_id": "com.android.chrome",
+  "category": "Productivity & Office",
+  "compatibility_status": "Working",
+  "play_integrity_required": false,
+  "tested_wsa_version": "REQUIRES TARGET ENVIRONMENT VERIFICATION",
+  "tested_root_flavor": "Magisk Stable",
+  "last_tested_date": "REQUIRES TARGET ENVIRONMENT VERIFICATION",
+  "workaround_steps": [
+    "Fully functional on both Standard Edition (Magisk) and Banking Edition (Vanilla).",
+    "Google Account sync operates out-of-the-box when Google Play Services is installed (Standard Edition)."
+  ],
+  "known_issues": "Hardware acceleration depends on host GPU virtualization driver passthrough; some complex WebGL 2.0 demos may fallback to SwiftShader software rendering.",
+  "verification_status": "unverified"
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "../schema.json",
+  "app_name": "Microsoft Teams",
+  "package_id": "com.microsoft.teams",
+  "category": "Communication",
+  "compatibility_status": "Working",
+  "play_integrity_required": false,
+  "tested_wsa_version": "REQUIRES TARGET ENVIRONMENT VERIFICATION",
+  "tested_root_flavor": "Magisk Stable",
+  "last_tested_date": "REQUIRES TARGET ENVIRONMENT VERIFICATION",
+  "workaround_steps": [
+    "Grant microphone and camera permissions when prompted by Windows Subsystem for Android Settings.",
+    "Compatible with both Standard Edition and Banking Edition without root concealment."
+  ],
+  "known_issues": "Background incoming call notifications require WSA background activity policy to be set to 'Continuous' in WSA Settings.",
+  "verification_status": "unverified"
+}

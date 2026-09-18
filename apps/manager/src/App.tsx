@@ -61,7 +61,7 @@ export const App: React.FC = () => {
       <main className="flex-1 overflow-y-auto p-6 max-w-5xl mx-auto w-full space-y-6">
         {activeTab === 'dashboard' && (
           <>
-            <StatusCard status={status} />
+            <StatusCard status={status} onRefresh={refreshStatus} />
             <ReleaseCard
               status={status}
               updateStatus={updateStatus}

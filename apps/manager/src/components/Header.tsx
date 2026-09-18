@@ -69,10 +69,20 @@ export const Header: React.FC<HeaderProps> = ({
         {(() => {
           const projected = projectSubsystemStatus(status);
           const { presentation } = projected;
+          const hostArch =
+            typeof navigator !== 'undefined' &&
+            (navigator.userAgent.toLowerCase().includes('arm64') ||
+              navigator.userAgent.toLowerCase().includes('aarch64'))
+              ? 'arm64'
+              : 'x64';
           return (
             <div className="flex items-center gap-2 text-xs">
               <span className={`px-2.5 py-1 rounded-full font-medium ${presentation.badgeClass}`}>
                 {presentation.label}
+              </span>
+
+              <span className="px-2.5 py-1 rounded-full border font-mono font-medium bg-indigo-500/10 text-indigo-300 border-indigo-500/30">
+                {hostArch === 'arm64' ? 'ARM64 (Snapdragon Native)' : 'x64 Native'}
               </span>
 
               {projected.runningLabel && (

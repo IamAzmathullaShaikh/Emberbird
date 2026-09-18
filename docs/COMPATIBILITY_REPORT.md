@@ -1,17 +1,19 @@
 # Emberbird Application Compatibility Operations Report
 
-**Generated**: `2026-09-18T11:20:08Z`  
-**Total Applications Tested**: `11`  
-**Overall Compatibility Score**: `88.6%`  
-**Play Integrity Requirement Rate**: `54.5%`  
+**Generated**: `2026-09-18T13:36:11Z`  
+**Total Applications Tested**: `15`  
+**Overall Compatibility Score**: `88.3%`  
+**Play Integrity Requirement Rate**: `40.0%`  
 
 ## Category Performance Matrix
 
 | Category | Apps Tested | Working | Workaround | Broken | Compatibility Score |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Banking & UPI** | 3 | 1 | 2 | 0 | **83.3%** |
-| **Communication** | 2 | 2 | 0 | 0 | **100.0%** |
-| **Streaming & Media** | 2 | 1 | 1 | 0 | **87.5%** |
+| **Communication** | 3 | 3 | 0 | 0 | **100.0%** |
+| **Gaming** | 1 | 0 | 1 | 0 | **75.0%** |
+| **Productivity & Office** | 1 | 1 | 0 | 0 | **100.0%** |
+| **Streaming & Media** | 3 | 1 | 2 | 0 | **83.3%** |
 | **Utilities & Tools** | 4 | 2 | 2 | 0 | **87.5%** |
 
 ## Edition Recommendations
@@ -23,13 +25,17 @@
 
 | App Name | Package ID | Category | Status | Play Integrity | Tested WSA | Root Flavor |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Google Chrome** | `com.android.chrome` | Productivity & Office | **Working** | Optional | `REQUIRES TARGET ENVIRONMENT VERIFICATION` | `Magisk Stable` |
+| **Genshin Impact** | `com.miHoYo.GenshinImpact` | Gaming | **Workaround Required** | Optional | `REQUIRES TARGET ENVIRONMENT VERIFICATION` | `Magisk Stable` |
 | **Google Play Services** | `com.google.android.gms` | Utilities & Tools | **Workaround Required** | Required | `REQUIRES TARGET ENVIRONMENT VERIFICATION` | `Magisk Stable` |
 | **Google Play Store** | `com.android.vending` | Utilities & Tools | **Working** | Required | `REQUIRES TARGET ENVIRONMENT VERIFICATION` | `Magisk Stable` |
 | **Netflix** | `com.netflix.mediaclient` | Streaming & Media | **Workaround Required** | Required | `REQUIRES TARGET ENVIRONMENT VERIFICATION` | `Magisk Stable` |
 | **Paytm** | `net.one97.paytm` | Banking & UPI | **Working** | Required | `REQUIRES REPOSITORY VERIFICATION` | `Magisk Stable` |
 | **PhonePe** | `com.phonepe.app` | Banking & UPI | **Workaround Required** | Required | `REQUIRES REPOSITORY VERIFICATION` | `Magisk Stable` |
+| **Amazon Prime Video** | `com.amazon.avod.thirdpartyclient` | Streaming & Media | **Workaround Required** | Optional | `REQUIRES TARGET ENVIRONMENT VERIFICATION` | `Magisk Stable` |
 | **Shizuku** | `moe.shizuku.privileged.api` | Utilities & Tools | **Workaround Required** | Optional | `2407.40000.4.0` | `Magisk Stable` |
 | **Spotify** | `com.spotify.music` | Streaming & Media | **Working** | Optional | `REQUIRES TARGET ENVIRONMENT VERIFICATION` | `Magisk Stable` |
+| **Microsoft Teams** | `com.microsoft.teams` | Communication | **Working** | Optional | `REQUIRES TARGET ENVIRONMENT VERIFICATION` | `Magisk Stable` |
 | **Telegram** | `org.telegram.messenger.web` | Communication | **Working** | Optional | `REQUIRES TARGET ENVIRONMENT VERIFICATION` | `Magisk Stable / No Root` |
 | **Termux** | `com.termux` | Utilities & Tools | **Working** | Optional | `2407.40000.4.0` | `Magisk Stable` |
 | **WhatsApp Messenger** | `com.whatsapp` | Communication | **Working** | Optional | `REQUIRES REPOSITORY VERIFICATION` | `Magisk Stable / No Root` |

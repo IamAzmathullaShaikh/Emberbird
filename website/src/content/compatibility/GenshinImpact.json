@@ -1,0 +1,18 @@
+{
+  "$schema": "../schema.json",
+  "app_name": "Genshin Impact",
+  "package_id": "com.miHoYo.GenshinImpact",
+  "category": "Gaming",
+  "compatibility_status": "Workaround Required",
+  "play_integrity_required": false,
+  "tested_wsa_version": "REQUIRES TARGET ENVIRONMENT VERIFICATION",
+  "tested_root_flavor": "Magisk Stable",
+  "last_tested_date": "REQUIRES TARGET ENVIRONMENT VERIFICATION",
+  "workaround_steps": [
+    "Configure WSA Advanced Settings > Graphics Architecture to dedicated GPU (DirectX 12) with at least 6 GB of allocated VRAM.",
+    "Set in-game graphics preset to 'Low' or 'Medium' with 30/45 FPS cap for thermal stability.",
+    "A third-party touch-to-key mapping utility or connected Xbox controller is recommended for full combat controls."
+  ],
+  "known_issues": "Substantial virtualized shader compilation overhead on first game startup; high GPU utilization may throttle thin-and-light laptop chassis.",
+  "verification_status": "unverified"
+}
