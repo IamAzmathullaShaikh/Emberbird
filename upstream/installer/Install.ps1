@@ -16,7 +16,7 @@
 # Copyright (C) 2024 LSPosed Contributors
 #
 
-$Host.UI.RawUI.WindowTitle = "Installing MagiskOnWSA...."
+$Host.UI.RawUI.WindowTitle = "Installing Emberbird Subsystem for Android...."
 function Test-Administrator {
     [OutputType([bool])]
     param()
@@ -53,7 +53,12 @@ Function Test-CommandExist {
 
 Function Finish {
     Clear-Host
-    Start-Process "wsa://com.topjohnwu.magisk"
+    if (Test-Path ".\AppxManifest.xml") {
+        $hasMagisk = Select-String -Path ".\AppxManifest.xml" -Pattern "com.topjohnwu.magisk" -Quiet
+        if ($hasMagisk) {
+            Start-Process "wsa://com.topjohnwu.magisk"
+        }
+    }
     Start-Process "wsa://com.android.vending"
 }
 
@@ -95,7 +100,7 @@ If (((Test-Path -Path "MakePri.ps1") -And (Test-Path -Path "makepri.exe")) -Eq $
         Write-Warning "Failed to merge resources, WSA Settings will always be in English`r`nPress any key to continue"
         $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
     }
-    $Host.UI.RawUI.WindowTitle = "Installing MagiskOnWSA...."
+    $Host.UI.RawUI.WindowTitle = "Installing Emberbird Subsystem for Android...."
 }
 
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /t REG_DWORD /f /v "AllowDevelopmentWithoutDevLicense" /d "1"
@@ -161,7 +166,7 @@ If (Test-CommandExist WsaClient) {
     Start-Process WsaClient -Wait -Args "/shutdown"
 }
 Stop-Process -Name "WsaClient" -ErrorAction SilentlyContinue
-Write-Output "Installing MagiskOnWSA...."
+Write-Output "Installing Emberbird Subsystem for Android...."
 Add-AppxPackage -ForceApplicationShutdown -ForceUpdateFromAnyVersion -Register .\AppxManifest.xml
 If ($?) {
     Finish

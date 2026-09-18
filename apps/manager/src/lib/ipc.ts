@@ -174,6 +174,12 @@ function mockInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> 
         message: 'WSA package registered successfully via AppX deployment API',
       } as unknown as T);
 
+    case 'launch_wsa':
+      return Promise.resolve(undefined as unknown as T);
+
+    case 'shutdown_wsa':
+      return Promise.resolve(undefined as unknown as T);
+
     default:
       return Promise.reject(new Error(`Unknown Tauri command: ${cmd}`));
   }
@@ -235,5 +241,13 @@ export async function installWsaPackage(
   return invokeTauri<InstallResult>('install_wsa_package', {
     package_path: packagePath,
   });
+}
+
+export async function launchWsa(target?: string): Promise<void> {
+  return invokeTauri<void>('launch_wsa', { target });
+}
+
+export async function shutdownWsa(): Promise<void> {
+  return invokeTauri<void>('shutdown_wsa');
 }
 

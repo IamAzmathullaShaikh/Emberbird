@@ -118,45 +118,71 @@ fn check_processes() -> bool {
 }
 
 fn check_package_registration() -> (bool, Option<String>, Option<String>, Option<String>) {
-    // In production, queries WinRT Windows.Management.Deployment.PackageManager
-    // Fallback/standard path detection:
     let local_app_data = std::env::var("LOCALAPPDATA").unwrap_or_default();
 
-    // Orphaned-data detection: the VHDX is only reported when the file
-    // actually exists on disk, so an orphaned file can never read as an
-    // installation signal.
-    let vhdx_candidate = if !local_app_data.is_empty() {
-        Some(format!(
-            "{}\\Packages\\MicrosoftCorporationII.WindowsSubsystemForAndroid_8wekyb3d8bbwe\\LocalCache\\userdata.vhdx",
-            local_app_data
-        ))
-    } else {
-        None
-    };
-    let vhdx = vhdx_candidate.filter(|p| std::path::Path::new(p).exists());
-
-    // Package data directory (LocalCache): exists only when the package has
-    // created its data, i.e. WSA was actually set up at least once.
-    let data_dir = if !local_app_data.is_empty() {
-        let dir = format!(
-            "{}\\Packages\\MicrosoftCorporationII.WindowsSubsystemForAndroid_8wekyb3d8bbwe\\LocalCache",
-            local_app_data
-        );
-        if std::path::Path::new(&dir).exists() {
-            Some(dir)
+    let (data_dir, vhdx) = if !local_app_data.is_empty() {
+        let cache = std::path::PathBuf::from(&local_app_data)
+            .join("Packages")
+            .join("MicrosoftCorporationII.WindowsSubsystemForAndroid_8wekyb3d8bbwe")
+            .join("LocalCache");
+        if cache.exists() {
+            let v2 = cache.join("userdata.2.vhdx");
+            let v1 = cache.join("userdata.vhdx");
+            let vhdx_path = if v2.exists() {
+                Some(v2.to_string_lossy().to_string())
+            } else if v1.exists() {
+                Some(v1.to_string_lossy().to_string())
+            } else {
+                None
+            };
+            (Some(cache.to_string_lossy().to_string()), vhdx_path)
         } else {
-            None
+            (None, None)
         }
     } else {
-        None
+        (None, None)
     };
 
-    (
-        false,
-        None,
-        data_dir,
-        vhdx,
-    )
+    #[cfg(windows)]
+    {
+        let mut is_registered = false;
+        let mut version = None;
+        let mut install_path = None;
+
+        if let Ok(output) = std::process::Command::new("powershell.exe")
+            .args([
+                "-NoProfile",
+                "-NonInteractive",
+                "-Command",
+                "(Get-AppxPackage MicrosoftCorporationII.WindowsSubsystemForAndroid) | ForEach-Object { \"$($_.Version)|$($_.InstallLocation)\" }",
+            ])
+            .output()
+        {
+            if output.status.success() {
+                let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
+                if !stdout.is_empty() {
+                    if let Some((ver, path)) = stdout.split_once('|') {
+                        let v = ver.trim();
+                        let p = path.trim();
+                        if !v.is_empty() {
+                            version = Some(v.to_string());
+                            is_registered = true;
+                        }
+                        if !p.is_empty() {
+                            install_path = Some(p.to_string());
+                        }
+                    }
+                }
+            }
+        }
+
+        (is_registered, version, install_path.or(data_dir), vhdx)
+    }
+
+    #[cfg(not(windows))]
+    {
+        (false, None, data_dir, vhdx)
+    }
 }
 
 #[cfg(test)]

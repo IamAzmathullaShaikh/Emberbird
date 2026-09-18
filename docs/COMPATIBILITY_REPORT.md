@@ -1,6 +1,6 @@
 # Emberbird Application Compatibility Operations Report
 
-**Generated**: `2026-09-18T14:18:32Z`  
+**Generated**: `2026-09-18T17:23:14Z`  
 **Total Applications Tested**: `15`  
 **Overall Compatibility Score**: `88.3%`  
 **Play Integrity Requirement Rate**: `40.0%`  

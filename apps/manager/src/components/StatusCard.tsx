@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { projectSubsystemStatus } from '../lib/state';
-import { installWsaPackage } from '../lib/ipc';
+import { installWsaPackage, launchWsa, shutdownWsa } from '../lib/ipc';
 import type { WsaStatus, InstallResult } from '../lib/types';
 
 interface StatusCardProps {
@@ -12,6 +12,9 @@ export const StatusCard: React.FC<StatusCardProps> = ({ status, onRefresh }) => 
   const [selectedEdition, setSelectedEdition] = useState<'standard' | 'banking'>('standard');
   const [packagePath, setPackagePath] = useState('C:\\Emberbird\\WSA_2407.40000.4.0_x64_Release-Magisk');
   const [isInstalling, setIsInstalling] = useState(false);
+  const [actionBusy, setActionBusy] = useState(false);
+  const [actionFeedback, setActionFeedback] = useState<string | null>(null);
+  const [copiedCmd, setCopiedCmd] = useState(false);
   const [installResult, setInstallResult] = useState<InstallResult | null>(null);
   const [installError, setInstallError] = useState<string | null>(null);
 
@@ -33,6 +36,34 @@ export const StatusCard: React.FC<StatusCardProps> = ({ status, onRefresh }) => 
       setPackagePath('C:\\Emberbird\\WSA_2407.40000.4.0_x64_Release-Magisk');
     } else {
       setPackagePath('C:\\Emberbird\\WSA_2407.40000.4.0_x64_Release-Vanilla');
+    }
+  };
+
+  const handleLaunch = async (target?: string) => {
+    setActionBusy(true);
+    setActionFeedback(null);
+    try {
+      await launchWsa(target);
+      setActionFeedback(`Launched ${target || 'WSA Settings'}`);
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      setActionFeedback(`Launch failed: ${String(err)}`);
+    } finally {
+      setActionBusy(false);
+    }
+  };
+
+  const handleShutdown = async () => {
+    setActionBusy(true);
+    setActionFeedback(null);
+    try {
+      await shutdownWsa();
+      setActionFeedback('Shutdown signal sent to WSA.');
+      setTimeout(() => onRefresh && onRefresh(), 1500);
+    } catch (err) {
+      setActionFeedback(`Shutdown failed: ${String(err)}`);
+    } finally {
+      setActionBusy(false);
     }
   };
 
@@ -120,6 +151,44 @@ export const StatusCard: React.FC<StatusCardProps> = ({ status, onRefresh }) => 
         <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/60 text-xs">
           <span className="text-slate-500 block mb-0.5">Userdata VHDX Storage{status.state === 'NOT_INSTALLED' ? ' (orphaned data — no subsystem)' : ''}:</span>
           <code className="text-slate-300 font-mono text-[11px] select-all break-all">{status.vhdx_path}</code>
+        </div>
+      )}
+
+      {/* Quick Launch & Control Panel (Surfaced when Subsystem is Registered / Installed) */}
+      {status.state !== 'NOT_INSTALLED' && status.state !== 'UNKNOWN' && (
+        <div className="mt-4 pt-4 border-t border-slate-800/80 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-300">Subsystem Controls</span>
+            {actionFeedback && (
+              <span className="text-[11px] text-indigo-400">{actionFeedback}</span>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => handleLaunch('wsa://settings')}
+              disabled={actionBusy}
+              className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-semibold shadow transition-all flex items-center gap-1.5"
+            >
+              <span>⚙️</span> Open Settings
+            </button>
+            <button
+              type="button"
+              onClick={() => handleLaunch('wsa://com.android.vending')}
+              disabled={actionBusy}
+              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-semibold shadow transition-all flex items-center gap-1.5"
+            >
+              <span>🛍️</span> Open Play Store
+            </button>
+            <button
+              type="button"
+              onClick={handleShutdown}
+              disabled={actionBusy}
+              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-300 text-xs font-medium border border-slate-700 transition-all flex items-center gap-1.5"
+            >
+              <span>⏹️</span> Shut Down WSA
+            </button>
+          </div>
         </div>
       )}
 
@@ -234,8 +303,30 @@ export const StatusCard: React.FC<StatusCardProps> = ({ status, onRefresh }) => 
           )}
 
           {installError && (
-            <div className="p-3 rounded-lg text-xs bg-rose-500/10 text-rose-300 border border-rose-500/30">
-              {installError}
+            <div className="p-3.5 rounded-xl bg-rose-950/40 text-rose-300 border border-rose-500/30 text-xs space-y-2">
+              <div className="font-semibold flex items-center gap-2 text-rose-200">
+                <span>🛡️</span>
+                <span>Administrator Elevation Required (Windows Service Registration)</span>
+              </div>
+              <p className="text-[11px] text-rose-300/90 leading-relaxed">
+                Windows requires administrator privileges to install the WSA system service (<code className="font-mono text-rose-200">WsaService</code>).
+                Run Emberbird Manager as Administrator, or paste this command into an elevated PowerShell prompt:
+              </p>
+              <div className="p-2 rounded bg-slate-950/80 border border-slate-800 font-mono text-[11px] text-slate-200 flex items-center justify-between gap-2 break-all">
+                <code>Add-AppxPackage -Register &quot;{packagePath}&quot; -ForceApplicationShutdown -ForceUpdateFromAnyVersion</code>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`Add-AppxPackage -Register "${packagePath}" -ForceApplicationShutdown -ForceUpdateFromAnyVersion`);
+                    setCopiedCmd(true);
+                    setTimeout(() => setCopiedCmd(false), 2000);
+                  }}
+                  className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-indigo-300 font-sans whitespace-nowrap"
+                >
+                  {copiedCmd ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+              <p className="text-[10px] text-rose-400 font-mono opacity-80">{installError}</p>
             </div>
           )}
         </div>

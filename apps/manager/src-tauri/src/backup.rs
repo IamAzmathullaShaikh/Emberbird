@@ -101,19 +101,37 @@ pub fn copy_and_hash_vhdx(src: &Path, dst: &Path) -> Result<(u64, String), Strin
 
 pub fn get_default_vhdx_path() -> Option<PathBuf> {
     let local_app_data = std::env::var("LOCALAPPDATA").ok()?;
-    let path = PathBuf::from(local_app_data)
+    let cache_dir = PathBuf::from(local_app_data)
         .join("Packages")
         .join("MicrosoftCorporationII.WindowsSubsystemForAndroid_8wekyb3d8bbwe")
-        .join("LocalCache")
-        .join("userdata.vhdx");
-    Some(path)
+        .join("LocalCache");
+
+    let vhdx2 = cache_dir.join("userdata.2.vhdx");
+    if vhdx2.exists() {
+        return Some(vhdx2);
+    }
+
+    let vhdx1 = cache_dir.join("userdata.vhdx");
+    if vhdx1.exists() {
+        return Some(vhdx1);
+    }
+
+    Some(vhdx2)
 }
 
 pub fn get_default_backup_dir() -> PathBuf {
     if let Ok(local_app_data) = std::env::var("LOCALAPPDATA") {
-        PathBuf::from(local_app_data).join("WSABuilds").join("backups")
+        let emberbird_dir = PathBuf::from(&local_app_data).join("Emberbird").join("backups");
+        if emberbird_dir.exists() {
+            return emberbird_dir;
+        }
+        let legacy_dir = PathBuf::from(&local_app_data).join("WSABuilds").join("backups");
+        if legacy_dir.exists() {
+            return legacy_dir;
+        }
+        emberbird_dir
     } else {
-        std::env::temp_dir().join("WSABuilds").join("backups")
+        std::env::temp_dir().join("Emberbird").join("backups")
     }
 }
 
@@ -132,7 +150,7 @@ pub fn create_vhdx_backup_impl(
 
     if !source_path.exists() {
         return Err(format!(
-            "Source userdata.vhdx not found at: {}",
+            "Source userdata VHDX not found at: {}",
             source_path.display()
         ));
     }
@@ -172,7 +190,11 @@ pub fn create_vhdx_backup_impl(
     fs::create_dir_all(&target_dir)
         .map_err(|e| format!("Failed to create backup target directory: {}", e))?;
 
-    let target_vhdx = target_dir.join("userdata.vhdx");
+    let file_name = source_path
+        .file_name()
+        .map(|s| s.to_os_string())
+        .unwrap_or_else(|| std::ffi::OsString::from("userdata.2.vhdx"));
+    let target_vhdx = target_dir.join(file_name);
     let (file_size, sha256) = copy_and_hash_vhdx(&source_path, &target_vhdx)?;
 
     let status = crate::detector::detect_subsystem();

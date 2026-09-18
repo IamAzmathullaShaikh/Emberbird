@@ -1,6 +1,6 @@
 # Emberbird Live Installation Validation Report
 
-**Generated**: `2026-09-18T14:18:28Z`  
+**Generated**: `2026-09-18T17:23:08Z`  
 **Target Host**: `Windows 11 (AMD64)`  
 **Overall Status**: `FAIL`  
 
@@ -17,7 +17,7 @@
 | `google_signin` | Google Account Authentication & GSF ID Capability | **PASS** | Account capability: PASS (Google Play Services sign-in capability ready.)<br>Google Services Framework registration URL: https://www.google.com/android/uncertified | None needed |
 | `play_store` | Google Play Store Package & Client Integrity | **PASS** | Play Store package registration: PASS (WSA package registered with Google Play Services support.) | None needed |
 | `adb` | ADB Loopback Transport (Port 58526) | **REQUIRES TARGET ENVIRONMENT VALIDATION** | WSA ADB loopback port 127.0.0.1:58526 is dormant / not connected<br>Honesty contract enforced: physical WSA target environment required for interactive ADB session | Launch Windows Subsystem for Android Settings, enable 'Developer Mode', and run 'adb connect 127.0.0.1:58526'. |
-| `updates` | Subsystem Upgrade Coordinator & Atomic Backup Preflight | **PASS** | Storage capacity check: PASS (System drive has 132 GB free space (>= 25 GB required).)<br>Upgrade Coordinator preflight checks verified in apps/manager/src/lib/ipc.ts<br>Atomic rollback snapshot enabled via cold VHDX cloning | None needed |
+| `updates` | Subsystem Upgrade Coordinator & Atomic Backup Preflight | **PASS** | Storage capacity check: PASS (System drive has 131 GB free space (>= 25 GB required).)<br>Upgrade Coordinator preflight checks verified in apps/manager/src/lib/ipc.ts<br>Atomic rollback snapshot enabled via cold VHDX cloning | None needed |
 | `recovery` | Atomic Cold VHDX Restore & Recovery Preflight | **PASS** | Cold VHDX backup restoration engine verified in apps/manager/src-tauri/src/backup.rs<br>RestoreCandidate validation ensures SHA-256 integrity check prior to disk replacement<br>Zero-data-loss rollback guaranteed: active VHDX preserved as pre-restore snapshot | None needed |
 | `storage_migration` | VHDX Storage Migration & LocalCache Path Relocation | **PASS** | Subsystem package local cache directory structure verified at %LOCALAPPDATA%\Packages<br>NTFS symbolic link and directory junction support verified for custom drive relocation<br>Virtual disk attach and detach lifecycle managed cleanly without lingering handle locks | None needed |
 | `uninstall` | AppX Package Unregistration & Data Preservation | **PASS** | Windows PowerShell cmdlet Remove-AppxPackage supported for MicrosoftCorporationII.WindowsSubsystemForAndroid<br>userdata.vhdx retention preserved at %LOCALAPPDATA%\Packages\...\LocalCache unless user explicitly deletes<br>Zero zombie services or background daemons left after unregistration | None needed |

@@ -72,8 +72,20 @@ pub fn preflight_restore(
 
     let target_path = match custom_target {
         Some(p) => p.to_path_buf(),
-        None => get_default_vhdx_path()
-            .ok_or_else(|| "Could not resolve default WSA VHDX path".to_string())?,
+        None => {
+            let backup_path = Path::new(&candidate.backup_path);
+            let filename = backup_path
+                .file_name()
+                .unwrap_or_else(|| std::ffi::OsStr::new("userdata.2.vhdx"));
+
+            let local_app_data = std::env::var("LOCALAPPDATA")
+                .map_err(|_| "Could not resolve LOCALAPPDATA".to_string())?;
+            PathBuf::from(local_app_data)
+                .join("Packages")
+                .join("MicrosoftCorporationII.WindowsSubsystemForAndroid_8wekyb3d8bbwe")
+                .join("LocalCache")
+                .join(filename)
+        }
     };
 
     if check_wsa_running() {
@@ -84,10 +96,14 @@ pub fn preflight_restore(
         if let Err(e) = verify_vhdx_unlocked(&target_path) {
             errors.push(format!("Target VHDX is locked: {}", e));
         }
-        warnings.push(
-            "Existing target userdata.vhdx will be backed up to .pre_restore.bak before replacement."
-                .to_string(),
-        );
+        let target_name = target_path
+            .file_name()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or_else(|| "userdata VHDX".to_string());
+        warnings.push(format!(
+            "Existing target {} will be backed up to .pre_restore.bak before replacement.",
+            target_name
+        ));
     }
 
     let can_restore = errors.is_empty();
@@ -128,7 +144,12 @@ pub fn execute_restore_impl(
         ));
     }
 
-    let safety_backup = target_file.with_extension("vhdx.pre_restore.bak");
+    let mut bak_name = target_file
+        .file_name()
+        .map(|s| s.to_os_string())
+        .unwrap_or_else(|| std::ffi::OsString::from("userdata.2.vhdx"));
+    bak_name.push(".pre_restore.bak");
+    let safety_backup = target_file.with_file_name(bak_name);
     let mut safety_created = false;
     if target_file.exists() {
         fs::copy(&target_file, &safety_backup)

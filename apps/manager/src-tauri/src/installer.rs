@@ -93,6 +93,31 @@ pub fn register_wsa_package(manifest_path: &Path) -> Result<InstallResult, Strin
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
+            if stderr.contains("0x80073D28") || stderr.to_lowercase().contains("administrator privileges required") {
+                // Attempt to request UAC elevation via Start-Process -Verb RunAs
+                let escaped = manifest_str.replace('\'', "''");
+                let elev_cmd = format!(
+                    "$proc = Start-Process powershell.exe -PassThru -Verb RunAs -Wait -ArgumentList '-NoProfile', '-NonInteractive', '-Command', \"Add-AppxPackage -Register '\"\"{}\"\"' -ForceApplicationShutdown -ForceUpdateFromAnyVersion\"; exit $proc.ExitCode",
+                    escaped
+                );
+                if let Ok(elev_out) = std::process::Command::new("powershell.exe")
+                    .args(["-NoProfile", "-NonInteractive", "-Command", &elev_cmd])
+                    .output()
+                {
+                    if elev_out.status.success() {
+                        return Ok(InstallResult {
+                            success: true,
+                            package_path: manifest_str,
+                            message: "WSA package registered successfully with administrator elevation".to_string(),
+                        });
+                    }
+                }
+
+                return Err(format!(
+                    "Administrator privileges are required to install WSA services (error 0x80073D28). Please approve the Windows UAC elevation prompt, run Emberbird Manager as Administrator, or execute this command in an elevated PowerShell terminal:\nAdd-AppxPackage -Register \"{}\" -ForceApplicationShutdown -ForceUpdateFromAnyVersion",
+                    manifest_str
+                ));
+            }
             return Err(format!("Add-AppxPackage failed: {}", stderr.trim()));
         }
 

@@ -88,3 +88,26 @@ pub fn install_wsa_package(package_path: String) -> Result<crate::installer::Ins
     };
     crate::installer::register_wsa_package(&manifest)
 }
+
+#[tauri::command]
+pub fn launch_wsa(target: Option<String>) -> Result<(), String> {
+    #[cfg(windows)]
+    {
+        let uri = target.unwrap_or_else(|| "wsa://settings".to_string());
+        std::process::Command::new("powershell.exe")
+            .args(["-NoProfile", "-NonInteractive", "-Command", &format!("Start-Process '{}'", uri)])
+            .spawn()
+            .map_err(|e| format!("Failed to launch WSA: {}", e))?;
+        Ok(())
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = target;
+        Ok(())
+    }
+}
+
+#[tauri::command]
+pub fn shutdown_wsa() -> Result<(), String> {
+    crate::backup::request_wsa_shutdown()
+}
