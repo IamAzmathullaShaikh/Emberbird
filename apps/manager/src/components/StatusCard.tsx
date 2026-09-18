@@ -10,7 +10,7 @@ interface StatusCardProps {
 
 export const StatusCard: React.FC<StatusCardProps> = ({ status, onRefresh }) => {
   const [selectedEdition, setSelectedEdition] = useState<'standard' | 'banking'>('standard');
-  const [packagePath, setPackagePath] = useState('C:\\WSABuilds\\WSA_2407.40000.4.0_x64_Release-Magisk');
+  const [packagePath, setPackagePath] = useState('C:\\Emberbird\\WSA_2407.40000.4.0_x64_Release-Magisk');
   const [isInstalling, setIsInstalling] = useState(false);
   const [installResult, setInstallResult] = useState<InstallResult | null>(null);
   const [installError, setInstallError] = useState<string | null>(null);
@@ -30,9 +30,9 @@ export const StatusCard: React.FC<StatusCardProps> = ({ status, onRefresh }) => 
   const handleSelectEdition = (edition: 'standard' | 'banking') => {
     setSelectedEdition(edition);
     if (edition === 'standard') {
-      setPackagePath('C:\\WSABuilds\\WSA_2407.40000.4.0_x64_Release-Magisk');
+      setPackagePath('C:\\Emberbird\\WSA_2407.40000.4.0_x64_Release-Magisk');
     } else {
-      setPackagePath('C:\\WSABuilds\\WSA_2407.40000.4.0_x64_Release-Vanilla');
+      setPackagePath('C:\\Emberbird\\WSA_2407.40000.4.0_x64_Release-Vanilla');
     }
   };
 

@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 test('installWsaPackage IPC returns successful installation structure', async () => {
-  const res = await installWsaPackage('C:\\WSABuilds\\WSA_2407.40000.4.0_x64_Release-Magisk');
+  const res = await installWsaPackage('C:\\Emberbird\\WSA_2407.40000.4.0_x64_Release-Magisk');
   assert.equal(res.success, true);
   assert.ok(res.package_path.includes('AppxManifest.xml') || res.package_path.includes('WSA_2407'));
   assert.ok(res.message.includes('registered successfully'));

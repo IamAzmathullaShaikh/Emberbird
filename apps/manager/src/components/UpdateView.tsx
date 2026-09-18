@@ -53,7 +53,7 @@ export const UpdateView: React.FC<UpdateViewProps> = ({ onUpgradeSuccess }) => {
   };
 
   const handleUpgradeToRecommended = () => {
-    const defaultPath = 'C:\\WSABuilds\\WSA_2407.40000.4.0_x64_Release-Magisk';
+    const defaultPath = 'C:\\Emberbird\\WSA_2407.40000.4.0_x64_Release-Magisk';
     setPackagePath(defaultPath);
     checkPreflight(defaultPath);
   };
@@ -265,17 +265,17 @@ export const UpdateView: React.FC<UpdateViewProps> = ({ onUpgradeSuccess }) => {
               <span className="text-slate-500">Auto-Detect Suggestions:</span>
               <button
                 type="button"
-                onClick={() => handleQuickSelectPath('C:\\WSABuilds\\WSA_2407.40000.4.0_x64_Release-Magisk')}
+                onClick={() => handleQuickSelectPath('C:\\Emberbird\\WSA_2407.40000.4.0_x64_Release-Magisk')}
                 className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 font-mono text-[10px] transition-colors"
               >
-                C:\WSABuilds\WSA_2407_Magisk
+                C:\Emberbird\WSA_2407_Magisk
               </button>
               <button
                 type="button"
-                onClick={() => handleQuickSelectPath('C:\\WSABuilds\\WSA_2407.40000.4.0_x64_Release-Vanilla')}
+                onClick={() => handleQuickSelectPath('C:\\Emberbird\\WSA_2407.40000.4.0_x64_Release-Vanilla')}
                 className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-emerald-300 font-mono text-[10px] transition-colors"
               >
-                C:\WSABuilds\WSA_2407_Vanilla
+                C:\Emberbird\WSA_2407_Vanilla
               </button>
             </div>
           </div>
@@ -365,7 +365,7 @@ export const UpdateView: React.FC<UpdateViewProps> = ({ onUpgradeSuccess }) => {
                 </span>
                 <button
                   type="button"
-                  onClick={() => handleQuickSelectPath(`C:\\WSABuilds\\${r.name}_x64`)}
+                  onClick={() => handleQuickSelectPath(`C:\\Emberbird\\${r.name}_x64`)}
                   className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 text-[11px] font-medium transition-colors"
                 >
                   Use for Upgrade

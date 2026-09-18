@@ -170,7 +170,7 @@ function mockInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> 
         success: true,
         package_path:
           (args?.package_path as string) ||
-          'C:\\WSABuilds\\WSA_2407.40000.4.0_x64_Release-Magisk\\AppxManifest.xml',
+          'C:\\Emberbird\\WSA_2407.40000.4.0_x64_Release-Magisk\\AppxManifest.xml',
         message: 'WSA package registered successfully via AppX deployment API',
       } as unknown as T);
 
