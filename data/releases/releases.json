@@ -317,6 +317,128 @@
           "report_file": "release-metadata.json"
         }
       ]
+    },
+    {
+      "release_id": "wsa-2407-banking",
+      "tag": "wsa-v2407.40000.4.0",
+      "kind": "subsystem",
+      "channel": "retail",
+      "edition": "banking",
+      "architectures": [
+        "x64"
+      ],
+      "status": "published",
+      "published_at": "2026-09-18T14:12:49Z",
+      "provenance": {
+        "tool": "scripts/publish_release.py",
+        "mode": "production-release",
+        "generated_at": "2026-09-18T14:12:49Z",
+        "commit": "00b605953107b5d8f612b96b3efd3883b6e3d820"
+      },
+      "assets": [
+        {
+          "filename": "WSA_2407.40000.4.0_x64_vanilla.7z",
+          "sha256": "0e275361fba545c3fca7db15ee16dff8f426b37c7cc899d58ddda1937f24a878",
+          "arch": "x64",
+          "role": "package",
+          "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/wsa-v2407.40000.4.0/WSA_2407.40000.4.0_x64_vanilla.7z",
+          "source_type": "derived",
+          "hash_source": "computed",
+          "verified_at": "2026-09-18T14:12:49Z",
+          "size_bytes": 776168810
+        }
+      ],
+      "wsa_version": "2407.40000.4.0",
+      "root_solution": "none",
+      "gapps_variant": "pico",
+      "validation_reports": [
+        {
+          "report_type": "gapps",
+          "result": "VERIFIED",
+          "report_file": "gapps-validation-report.json"
+        },
+        {
+          "report_type": "magisk",
+          "result": "SKIPPED",
+          "report_file": "magisk-validation-report.json"
+        },
+        {
+          "report_type": "package-integrity",
+          "result": "VERIFIED",
+          "report_file": "package-integrity-report.json"
+        },
+        {
+          "report_type": "package-identity",
+          "result": "VERIFIED",
+          "report_file": "package-identity-report.json"
+        },
+        {
+          "report_type": "release-metadata",
+          "result": "VERIFIED",
+          "report_file": "release-metadata.json"
+        }
+      ]
+    },
+    {
+      "release_id": "wsa-2407-standard",
+      "tag": "wsa-v2407.40000.4.0",
+      "kind": "subsystem",
+      "channel": "retail",
+      "edition": "standard",
+      "architectures": [
+        "x64"
+      ],
+      "status": "published",
+      "published_at": "2026-09-18T14:12:44Z",
+      "provenance": {
+        "tool": "scripts/publish_release.py",
+        "mode": "production-release",
+        "generated_at": "2026-09-18T14:12:44Z",
+        "commit": "00b605953107b5d8f612b96b3efd3883b6e3d820"
+      },
+      "assets": [
+        {
+          "filename": "WSA_2407.40000.4.0_x64.7z",
+          "sha256": "9bdfbc5aeef07253b7dc5dadee74d931aac7fc78388ed0bcf463a9c1c1799c28",
+          "arch": "x64",
+          "role": "package",
+          "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/wsa-v2407.40000.4.0/WSA_2407.40000.4.0_x64.7z",
+          "source_type": "derived",
+          "hash_source": "computed",
+          "verified_at": "2026-09-18T14:12:44Z",
+          "size_bytes": 787645801
+        }
+      ],
+      "wsa_version": "2407.40000.4.0",
+      "root_solution": "magisk",
+      "gapps_variant": "pico",
+      "validation_reports": [
+        {
+          "report_type": "gapps",
+          "result": "VERIFIED",
+          "report_file": "gapps-validation-report.json"
+        },
+        {
+          "report_type": "magisk",
+          "result": "VERIFIED",
+          "report_file": "magisk-validation-report.json"
+        },
+        {
+          "report_type": "package-integrity",
+          "result": "VERIFIED",
+          "report_file": "package-integrity-report.json"
+        },
+        {
+          "report_type": "package-identity",
+          "result": "VERIFIED",
+          "report_file": "package-identity-report.json"
+        },
+        {
+          "report_type": "release-metadata",
+          "result": "VERIFIED",
+          "report_file": "release-metadata.json"
+        }
+      ]
     }
   ],
   "vault": [
@@ -390,6 +512,22 @@
       "sha256": "fc671cdab4d486a0a830196957cf9614f320fe8936d5d6d22f25cf62298c0cac",
       "mirror_status": "unverified",
       "last_verified_at": "2026-09-15T11:14:55Z",
+      "availability_score": 100
+    },
+    {
+      "artifact": "WSA_2407.40000.4.0_x64.7z",
+      "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/wsa-v2407.40000.4.0/WSA_2407.40000.4.0_x64.7z",
+      "sha256": "9bdfbc5aeef07253b7dc5dadee74d931aac7fc78388ed0bcf463a9c1c1799c28",
+      "mirror_status": "unverified",
+      "last_verified_at": "2026-09-18T14:12:44Z",
+      "availability_score": 100
+    },
+    {
+      "artifact": "WSA_2407.40000.4.0_x64_vanilla.7z",
+      "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/wsa-v2407.40000.4.0/WSA_2407.40000.4.0_x64_vanilla.7z",
+      "sha256": "0e275361fba545c3fca7db15ee16dff8f426b37c7cc899d58ddda1937f24a878",
+      "mirror_status": "unverified",
+      "last_verified_at": "2026-09-18T14:12:49Z",
       "availability_score": 100
     }
   ]

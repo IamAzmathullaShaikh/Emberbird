@@ -5,14 +5,14 @@
     "m4": "Release History Is Immutable",
     "s1": "Historical Identity Preservation — Emberbird may replace branding; it may not erase history"
   },
-  "generated_at": "2026-09-17T19:45:35Z",
+  "generated_at": "2026-09-18T14:21:27Z",
   "totals": {
     "files": 159,
-    "occurrences": 979,
+    "occurrences": 983,
     "by_token": {
       "MagiskOnWSA": 126,
       "MagiskOnWSALocal": 74,
-      "WSABuilds": 779
+      "WSABuilds": 783
     },
     "by_class": {
       "doc-prose": 110,
@@ -21,7 +21,7 @@
       "package-name": 51,
       "path-reference": 122,
       "upstream-attribution": 87,
-      "url": 57,
+      "url": 61,
       "user-facing": 9,
       "workflow-name": 5
     },
@@ -974,7 +974,7 @@
     },
     {
       "path": "data/releases/releases.json",
-      "count": 43,
+      "count": 47,
       "occurrences": [
         {
           "token": "WSABuilds",
@@ -1190,6 +1190,26 @@
           "token": "WSABuilds",
           "class": "url",
           "context": "\"source_url\": \"https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/wsa-v2311.40000.5.0/WSA_2407.40000.4.0_x64_vanilla.7z\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "url",
+          "context": "\"source_url\": \"https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/wsa-v2407.40000.4.0/WSA_2407.40000.4.0_x64.7z\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "url",
+          "context": "\"source_url\": \"https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/wsa-v2407.40000.4.0/WSA_2407.40000.4.0_x64.7z\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "url",
+          "context": "\"source_url\": \"https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/wsa-v2407.40000.4.0/WSA_2407.40000.4.0_x64_vanilla.7z\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "url",
+          "context": "\"source_url\": \"https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/wsa-v2407.40000.4.0/WSA_2407.40000.4.0_x64_vanilla.7z\","
         }
       ]
     },

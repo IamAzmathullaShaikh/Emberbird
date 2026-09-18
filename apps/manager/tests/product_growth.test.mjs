@@ -20,7 +20,7 @@ test('installWsaPackage IPC returns successful installation structure', async ()
 test('Observatory recommended release is resolved from registry truth', () => {
   const latest = latestReleasesFromRegistry();
   assert.ok(latest.wsa, 'WSA release family must be present');
-  assert.equal(latest.wsa.tag_name, 'wsa-v2311.40000.5.0');
+  assert.equal(latest.wsa.tag_name, 'wsa-v2407.40000.4.0');
 
   const allWsa = releasesFromRegistry().filter((r) => r.channel === 'wsa');
   assert.ok(allWsa.length >= 2, 'Must include published WSA releases');

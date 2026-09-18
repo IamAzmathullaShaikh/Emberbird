@@ -73,7 +73,7 @@ test('latestReleasesFromRegistry pins one newest release per family', () => {
   assert.ok(latest.manager, 'manager family resolves');
   assert.ok(latest.wsa, 'wsa family resolves');
   assert.equal(latest.manager.tag_name, 'v0.2.2');
-  assert.equal(latest.wsa.tag_name, 'wsa-v2311.40000.5.0');
+  assert.equal(latest.wsa.tag_name, 'wsa-v2407.40000.4.0');
 });
 
 test('non-published registry rows never resolve', () => {

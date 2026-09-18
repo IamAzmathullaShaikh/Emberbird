@@ -1,6 +1,6 @@
 # Emberbird Release Health Report (Epic PR2)
 
-**Generated**: `2026-09-18T13:36:21Z`  
+**Generated**: `2026-09-18T14:18:41Z`  
 **Overall Health Score**: **100.0 / 100.0**  
 **Status**: `PASS`  
 **Authority**: `Reality → Registry → Build → Validate → Publish → Distribute → Deploy → Verify`
@@ -22,8 +22,8 @@
 
 ### PR2.1: Release Asset Verification
 - **Status**: `PASS` (Score: **100.0%**)
-  - Audited 9 assets across 6 releases: 9 valid
-  - Correlated 9 vault entries with published assets
+  - Audited 11 assets across 8 releases: 11 valid
+  - Correlated 11 vault entries with published assets
 
 ### PR2.2: Download Validation
 - **Status**: `PASS` (Score: **100.0%**)
@@ -40,8 +40,8 @@
 
 ### PR2.4: Registry Consistency
 - **Status**: `PASS` (Score: **100.0%**)
-  - Zero orphan release assets: all 9 assets have vault entries
-  - Zero orphan vault entries: all 9 vault entries map to active releases
+  - Zero orphan release assets: all 11 assets have vault entries
+  - Zero orphan vault entries: all 11 vault entries map to active releases
   - 100% cryptographic parity: all release asset hashes match vault hashes exactly
   - Registry schema contract 100% valid (0 Draft-07 violations)
 
