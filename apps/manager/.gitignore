@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.env
+.env.*
+*.log
+
+# Tauri
+src-tauri/target/
+src-tauri/bin/
+src-tauri/gen/
+src-tauri/dist/
+src-tauri/icons/
+src-tauri/app-icon.ico
+
+# OS
+.DS_Store
+Thumbs.db
