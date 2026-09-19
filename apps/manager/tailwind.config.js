@@ -7,11 +7,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        fluent: {
-          dark: '#0f172a',
-          card: '#1e293b',
-          border: '#334155',
-          accent: '#6366f1'
+        ember: {
+          obsidian: '#0A0A0B',
+          charcoal: '#161618',
+          ash: '#4A4A4A',
+          glow: '#FF5F1F',
+          highlight: '#FFB347',
         }
       }
     },

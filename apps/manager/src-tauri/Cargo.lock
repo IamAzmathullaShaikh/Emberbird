@@ -755,6 +755,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4ef6b89e5b37196644d8796de5268852ff179b44e96276cf4290264843743bb7"
 
 [[package]]
+name = "emberbird-manager"
+version = "0.2.2"
+dependencies = [
+ "chrono",
+ "reqwest 0.12.28",
+ "semver",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-shell",
+ "tokio",
+ "windows 0.58.0",
+ "winreg 0.52.0",
+]
+
+[[package]]
 name = "encoding_rs"
 version = "0.8.41"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5111,24 +5129,6 @@ dependencies = [
  "windows-core 0.61.2",
  "windows-version",
  "x11-dl",
-]
-
-[[package]]
-name = "emberbird-manager"
-version = "0.2.2"
-dependencies = [
- "chrono",
- "reqwest 0.12.28",
- "semver",
- "serde",
- "serde_json",
- "sha2",
- "tauri",
- "tauri-build",
- "tauri-plugin-shell",
- "tokio",
- "windows 0.58.0",
- "winreg 0.52.0",
 ]
 
 [[package]]

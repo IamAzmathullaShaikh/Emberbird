@@ -27,24 +27,24 @@ export const Header: React.FC<HeaderProps> = ({
   ];
 
   return (
-    <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-3 sm:py-0 sm:h-16">
+    <header className="border-b border-ember-ash/20 bg-ember-obsidian/80 backdrop-blur-md px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-3 sm:py-0 sm:h-16">
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/30">
+          <div className="w-8 h-8 rounded-lg bg-ember-glow flex items-center justify-center font-bold text-ember-obsidian shadow-lg shadow-ember-glow/30">
             E
           </div>
-          <div>
-            <h1 className="text-sm font-bold text-white leading-tight">
-              Emberbird Manager
+          <div className="flex flex-col">
+            <h1 className="text-sm font-bold text-white leading-tight tracking-tight">
+              Emberbird <span className="text-ember-glow">Engine</span>
             </h1>
-            <span className="text-[11px] text-slate-400 font-mono">
-              v0.2.2 (Lifecycle Engine)
+            <span className="text-[10px] text-ember-ash font-mono uppercase tracking-widest">
+              Lifecycle Manager v0.2.2
             </span>
           </div>
         </div>
 
         {/* Navigation Tabs */}
-        <nav className="flex items-center gap-1 bg-slate-950/50 p-1 rounded-lg border border-slate-800/80">
+        <nav className="hidden md:flex items-center gap-1 bg-ember-charcoal/50 p-1 rounded-xl border border-ember-ash/20">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -52,10 +52,10 @@ export const Header: React.FC<HeaderProps> = ({
                 key={tab.id}
                 type="button"
                 onClick={() => onSelectTab(tab.id)}
-                className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
+                className={`px-3 py-1 text-xs font-medium rounded-lg transition-all duration-200 ${
                   isActive
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                    ? 'bg-ember-glow text-ember-obsidian shadow-sm' 
+                    : 'text-ember-ash hover:text-white hover:bg-ember-ash/20'
                 }`}
               >
                 {tab.label}
@@ -81,8 +81,8 @@ export const Header: React.FC<HeaderProps> = ({
                 {presentation.label}
               </span>
 
-              <span className="px-2.5 py-1 rounded-full border font-mono font-medium bg-indigo-500/10 text-indigo-300 border-indigo-500/30">
-                {hostArch === 'arm64' ? 'ARM64 (Snapdragon Native)' : 'x64 Native'}
+              <span className="px-2.5 py-1 rounded-full border font-mono font-medium bg-ember-charcoal text-ember-ash border-ember-ash/30">
+                {hostArch === 'arm64' ? 'ARM64' : 'x64'}
               </span>
 
               {projected.runningLabel && (
@@ -90,13 +90,12 @@ export const Header: React.FC<HeaderProps> = ({
                   className={`px-2.5 py-1 rounded-full border font-medium ${
                     status!.is_running
                       ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                      : 'bg-slate-800 text-slate-300 border-slate-700'
+                      : 'bg-ember-charcoal text-ember-ash border-ember-ash/30'
                   }`}
                 >
                   {projected.runningLabel}
                 </span>
               )}
-
               <span
                 className={`px-2.5 py-1 rounded-full border font-medium ${
                   status!.developer_mode_enabled
@@ -109,12 +108,11 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           );
         })()}
-
         <button
           type="button"
           onClick={onRefresh}
           disabled={loading}
-          className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs text-slate-200 transition-colors disabled:opacity-50"
+          className="px-3 py-1.5 rounded-lg bg-ember-charcoal hover:bg-ember-ash/40 border border-ember-ash/30 text-xs text-white transition-colors disabled:opacity-50"
         >
           {loading ? 'Refreshing...' : 'Refresh'}
         </button>

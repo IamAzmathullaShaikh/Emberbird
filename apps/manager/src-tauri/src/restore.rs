@@ -1,5 +1,5 @@
 use crate::backup::{
-    check_wsa_running, copy_and_hash_vhdx, get_default_vhdx_path, verify_vhdx_unlocked,
+    check_wsa_running, copy_and_hash_vhdx, verify_vhdx_unlocked,
 };
 use crate::registry::list_backups;
 use serde::{Deserialize, Serialize};

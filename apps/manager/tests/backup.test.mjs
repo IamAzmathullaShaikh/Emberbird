@@ -7,58 +7,31 @@ import {
   pruneBackups,
 } from '../src/lib/ipc.ts';
 
-test('createVhdxBackup returns successful metadata structure with SHA-256 and size', async () => {
-  const result = await createVhdxBackup('Test pre-upgrade backup');
+// Zero-Mock contract: ipc.ts throws outside a real Tauri backend instead of
+// returning fabricated success data. The browser/Node test environment has no
+// backend, so every IPC wrapper must reject — never resolve with fake data.
+const BROWSER_MODE_ERROR = /Tauri backend not detected/;
 
-  assert.equal(result.success, true);
-  assert.equal(result.error, null);
-  assert.ok(result.metadata, 'Metadata must be present on success');
-
-  const meta = result.metadata;
-  assert.ok(meta.id.startsWith('backup_'), 'Backup ID must have backup_ prefix');
-  assert.equal(meta.description, 'Test pre-upgrade backup');
-  assert.equal(typeof meta.file_size_bytes, 'number');
-  assert.ok(meta.file_size_bytes > 0, 'Backup size must be positive');
-  assert.match(
-    meta.sha256,
-    /^[a-f0-9]{64}$/,
-    'Checksum must be a valid 64-char hex SHA-256'
+test('createVhdxBackup rejects in browser mode instead of faking a backup', async () => {
+  await assert.rejects(
+    () => createVhdxBackup('Test pre-upgrade backup'),
+    BROWSER_MODE_ERROR,
+    'Backup creation must never report fabricated success outside the Tauri backend'
   );
-  assert.equal(meta.status, 'completed');
 });
 
-test('listBackupCandidates returns sorted candidates with validity flags', async () => {
-  const candidates = await listBackupCandidates();
-
-  assert.ok(Array.isArray(candidates));
-  assert.ok(candidates.length > 0, 'Should have mock candidates in registry');
-
-  for (const candidate of candidates) {
-    assert.ok(candidate.id, 'Candidate must have an ID');
-    assert.ok(candidate.timestamp, 'Candidate must have an ISO timestamp');
-    assert.ok(candidate.wsa_version, 'Candidate must specify WSA version');
-    assert.equal(typeof candidate.is_valid, 'boolean');
-    assert.match(
-      candidate.sha256,
-      /^[a-f0-9]{64}$/,
-      'SHA-256 must be a 64-char hex string'
-    );
-  }
-
-  // Verify descending sort order by timestamp
-  for (let i = 0; i < candidates.length - 1; i++) {
-    const tCurrent = new Date(candidates[i].timestamp).getTime();
-    const tNext = new Date(candidates[i].next?.timestamp || candidates[i + 1].timestamp).getTime();
-    assert.ok(
-      tCurrent >= tNext,
-      'Candidates must be sorted descending by timestamp'
-    );
-  }
+test('listBackupCandidates rejects in browser mode instead of faking a registry', async () => {
+  await assert.rejects(
+    () => listBackupCandidates(),
+    BROWSER_MODE_ERROR,
+    'Backup listing must surface Detection Failed, not synthetic candidates'
+  );
 });
 
-test('pruneBackups executes retention policy and returns pruned candidate IDs', async () => {
-  const pruned = await pruneBackups(1);
-
-  assert.ok(Array.isArray(pruned));
-  assert.ok(pruned.length > 0, 'Pruning should remove older backups exceeding retention limit');
+test('pruneBackups rejects in browser mode instead of faking a retention run', async () => {
+  await assert.rejects(
+    () => pruneBackups(1),
+    BROWSER_MODE_ERROR,
+    'Pruning must never report fabricated deletions'
+  );
 });

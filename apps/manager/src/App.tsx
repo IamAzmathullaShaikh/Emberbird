@@ -49,7 +49,7 @@ export const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500/30">
+    <div className=\"flex flex-col h-screen bg-ember-obsidian text-slate-100 font-sans selection:bg-ember-glow/30\">
       <Header
         status={status}
         onRefresh={refreshStatus}
@@ -58,43 +58,60 @@ export const App: React.FC = () => {
         onSelectTab={setActiveTab}
       />
 
-      <main className="flex-1 overflow-y-auto p-6 max-w-5xl mx-auto w-full space-y-6">
+      <main className=\"flex-1 overflow-y-auto p-6 max-w-6xl mx-auto w-full space-y-6\">\
         {activeTab === 'dashboard' && (
-          <>
-            <StatusCard status={status} onRefresh={refreshStatus} />
-            <ReleaseCard
-              status={status}
-              updateStatus={updateStatus}
-              onCheckUpdates={handleCheckUpdates}
-              checking={checkingUpdates}
-            />
-          </>
+          <div className=\"grid grid-cols-1 lg:grid-cols-12 gap-6\">
+            {/* Primary Status Widget - Large Span */}
+            <div className=\"lg:col-span-8 space-y-6\">
+               <StatusCard status={status} onRefresh={refreshStatus} />
+            </div>
+
+            {/* Secondary Intelligence Widget - Side Span */}
+            <div className=\"lg:col-span-4 space-y-6\">
+               <ReleaseCard
+                 status={status}
+                 updateStatus={updateStatus}
+                 onCheckUpdates={handleCheckUpdates}
+                 checking={checkingUpdates}
+               />
+            </div>
+          </div>
         )}
 
         {activeTab === 'updates' && (
-          <UpdateView onUpgradeSuccess={refreshStatus} />
+          <div className=\"animate-in fade-in slide-in-from-bottom-4 duration-300\">
+            <UpdateView onUpgradeSuccess={refreshStatus} />
+          </div>
         )}
 
         {activeTab === 'backups' && (
-          <BackupView status={status} />
+          <div className=\"animate-in fade-in slide-in-from-bottom-4 duration-300\">
+            <BackupView status={status} />
+          </div>
         )}
 
         {activeTab === 'restore' && (
-          <RestoreView status={status} onRestoreComplete={refreshStatus} />
+          <div className=\"animate-in fade-in slide-in-from-bottom-4 duration-300\">
+            <RestoreView status={status} onRestoreComplete={refreshStatus} />
+          </div>
         )}
 
         {activeTab === 'doctor' && (
-          <DoctorView />
+          <div className=\"animate-in fade-in slide-in-from-bottom-4 duration-300\">
+            <DoctorView />
+          </div>
         )}
 
         {activeTab === 'licenses' && (
-          <LicensesView />
+          <div className=\"animate-in fade-in slide-in-from-bottom-4 duration-300\">
+            <LicensesView />
+          </div>
         )}
 
-        <div className="p-4 rounded-xl bg-slate-900/30 border border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
-          <span>Emberbird Desktop Subsystem Lifecycle Engine</span>
-          <span>Sprint 7 Deliverable • Architecture v5.0</span>
-        </div>
+        <footer className=\"p-4 rounded-2xl bg-ember-charcoal/30 border border-ember-ash/10 flex items-center justify-between text-[10px] text-ember-ash uppercase tracking-widest font-mono\">
+          <span>Emberbird Engine &bull; Lifecycle Platform</span>
+          <span>Obsidian Edition &bull; Architecture v5.0</span>
+        </footer>
       </main>
     </div>
   );

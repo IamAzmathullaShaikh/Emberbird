@@ -5,6 +5,7 @@ pub mod detector;
 pub mod env;
 pub mod installer;
 pub mod registry;
+pub mod registry_truth;
 pub mod releases;
 pub mod restore;
 pub mod state;

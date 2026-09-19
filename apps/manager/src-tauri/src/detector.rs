@@ -70,8 +70,31 @@ fn check_developer_mode() -> bool {
 
 #[cfg(windows)]
 fn check_virtualization() -> bool {
-    // Hyper-V check stub for native compilation
-    true
+    // Real detection: Hyper-V present means virtualization is active. Fall back
+    // to CPU virtualization-firmware support via wmic when Hyper-V is off —
+    // that is what the VM needs to start. Never hardcode `true`.
+    if let Ok(output) = std::process::Command::new("powershell.exe")
+        .args([
+            "-NoProfile",
+            "-Command",
+            "(Get-CimInstance Win32_ComputerSystem).HypervisorPresent",
+        ])
+        .output()
+    {
+        if output.status.success() && String::from_utf8_lossy(&output.stdout).contains("True") {
+            return true;
+        }
+    }
+    matches!(
+        std::process::Command::new("wmic")
+            .args(["cpu", "get", "VirtualizationFirmwareEnabled", "/value"])
+            .output(),
+        Ok(out)
+            if out.status.success()
+                && String::from_utf8_lossy(&out.stdout)
+                    .to_lowercase()
+                    .contains("virtualizationfirmwareenabled=true")
+    )
 }
 
 #[cfg(not(windows))]

@@ -51,14 +51,67 @@ Function Test-CommandExist {
     Finally { $ErrorActionPreference = $OldPreference }
 } #end function Test-CommandExist
 
+# Track 0.3: Zombie-lock-free shutdown.
+# A bare `Stop-Process WsaClient` leaves the Hyper-V worker (vmmemWSA) running
+# with open handles on userdata.vhdx, which makes the next install/update fail
+# with file-in-use errors. We shut down gracefully, then WAIT for the VM
+# process to disappear before falling back to a forced kill.
+Function Stop-EmberbirdSubsystem {
+    If (Test-CommandExist WsaClient) {
+        Start-Process WsaClient -Wait -Args "/shutdown" -ErrorAction SilentlyContinue
+    }
+    $deadline = (Get-Date).AddSeconds(20)
+    While ((Get-Date) -Lt $deadline) {
+        If (-Not (Get-Process -Name "vmmemWSA" -ErrorAction SilentlyContinue)) { Break }
+        Start-Sleep -Milliseconds 500
+    }
+    If (Get-Process -Name "vmmemWSA" -ErrorAction SilentlyContinue) {
+        Write-Warning "Subsystem VM did not exit gracefully; forcing shutdown"
+        Stop-Process -Name "vmmemWSA" -Force -ErrorAction SilentlyContinue
+    }
+    Stop-Process -Name "WsaClient" -ErrorAction SilentlyContinue
+    Stop-Process -Name "WsaService" -ErrorAction SilentlyContinue
+    Stop-Process -Name "WsaSettings" -ErrorAction SilentlyContinue
+    Stop-Process -Name "WSACrashUploader" -ErrorAction SilentlyContinue
+}
+
+# Track 0.2: Developer Settings bypass (VM warm-up).
+# Instead of asking the user to click "Manage developer settings", we boot the
+# subsystem once during installation: the deep link starts the VM, we poll for
+# the vmmemWSA worker with a bounded deadline (no blind sleeps), then shut the
+# subsystem down cleanly so userdata.vhdx is unlocked before first launch.
+# The first user-facing launch therefore boots warm instead of cold.
+Function Start-EmberbirdWarmUp {
+    Write-Output "Initializing Subsystem components (one-time warm-up)...."
+    Start-Process "wsa://settings"
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    $deadline = (Get-Date).AddSeconds(90)
+    $booted = $false
+    While ((Get-Date) -Lt $deadline) {
+        If (Get-Process -Name "vmmemWSA" -ErrorAction SilentlyContinue) {
+            Start-Sleep -Seconds 8   # let Android finish the critical boot phase
+            $booted = $true
+            Break
+        }
+        Start-Sleep -Seconds 2
+    }
+    If ($booted) {
+        Write-Output ("Subsystem warm-up completed in {0:N0} seconds" -f $sw.Elapsed.TotalSeconds)
+    }
+    Else {
+        Write-Warning "Subsystem VM did not signal boot within 90 seconds. First launch may be slow. If Android never boots, check Virtual Machine Platform is enabled and reboot."
+    }
+    Stop-EmberbirdSubsystem
+}
+
+# Track 0.1: Single primary entry point.
+# Exactly ONE user-facing launch happens when installation completes. The
+# warm-up's internal wsa://settings boot is shut down before this runs, so the
+# user sees a single Play Store window, never a duplicate/magisk pair.
 Function Finish {
     Clear-Host
-    if (Test-Path ".\AppxManifest.xml") {
-        $hasMagisk = Select-String -Path ".\AppxManifest.xml" -Pattern "com.topjohnwu.magisk" -Quiet
-        if ($hasMagisk) {
-            Start-Process "wsa://com.topjohnwu.magisk"
-        }
-    }
+    Start-EmberbirdWarmUp
+    Write-Output "Installation complete. Launching Emberbird Subsystem..."
     Start-Process "wsa://com.android.vending"
 }
 
@@ -161,11 +214,20 @@ If (($null -Ne $Installed) -And (-Not ($Installed.IsDevelopmentMode))) {
     }
 }
 
-If (Test-CommandExist WsaClient) {
-    Write-Output "Shutting down WSA...."
-    Start-Process WsaClient -Wait -Args "/shutdown"
+# Track 0.3 (replace path): a development-mode package makes same-version
+# `-Register` a silent no-op (the install location never moves). Remove it with
+# preserved user data first so the new package actually installs.
+If (($null -Ne $Installed) -And ($Installed.IsDevelopmentMode)) {
+    Write-Output "Replacing development-mode installation (user data preserved)...."
+    Remove-AppxPackage -PreserveApplicationData -Package $Installed.PackageFullName
+    $Installed = $null
+    Start-Sleep -Seconds 3
 }
-Stop-Process -Name "WsaClient" -ErrorAction SilentlyContinue
+
+# Track 0.3 (lock path): full subsystem shutdown incl. the vmmemWSA worker so
+# no stale handle survives on userdata.vhdx during registration.
+Stop-EmberbirdSubsystem
+
 Write-Output "Installing Emberbird Subsystem for Android...."
 Add-AppxPackage -ForceApplicationShutdown -ForceUpdateFromAnyVersion -Register .\AppxManifest.xml
 If ($?) {

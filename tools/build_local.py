@@ -251,8 +251,10 @@ def main() -> int:
     gapps_rc = download_dir / "gapps-13.0.rc"
     cust_img = download_dir / "cust.img"
     lspinit = bin_dir / "lspinit"
-    post_fs = script_dir / "post-fs-data.sh"
-    init_lsp_rc = script_dir / "init.lsp.magisk.rc"
+    # E2 layout: overlay scripts live beside build.sh's core/ modules
+    core_dir = script_dir / "core"
+    post_fs = core_dir / "post-fs-data.sh"
+    init_lsp_rc = core_dir / "init.lsp.magisk.rc"
 
     required_checks = [
         (wsa_zip, "WSA Package / Archive"),

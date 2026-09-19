@@ -3,29 +3,25 @@ import assert from 'node:assert/strict';
 
 import { preflightUpgrade, executeUpgrade } from '../src/lib/ipc.ts';
 
-test('preflightUpgrade reports system readiness and 25GB disk requirement', async () => {
-  const preflight = await preflightUpgrade();
-
-  assert.equal(typeof preflight.windows_version_ok, 'boolean');
-  assert.equal(typeof preflight.dev_mode_ok, 'boolean');
-  assert.equal(typeof preflight.virtualization_ok, 'boolean');
-  assert.equal(typeof preflight.disk_space_ok, 'boolean');
-  assert.equal(typeof preflight.can_upgrade, 'boolean');
-
-  // Verify 25 GB constant (25 * 1024 * 1024 * 1024)
-  assert.equal(preflight.required_disk_bytes, 26843545600);
-  assert.ok(preflight.free_disk_bytes > 0, 'Free disk bytes must be positive');
+// Zero-Mock contract: IPC wrappers reject outside the Tauri backend. A
+// fabricated "can_upgrade: true" or "success: true" would be a lie about the
+// real machine state, so tests assert rejection instead.
+test('preflightUpgrade rejects in browser mode instead of faking readiness', async () => {
+  await assert.rejects(
+    () => preflightUpgrade(),
+    /Tauri backend not detected/,
+    'Preflight must never fabricate disk/dev-mode/virtualization readiness'
+  );
 });
 
-test('executeUpgrade runs orchestrated pipeline with safety backup metadata', async () => {
-  const result = await executeUpgrade({
-    package_path: 'C:\\Packages\\WSA-Release-2311',
-    create_backup: true,
-    backup_note: 'Preflight test run',
-  });
-
-  assert.equal(result.success, true);
-  assert.ok(result.backup_metadata, 'Backup metadata should be created when requested');
-  assert.ok(result.installed_manifest, 'Installed manifest path should be reported');
-  assert.ok(result.message.includes('completed'), 'Message should indicate successful upgrade');
+test('executeUpgrade rejects in browser mode instead of faking a completed upgrade', async () => {
+  await assert.rejects(
+    () => executeUpgrade({
+      package_path: 'C:\\Packages\\WSA-Release-2311',
+      create_backup: true,
+      backup_note: 'Preflight test run',
+    }),
+    /Tauri backend not detected/,
+    'Upgrade execution must never report fabricated success'
+  );
 });

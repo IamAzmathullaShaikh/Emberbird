@@ -43,7 +43,7 @@ export const DoctorView: React.FC = () => {
       severity: 'CRITICAL',
       summary: 'Windows Developer Mode is ENABLED.',
       details: 'AllowDevelopmentWithoutDevLicense is set to 1',
-      remediation_cmd: 'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock" /t REG_DWORD /f /v "AllowDevelopmentWithoutDevLicense" /d 1',
+      remediation_cmd: 'reg add \"HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\AppModelUnlock\" /t REG_DWORD /f /v \"AllowDevelopmentWithoutDevLicense\" /d 1',
       can_autofix: true,
     },
     {
@@ -155,113 +155,10 @@ export const DoctorView: React.FC = () => {
       case 'FAIL':
         return 'bg-rose-500/10 text-rose-400 border-rose-500/30';
       default:
-        return 'bg-slate-800 text-slate-400 border-slate-700';
+        return 'bg-ember-charcoal text-ember-ash border-ember-ash/30';
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Overview Banner */}
-      <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur shadow-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
-          <div>
-            <h2 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
-              <span>Ember Doctor</span>
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-mono">
-                PRB-01 to PRB-12
-              </span>
-            </h2>
-            <p className="text-xs text-slate-400 mt-1">
-              Automated host environment diagnostic scanner for virtualization, networking, Play Services, and storage.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
-              {passedCount} Passed
-            </span>
-            {warnCount > 0 && (
-              <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-semibold">
-                {warnCount} Warning{warnCount > 1 ? 's' : ''}
-              </span>
-            )}
-            {failCount > 0 && (
-              <span className="px-3 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 text-xs font-semibold">
-                {failCount} Fail{failCount > 1 ? 's' : ''}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Actionable Warning/Failure Callout if any */}
-        {warnCount + failCount > 0 && (
-          <div className="mt-4 p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
-            <h3 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2">
-              Actionable Remediations Detected
-            </h3>
-            <div className="space-y-2">
-              {probes
-                .filter((p) => p.status === 'WARN' || p.status === 'FAIL')
-                .map((p) => (
-                  <div key={p.probe_id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/80">
-                    <div>
-                      <span className="font-mono text-indigo-400 font-semibold mr-2">{p.probe_id}:</span>
-                      <span className="text-slate-300">{p.summary}</span>
-                    </div>
-                    {p.remediation_cmd && (
-                      <button
-                        type="button"
-                        onClick={() => handleCopyCmd(p.probe_id, p.remediation_cmd!)}
-                        className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-[11px] border border-slate-700 transition-colors whitespace-nowrap"
-                      >
-                        {copiedId === p.probe_id ? 'Copied!' : 'Copy Fix'}
-                      </button>
-                    )}
-                  </div>
-                ))}
-            </div>
-          </div>
-        )}
-
-        {/* 12 Probe Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-          {probes.map((probe) => (
-            <div
-              key={probe.probe_id}
-              className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 transition-colors flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono font-bold text-indigo-400">{probe.probe_id}</span>
-                    <span className="text-xs text-slate-400 font-medium truncate max-w-[180px]">{probe.domain}</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${getStatusBadge(probe.status)}`}>
-                    {probe.status}
-                  </span>
-                </div>
-                <h4 className="text-sm font-semibold text-white mb-1">{probe.title}</h4>
-                <p className="text-xs text-slate-300 leading-relaxed mb-2">{probe.summary}</p>
-              </div>
-
-              {probe.remediation_cmd && probe.status !== 'PASS' && (
-                <div className="pt-2 mt-2 border-t border-slate-800/60">
-                  <span className="text-[10px] uppercase font-semibold text-slate-500 block mb-1">Remediation:</span>
-                  <div className="flex items-center justify-between gap-2 bg-slate-900/80 px-2.5 py-1.5 rounded font-mono text-[11px] text-slate-300 border border-slate-800">
-                    <span className="truncate">{probe.remediation_cmd}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleCopyCmd(probe.probe_id, probe.remediation_cmd!)}
-                      className="text-xs text-indigo-400 hover:text-indigo-300 whitespace-nowrap ml-2"
-                    >
-                      {copiedId === probe.probe_id ? 'Copied' : 'Copy'}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
+    <div className=\"space-y-6\">
+      {/* Overview Banner */}\n      <div className=\"p-6 rounded-2xl bg-ember-charcoal/60 border border-ember-ash/20 backdrop-blur-sm shadow-xl\">\n        <div className=\"flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-ember-ash/20\">\n          <div className=\"flex flex-col\">\n            <h2 className=\"text-lg font-bold text-white tracking-tight flex items-center gap-2\">\n              <span className=\"text-ember-glow\">Ember Doctor</span>\n              <span className=\"text-xs px-2.5 py-0.5 rounded-full bg-ember-glow/10 text-ember-glow border border-ember-glow/20 font-mono\">\n                Diagnostic Engine v1.0\n              </span>\n            </h2>\n            <p className=\"text-xs text-ember-ash mt-1\">\n              Automated host environment diagnostic scanner for virtualization, networking, and system integrity.\n            </p>\n          </div>\n          <div className=\"flex items-center gap-2\">\n            <span className=\"px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold\">\n              {passedCount} Passed\n            </span>\n            {warnCount > 0 && (\n              <span className=\"px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-semibold\">\n                {warnCount} Warning{warnCount > 1 ? 's' : ''}\n              </span>\n            )}\n            {failCount > 0 && (\n              <span className=\"px-3 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 text-xs font-semibold\">\n                {failCount} Fail{failCount > 1 ? 's' : ''}\n              </span>\n            )}\n          </div>\n        </div>\n\n        {/* Actionable Warning/Failure Callout if any */}\n        {warnCount + failCount > 0 && (\n          <div className=\"mt-4 p-4 rounded-xl bg-ember-glow/5 border border-ember-glow/20\">\n            <h3 className=\"text-xs font-bold text-ember-glow uppercase tracking-wider mb-2\">\n              Critical Remediations Detected\n            </h3>\n            <div className=\"space-y-2\">\n              {probes\n                .filter((p) => p.status === 'WARN' || p.status === 'FAIL')\n                .map((p) => (\n                  <div key={p.probe_id} className=\"flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs bg-ember-obsidian/60 p-3 rounded-lg border border-ember-ash/20\">\n                    <div className=\"flex items-center gap-2\">\n                      <span className=\"font-mono text-ember-glow font-bold\">{p.probe_id}</span>\n                      <span className=\"text-slate-300\">{p.summary}</span>\n                    </div>\n                    {p.remediation_cmd && (\n                      <button\n                        type=\"button\"\n                        onClick={() => handleCopyCmd(p.probe_id, p.remediation_cmd!)}\n                        className=\"px-2.5 py-1 rounded bg-ember-charcoal hover:bg-ember-ash/40 text-white font-mono text-[11px] border border-ember-ash/30 transition-colors whitespace-nowrap\"\n                      >\n                        {copiedId === p.probe_id ? 'Copied!' : 'Copy Fix'}\n                      </button>\n                    )}\n                  </div>\n                ))}\n            </div>\n          </div>\n        )}\n\n        {/* 12 Probe Grid */}\n        <div className=\"grid grid-cols-1 md:grid-cols-2 gap-4 mt-6\">\n          {probes.map((probe) => (\n            <div\n              key={probe.probe_id}\n              className=\"p-4 rounded-xl bg-ember-obsidian/60 border border-ember-ash/20 hover:border-ember-glow/40 transition-all duration-200 flex flex-col justify-between group\"\n            >\n              <div className=\"space-y-2\">\n                <div className=\"flex items-center justify-between gap-2\">\n                  <div className=\"flex items-center gap-2\">\n                    <span className=\"text-xs font-mono font-bold text-ember-glow\">{probe.probe_id}</span>\n                    <span className=\"text-xs text-ember-ash font-medium truncate max-w-[150px]\">{probe.domain}</span>\n                  </div>\n                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${getStatusBadge(probe.status)}`}>\n                    {probe.status}\n                  </span>\n                </div>\n                <h4 className=\"text-sm font-semibold text-white group-hover:text-ember-glow transition-colors\">{probe.title}</h4>\n                <p className=\"text-xs text-ember-ash leading-relaxed\">{probe.summary}</p>\n              </div>\n\n              {probe.remediation_cmd && probe.status !== 'PASS' && (\n                <div className=\"pt-3 mt-3 border-t border-ember-ash/20\">\n                  <span className=\"text-[10px] uppercase font-bold text-ember-ash/60 block mb-1\">Remediation:</span>\n                  <div className=\"flex items-center justify-between gap-2 bg-ember-charcoal/60 px-2.5 py-1.5 rounded border border-ember-ash/30 font-mono text-[11px] text-slate-300\">\n                    <span className=\"truncate\">{probe.remediation_cmd}</span>\n                    <button\n                      type=\"button\"\n                      onClick={() => handleCopyCmd(probe.probe_id, probe.remediation_cmd!)}\n                      className=\"text-xs text-ember-glow hover:text-ember-highlight transition-colors whitespace-nowrap ml-2\"\n                    >\n                      {copiedId === probe.probe_id ? 'Copied' : 'Copy'}\n                    </button>\n                  </div>\n                </div>\n              )}\n            </div>\n          ))}\n        </div>\n      </div>\n    </div>\n  );\n};

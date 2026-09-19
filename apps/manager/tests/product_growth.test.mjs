@@ -10,11 +10,14 @@ import { latestReleasesFromRegistry, releasesFromRegistry } from '../src/lib/reg
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-test('installWsaPackage IPC returns successful installation structure', async () => {
-  const res = await installWsaPackage('C:\\Emberbird\\WSA_2407.40000.4.0_x64_Release-Magisk');
-  assert.equal(res.success, true);
-  assert.ok(res.package_path.includes('AppxManifest.xml') || res.package_path.includes('WSA_2407'));
-  assert.ok(res.message.includes('registered successfully'));
+test('installWsaPackage rejects in browser mode instead of faking an install', async () => {
+  // Zero-Mock contract: outside a real Tauri backend there is no package to
+  // register, so the wrapper must reject rather than fabricate success.
+  await assert.rejects(
+    () => installWsaPackage('C:\\Emberbird\\WSA_2407.40000.4.0_x64_Release-Magisk'),
+    /Tauri backend not detected/,
+    'Installation must never report fabricated registration success'
+  );
 });
 
 test('Observatory recommended release is resolved from registry truth', () => {
