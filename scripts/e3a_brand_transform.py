@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """E3A — Brand metamorphosis transform (platform identity only).
 
-Scope per docs/BRAND.md §3 and the Cycle E3A S1 review (TODO.md):
+Scope: platform-identity prose only (Cycle E3A S1 review):
   REBRAND   : platform-identity prose (WSABuilds -> Emberbird) in living docs
   PATH-FIX  : stale pre-E2 paths in living build guides (E2 residue)
   KEEP      : product name "WSABuilds Manager" (E5), repo URLs & clone paths (E4),
@@ -60,12 +60,7 @@ PATH_FIX = [
 REBRAND = [
     ".github/WORKFLOWS.md",
     ".github/workflows/update.yml",
-    "BUILD.md",
     "CONTRIBUTING.md",
-    "GOVERNANCE.md",
-    "RELEASE.md",
-    "TROUBLESHOOTING.md",
-    "WINDOWS11_BUILD_GUIDE.md",
     "README.md",
     "compatibility/README.md",
     "scripts/README.md",
@@ -120,11 +115,6 @@ SKIP = [
     "CLEANUP_REPORT.md",
     "REMOVED_ROOT_SOLUTIONS.md",
     "TODO.md",
-    "docs/CLEANUP_REGISTER.md",
-    "docs/EMBERBIRD_CHARTER.md",
-    "docs/METAMORPHOSIS.md",
-    "docs/PATH_MAP.md",
-    "docs/BRAND.md",
     "docs/ATTRIBUTION.md",
 ]
 

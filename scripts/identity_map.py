@@ -7,7 +7,7 @@ MagiskOnWSALocal) and produces a CLASSIFIED inventory:
     docs/identity-inventory.json
 
 Every occurrence is marked with one of the classes used by the programme's
-brand policy (docs/BRAND.md):
+brand policy:
 
     upstream-attribution  protected forever (S1 — attribution/licensing/provenance)
     historical-doc        protected historical documentation (S1)

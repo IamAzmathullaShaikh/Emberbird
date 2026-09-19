@@ -75,6 +75,8 @@ export const Header: React.FC<HeaderProps> = ({
               navigator.userAgent.toLowerCase().includes('aarch64'))
               ? 'arm64'
               : 'x64';
+          const isRunning = status?.is_running ?? false;
+          const devMode = status?.developer_mode_enabled ?? false;
           return (
             <div className="flex items-center gap-2 text-xs">
               <span className={`px-2.5 py-1 rounded-full font-medium ${presentation.badgeClass}`}>
@@ -82,13 +84,13 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
 
               <span className="px-2.5 py-1 rounded-full border font-mono font-medium bg-ember-charcoal text-ember-ash border-ember-ash/30">
-                {hostArch === 'arm64' ? 'ARM64' : 'x64'}
+                {hostArch === 'arm64' ? 'ARM64 (Snapdragon Native)' : 'x64 Native'}
               </span>
 
               {projected.runningLabel && (
                 <span
                   className={`px-2.5 py-1 rounded-full border font-medium ${
-                    status!.is_running
+                    isRunning
                       ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                       : 'bg-ember-charcoal text-ember-ash border-ember-ash/30'
                   }`}
@@ -98,12 +100,12 @@ export const Header: React.FC<HeaderProps> = ({
               )}
               <span
                 className={`px-2.5 py-1 rounded-full border font-medium ${
-                  status!.developer_mode_enabled
+                  devMode
                     ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                     : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
                 }`}
               >
-                DevMode: {status!.developer_mode_enabled ? 'ON' : 'OFF'}
+                DevMode: {devMode ? 'ON' : 'OFF'}
               </span>
             </div>
           );

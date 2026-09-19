@@ -2,7 +2,7 @@
 """
 runtime_compatibility.py — WSABuilds Runtime Compatibility Test Harness
 
-Turns GOVERNANCE.md Appendix D into executable tooling. Against a live WSA
+Executable runtime-compatibility harness. Against a live WSA
 instance (via adb) it captures the platform baseline, probes target apps
 (install state, launch result, crash evidence), and emits:
 
@@ -314,7 +314,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(f"[-] adb unavailable: {exc}", file=sys.stderr)
         print(f"[!] Status: {PLACEHOLDER}", file=sys.stderr)
         print("[!] Harness cannot claim any runtime compatibility without adb. "
-              "Run this on the WSA host machine (GOVERNANCE.md Appendix A/D).", file=sys.stderr)
+              "Run this on the WSA host machine with adb on PATH.", file=sys.stderr)
         return 2
 
     live = [l for l in devices.splitlines()[1:] if l.strip() and l.split()[-1] == "device"]

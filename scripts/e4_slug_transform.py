@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """E4.2 — Repository slug rewrite (living identity pointers only).
 
-Scope per docs/BRAND.md §7 (E4.1 slug contract):
+Scope (E4.1 slug contract):
   REWRITE : living identity pointers (badges, clone URLs, issue links, env
             examples, living doc prose, identity-plumbing defaults in scripts).
   PIN     : publication plumbing gets an E4.3-FLIP marker instead of a rewrite
@@ -31,7 +31,6 @@ REWRITE = [
     (".github/ISSUE_TEMPLATE/bug_report.yml", "all", 3),
     (".github/ISSUE_TEMPLATE/config.yml", "all", 1),
     ("README.md", "readme", 4),
-    ("WINDOWS11_BUILD_GUIDE.md", "all", 2),
     ("apps/manager/.env.example", "all", 3),
     ("apps/manager/src/lib/env.ts", "all", 1),
     ("apps/manager/src/lib/ipc.ts", "all", 1),
@@ -41,7 +40,6 @@ REWRITE = [
     ("utilities/Update Script/WSAUpdater.py", "all", 1),
     ("website/.env.example", "all", 3),
     ("website/README.md", "all", 3),
-    ("docs/PHOENIX_CHARTER.md", "all", 1),
     ("docs/WINDOWS_VALIDATION_LAB.md", "all", 1),
     ("website/src/content/docs/getting-started/WINDOWS_VALIDATION_LAB.md", "all", 1),
     ("docs/community/discussions-governance.md", "all", 2),

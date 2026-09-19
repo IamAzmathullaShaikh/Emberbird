@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-"""E1.5 — M3: Consumer compliance tests.
+"""Consumer compliance tests.
 
-Pins the S4 Consumer Purity Matrix (docs/CONSUMER_MATRIX.md) against the code:
+Pins the consumer purity invariants against the code:
   - the engine core stays offline-pure (zero network tokens)
   - the website's direct-GitHub-discovery inventory is CLOSED — no new
     discovery modules may appear; E3B shrinks this set to zero
   - the manager's release-URL derivation inventory is CLOSED — E3C shrinks it
-  - matrix file exists (the audit basis)
 
 stdlib-only; runs in CI unchanged.
 """
@@ -119,22 +118,6 @@ class TestClosedDiscoveryInventory(unittest.TestCase):
         self.assertIn("releases.json", text)
         self.assertNotIn("api.github.com", text)
         self.assertNotIn("releases/latest", text)
-
-    def test_matrix_document_exists(self):
-        matrix = REPO_ROOT / "docs" / "CONSUMER_MATRIX.md"
-        self.assertTrue(matrix.is_file(), "docs/CONSUMER_MATRIX.md (S4) must exist")
-
-
-class TestMatrixTruthfulness(unittest.TestCase):
-    def test_matrix_records_migration_state(self):
-        """The matrix must always record the consumers' true state. After
-        E3B/E3C the website and manager rows are Migrated; the compatibility
-        hub remains a documented data-only pending row."""
-        matrix = read(REPO_ROOT / "docs" / "CONSUMER_MATRIX.md")
-        self.assertIn("Migrated** (E3B)", matrix)
-        self.assertIn("Migrated** (E3C", matrix)
-        self.assertIn("E3B pending", matrix)  # compatibility hub (data-only)
-        self.assertIn("Migrated", matrix)
 
 
 if __name__ == "__main__":

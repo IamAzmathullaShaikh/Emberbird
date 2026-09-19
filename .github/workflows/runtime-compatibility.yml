@@ -1,6 +1,6 @@
 name: Runtime Compatibility Validation
 
-# Executable GOVERNANCE.md Appendix D: runs the runtime compatibility harness
+# Runs the runtime compatibility harness
 # against a live WSA instance when one is reachable (self-hosted runner on the
 # WSA host machine), and always validates report/submission schemas.
 
@@ -87,7 +87,7 @@ jobs:
     needs: harness-validation
     # Only executes when explicitly dispatched with run_probes=true AND a
     # self-hosted runner is attached. The runner must be on the WSA host
-    # machine with adb on PATH (GOVERNANCE.md Appendix A steps 1-3).
+    # machine with adb on PATH.
     if: github.event_name == 'workflow_dispatch' && inputs.run_probes
     runs-on: self-hosted
     timeout-minutes: 30

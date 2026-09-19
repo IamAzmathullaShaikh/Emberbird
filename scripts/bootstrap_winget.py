@@ -2,7 +2,7 @@
 """
 bootstrap_winget.py — WSABuilds Winget Submission & Release Hash Bootstrap
 
-Automates the two remaining manual release steps (GOVERNANCE.md §3 post-release
+Automates the two remaining manual post-release steps (
 checklist):
 
   WS6  Release hash bootstrap:
@@ -58,7 +58,7 @@ REPO = "IamAzmathullaShaikh/Emberbird"
 OUT_DIR = ROOT / "dist_winget_submission"
 
 # The documented bootstrap placeholder allowed ONLY before publication
-# (GOVERNANCE.md §2). Never invented by this script; only carried through.
+# Release facts are never invented by this script; only carried through.
 PLACEHOLDER_MARKERS = ("REQUIRES REPOSITORY VERIFICATION",)
 
 

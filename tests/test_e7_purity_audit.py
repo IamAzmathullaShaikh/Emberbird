@@ -8,8 +8,7 @@ Codifies the audit results as permanent guards:
      comes from the registry; frozen surfaces are exempt and guarded
      elsewhere — E4/E5 tests).
   3. No hardcoded asset hashes in website/manager production modules.
-  4. The S4 Consumer Matrix records the completed migration state.
-  5. Milestone metadata consistency for the v1.0.0 tag.
+  4. Milestone metadata consistency for the v1.0.0 tag.
 
 stdlib-only; runs in CI unchanged.
 """
@@ -83,19 +82,11 @@ class TestE7PurityAudit(unittest.TestCase):
                 f"{rel} carries hardcoded 64-hex hashes (release truth must come from the registry): {matches}",
             )
 
-    def test_04_consumer_matrix_records_migrated_state(self):
-        matrix = read("docs/CONSUMER_MATRIX.md")
-        for token in ("RegistryReleaseProvider", "registry.ts"):
-            self.assertIn(token, matrix, f"consumer matrix must record the migrated consumers ({token})")
-        self.assertNotIn("MIGRATION PENDING", matrix.upper())
-
-    def test_05_milestone_metadata_is_consistent(self):
+    def test_04_milestone_metadata_is_consistent(self):
         """The emberbird-v1.0.0 milestone pins the completed metamorphosis state."""
         pkg = __import__("json").loads(read("deployment/version.json"))["manager"]
         self.assertEqual(pkg["winget_package_id"], "Emberbird.Manager")
         self.assertEqual(pkg["license"], "AGPL-3.0")
-        brand = read("docs/BRAND.md")
-        self.assertIn("IamAzmathullaShaikh/Emberbird", brand)
         # Registry still validates as the single source of truth.
         registry = __import__("json").loads(read("data/releases/releases.json"))
         self.assertTrue(registry.get("releases"), "registry must remain populated")

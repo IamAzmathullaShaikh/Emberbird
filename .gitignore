@@ -57,3 +57,10 @@ download/
 
 # Local restructure residue (never enters git)
 MagiskOnWSAOld/
+
+# Generated report outputs written into docs/ by scripts
+# (release_pipeline.py, validate_live_installation.py,
+# generate_compatibility_report.py) — build residue, never committed.
+docs/COMPATIBILITY_REPORT.md
+docs/LIVE_INSTALLATION_REPORT.md
+docs/RELEASE_HEALTH_REPORT.md

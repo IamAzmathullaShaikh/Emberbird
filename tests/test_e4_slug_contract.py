@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""E4 slug-contract guard tests (docs/BRAND.md §7).
+"""E4 slug-contract guard tests.
 
 Pins the repository-identity contract after the E4.2 rewrite:
   1. Living identity surfaces carry the canonical Emberbird slug.
-  2. Publication plumbing stays pinned to the historical slug with an
-     E4.3-FLIP marker until the owner's rename lands.
+  2. Publication plumbing points at the canonical slug (E4.3 flip executed).
   3. Frozen truth (registry, manifests, archive, oracles) keeps the
      historical slug — GitHub's forward redirect preserves it forever.
   4. The transform tool's exact postconditions remain stable.
@@ -27,7 +26,6 @@ REWRITE_SURFACES = [
     (".github/ISSUE_TEMPLATE/bug_report.yml", "all"),
     (".github/ISSUE_TEMPLATE/config.yml", "all"),
     ("README.md", "readme"),
-    ("WINDOWS11_BUILD_GUIDE.md", "all"),
     ("apps/manager/.env.example", "all"),
     ("apps/manager/src/lib/env.ts", "all"),
     ("apps/manager/src/lib/ipc.ts", "all"),
@@ -37,7 +35,6 @@ REWRITE_SURFACES = [
     ("utilities/Update Script/WSAUpdater.py", "all"),
     ("website/.env.example", "all"),
     ("website/README.md", "all"),
-    ("docs/PHOENIX_CHARTER.md", "all"),
     ("docs/WINDOWS_VALIDATION_LAB.md", "all"),
     ("website/src/content/docs/getting-started/WINDOWS_VALIDATION_LAB.md", "all"),
     ("docs/community/discussions-governance.md", "all"),
@@ -77,13 +74,6 @@ def readme_line_has_old_slug(line: str) -> bool:
 
 
 class TestE4SlugContract(unittest.TestCase):
-    def test_01_brand_section_seven_documents_contract(self):
-        brand = read("docs/BRAND.md")
-        self.assertIn("## 7. Repository identity", brand)
-        self.assertIn("IamAzmathullaShaikh/Emberbird", brand)
-        self.assertIn("E4.3-FLIP", brand)
-        self.assertIn("Rename repository", brand)
-
     def test_02_living_surfaces_use_canonical_slug(self):
         stale = []
         for rel, mode in REWRITE_SURFACES:

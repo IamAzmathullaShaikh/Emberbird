@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""E5 distribution-identity guards (docs/BRAND.md §8, charter M4/G3).
+"""E5 distribution-identity guards.
 
-Pins the boundary the metamorphosis must never cross:
+Pins the distribution-identity boundary:
   - The ACTIVE distribution identity is the new Emberbird package, derived
     from deployment/version.json (single seam).
   - The HISTORICAL package (WSABuilds.WSABuildsManager) is frozen history:
@@ -81,18 +81,6 @@ class TestE5DistributionIdentity(unittest.TestCase):
         self.assertIn("EmberbirdManager-", wf)
         self.assertIn("$mgr.winget_package_id.Split", wf)
         self.assertIn("emberbird-manager.exe", wf)
-
-    def test_07_brand_documents_the_distribution_record(self):
-        brand = read("docs/BRAND.md")
-        self.assertIn("## 8. Distribution identity", brand)
-        self.assertIn("Emberbird.Manager", brand)
-        self.assertIn("AGPL-3.0", brand)
-
-    def test_08_historical_preservation_manifest_exists(self):
-        hp = read("docs/HISTORICAL_PRESERVATION.md")
-        self.assertIn("WSABuilds.WSABuildsManager", hp)
-        self.assertIn("887443bad0aeb3eec04ff367b4768edad2cc0e1b2fcd6b9b255f5bfd3181466a", hp)
-        self.assertIn("Known historical inaccuracies", hp)
 
     def test_09_registry_untouched_by_distribution_rebrand(self):
         """Registry truth is observed reality; the E5 identity change must not

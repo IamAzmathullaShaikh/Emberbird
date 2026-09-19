@@ -3,7 +3,7 @@
 
 Pins the metamorphosis inventory (docs/identity-inventory.json):
   - the inventory exists and is FRESH (matches the current tree)
-  - every occurrence carries a policy class from docs/BRAND.md
+  - every occurrence carries a policy class
   - protected classes (upstream-attribution, historical-doc) are non-empty
     and are the largest single protected block — S1 is measurable
 

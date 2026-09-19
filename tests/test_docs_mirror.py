@@ -7,7 +7,7 @@ not reflected in the mirror lets the repository documentation and the live
 portal silently diverge.
 
 This guard is mapping-aware:
-- Some files live at different paths on each side (PATH_MAP).
+- Some files live at different paths on each side (explicit map).
 - Governance docs (charter, license audit, attribution, docs index) are
   intentionally unmirrored (ALLOWLIST_UNMIRRORED).
 
@@ -28,41 +28,17 @@ PATH_MAP = {
     "WINDOWS_VALIDATION_LAB.md": "getting-started/WINDOWS_VALIDATION_LAB.md",
 }
 
-# Governance/platform docs that intentionally have no website mirror.
+# Docs that intentionally have no website mirror.
 ALLOWLIST_UNMIRRORED = {
     "README.md",  # docs/ index; the website has its own portal navigation
-    "EMBERBIRD_CHARTER.md",
-    "PHOENIX_CHARTER.md",
     "LICENSE_AUDIT.md",
     "ATTRIBUTION.md",
-    "CLEANUP_REGISTER.md",  # platform governance evidence log
-    "METAMORPHOSIS.md",  # metamorphosis programme charter (E0+)
-    "research/ARM64_CROSS_COMPILATION.md",  # Task 4.2 research artifact (E0)
-    "BRAND.md",  # brand policy (E1)
-    "PATH_MAP.md",  # repository mapping (E1)
-    "CONSUMER_MATRIX.md",  # S4 consumer purity matrix (E1.5)
-    "HISTORICAL_PRESERVATION.md",  # G3 historical preservation manifest (E5.5)
-    "BRANCH_HYGIENE.md",  # Branch Policy evidence report (post-programme governance)
-    "LEARNING_PATH.md",  # Role-based learning guides
-    "HEALTH.md",  # Repository health and quality scorecard
-    "ADR.md",  # Architecture Decision Records register
-    "programme-board.md",  # G4 Programme Control Board
-    "REPOSITORY_EXCELLENCE_REPORT.md",  # Platform stewardship excellence report
-    "charters/DOCTOR_CHARTER.md",  # Phase D1 charter (Project Doctor)
-    "charters/ARM64_CHARTER.md",  # Phase A1 charter (Project Snapdragon)
-    "charters/ANDROID14_RESEARCH_CHARTER.md",  # Phase R1 charter (Project Genesis)
-    "PROGRAMME_INTELLIGENCE.md",  # AntiGravity Programme Intelligence System Specification
-    "research/ANDROID14_FEASIBILITY.md",  # Phase R1 research report (Project Genesis)
-    "DISTRIBUTION_EXPANSION.md",  # Phase P7 package manager evaluation (Winget, Scoop, Choco)
-    "PROJECT_STATUS.md",  # Authoritative Project Status document (Production Stewardship Edition)
-    "RELEASE_OPERATIONS.md",  # Epic RO1 Release Operations Handbook (Release Factory)
-    "RELEASE_PIPELINE_AUDIT.md",  # Epic RO1 Release Pipeline Audit Report
-    "RELEASE_HEALTH_REPORT.md",  # Epic PR2 Release Health Report
-    "LIVE_INSTALLATION_REPORT.md",  # Epic PR4 Live Installation Validation Report
-    "COMPATIBILITY_REPORT.md",  # Epic PR4 Compatibility Operations Report
-    "DOCTOR_TELEMETRY_REPORT.md",  # Epic PR4 Doctor Telemetry Loop Report
-    "WEBSITE_CONVERSION_AUDIT.md",  # Epic PR4 Website Conversion & Journey Audit
-    "COMMUNITY_FEEDBACK_LOOP.md",  # Epic PR4 Closed-Loop Community Feedback Architecture
+    # Generated outputs written into docs/ by scripts (release_pipeline.py,
+    # validate_live_installation.py, generate_compatibility_report.py);
+    # gitignored — never committed, never mirrored.
+    "COMPATIBILITY_REPORT.md",
+    "LIVE_INSTALLATION_REPORT.md",
+    "RELEASE_HEALTH_REPORT.md",
 }
 
 FRONTMATTER_RE = re.compile(r"\A---\s*\n.*?\n---\s*\n", re.DOTALL)

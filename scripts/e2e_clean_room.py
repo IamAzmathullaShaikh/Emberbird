@@ -12,7 +12,7 @@ Executes, from a clean state and without trusting any pre-existing output:
   4. Release metadata + checksum generation for each edition.
   5. Distribution-level gates (version sync + Winget manifests).
   6. Manager local gates: TypeScript check + unit tests (the release binary
-     itself is built and published by CI; see GOVERNANCE.md).
+     itself is built and published by CI).
   7. Website gates: unit tests + production build with CI environment.
 
 Exit code 0 only if every executed phase passed and every skipped phase
