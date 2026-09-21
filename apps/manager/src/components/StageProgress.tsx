@@ -57,6 +57,7 @@ export const StageProgressBar: React.FC<StageProgressBarProps> = ({ progress }) 
           aria-valuenow={percent}
           aria-valuemin={0}
           aria-valuemax={100}
+          aria-label={phaseLabel}
         />
       </div>
     </div>

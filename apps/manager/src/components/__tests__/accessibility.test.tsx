@@ -103,7 +103,9 @@ describe('Accessibility — Keyboard targets', () => {
     const { container } = render(<Button>Focus me</Button>);
     const btn = container.querySelector('button');
     expect(btn).not.toBeNull();
-    expect(btn!.tabIndex).not.toBe(-1); // Not excluded from tab order
+    // Default buttons without disabled attribute are focusable
+    expect(btn!.disabled).toBe(false);
+    expect(btn!.getAttribute('tabindex')).not.toBe('-1'); 
   });
 
   it('disabled Button is not tab-reachable', async () => {

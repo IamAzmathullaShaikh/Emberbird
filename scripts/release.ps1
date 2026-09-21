@@ -32,7 +32,7 @@ function Write-Ok([string]$msg)   { Write-Host "[+] $msg" -ForegroundColor Green
 function Write-Warn([string]$msg) { Write-Host "[!] $msg" -ForegroundColor Yellow }
 function Write-Fail([string]$msg) { Write-Host "[X] FATAL: $msg" -ForegroundColor Red; exit 1 }
 
-# ── 1. Read version from deployment/version.json (single source of truth) ─────
+# -- 1. Read version from deployment/version.json (single source of truth) --
 Write-Step "Reading version from deployment/version.json"
 $deploy = Get-Content "$REPO_ROOT/deployment/version.json" | ConvertFrom-Json
 $VERSION = $deploy.manager.version
@@ -41,7 +41,7 @@ if (-not $VERSION -or $VERSION -notmatch '^\d+\.\d+\.\d+$') {
 }
 Write-Ok "Target version: v$VERSION"
 
-# ── 2. Validate cross-file version consistency ─────────────────────────────────
+# -- 2. Validate cross-file version consistency --
 Write-Step "Validating version consistency across all manifests"
 
 $pkgVer = (Get-Content "$REPO_ROOT/apps/manager/package.json" | ConvertFrom-Json).version
@@ -56,7 +56,7 @@ if ($tauriVer -ne $VERSION) { Write-Fail "tauri.conf.json has version '$tauriVer
 
 Write-Ok "All 4 version sources agree: $VERSION"
 
-# ── 3. Check git state ─────────────────────────────────────────────────────────
+# -- 3. Check git state --
 Write-Step "Checking git state"
 
 $status = git status --porcelain 2>&1
@@ -66,7 +66,7 @@ if ($status) {
     if (-not $DryRun) {
         Write-Fail "Commit or stash changes before releasing."
     } else {
-        Write-Warn "[DryRun] Would abort here — uncommitted changes present."
+        Write-Warn "[DryRun] Would abort here - uncommitted changes present."
     }
 }
 
@@ -77,9 +77,9 @@ if ($tagExists) {
 
 $branch = git rev-parse --abbrev-ref HEAD
 Write-Ok "On branch: $branch"
-Write-Ok "Tag v$VERSION does not exist yet — ready to create."
+Write-Ok "Tag v$VERSION does not exist yet - ready to create."
 
-# ── 4. Full test battery ───────────────────────────────────────────────────────
+# -- 4. Full test battery --
 if (-not $SkipTests) {
     Write-Step "Running full test battery"
 
@@ -133,7 +133,7 @@ if (-not $SkipTests) {
     Write-Ok "Full test battery passed."
 }
 
-# ── 5. Validate Winget manifests exist for this version ────────────────────────
+# -- 5. Validate Winget manifests exist for this version --
 Write-Step "Validating Winget manifests for v$VERSION"
 $manifestDir = "$REPO_ROOT/manifests/e/Emberbird/Manager/$VERSION"
 if (-not (Test-Path $manifestDir)) {
@@ -145,31 +145,31 @@ if ($manifests.Count -lt 3) {
 }
 Write-Ok "Winget manifests present: $($manifests.Name -join ', ')"
 
-# ── 6. Validate distribution validator passes ──────────────────────────────────
+# -- 6. Validate distribution validator passes --
 Write-Step "Running distribution validator"
 python scripts/validate_distribution.py
 if ($LASTEXITCODE -ne 0) { Write-Fail "Distribution validator failed." }
 Write-Ok "Distribution validator: pass"
 
-# ── 7. Create and push tag ─────────────────────────────────────────────────────
+# -- 7. Create and push tag --
 if ($DryRun) {
     Write-Warn "[DryRun] Would now run:"
     Write-Warn "  git tag -a v$VERSION -m 'Emberbird Manager v$VERSION'"
     Write-Warn "  git push origin v$VERSION"
     Write-Warn "[DryRun] CI would then trigger winget-release.yml (build, sign, publish, Winget PR)."
-    Write-Ok "Dry run complete — all gates passed. Remove -DryRun to release."
+    Write-Ok "Dry run complete - all gates passed. Remove -DryRun to release."
     
-    # ── Post-release: print version bump instructions ──────────────────────────────
+    # -- Post-release: print version bump instructions --
     Write-Host ""
-    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    Write-Host "===================================================================="
     Write-Host "  Emberbird Manager v$VERSION released successfully!"
-    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    Write-Host "===================================================================="
     Write-Host ""
     Write-Host "To prepare the next release, update ALL 4 version sources:"
-    Write-Host "  1. deployment/version.json  → manager.version"
-    Write-Host "  2. apps/manager/package.json → version"
-    Write-Host "  3. apps/manager/src-tauri/Cargo.toml → version (first occurrence)"
-    Write-Host "  4. apps/manager/src-tauri/tauri.conf.json → version"
+    Write-Host "  1. deployment/version.json  -> manager.version"
+    Write-Host "  2. apps/manager/package.json -> version"
+    Write-Host "  3. apps/manager/src-tauri/Cargo.toml -> version (first occurrence)"
+    Write-Host "  4. apps/manager/src-tauri/tauri.conf.json -> version"
     Write-Host ""
     Write-Host "Then generate Winget manifests:"
     Write-Host "  python scripts/bootstrap_winget.py"
@@ -195,17 +195,17 @@ Write-Host "  4. Submit PR to microsoft/winget-pkgs (if WINGET_TOKEN configured)
 Write-Host ""
 Write-Host "Monitor at: https://github.com/IamAzmathullaShaikh/Emberbird/actions"
 
-# ── Post-release: print version bump instructions ──────────────────────────────
+# -- Post-release: print version bump instructions --
 Write-Host ""
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+Write-Host "===================================================================="
 Write-Host "  Emberbird Manager v$VERSION released successfully!"
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+Write-Host "===================================================================="
 Write-Host ""
 Write-Host "To prepare the next release, update ALL 4 version sources:"
-Write-Host "  1. deployment/version.json  → manager.version"
-Write-Host "  2. apps/manager/package.json → version"
-Write-Host "  3. apps/manager/src-tauri/Cargo.toml → version (first occurrence)"
-Write-Host "  4. apps/manager/src-tauri/tauri.conf.json → version"
+Write-Host "  1. deployment/version.json  -> manager.version"
+Write-Host "  2. apps/manager/package.json -> version"
+Write-Host "  3. apps/manager/src-tauri/Cargo.toml -> version (first occurrence)"
+Write-Host "  4. apps/manager/src-tauri/tauri.conf.json -> version"
 Write-Host ""
 Write-Host "Then generate Winget manifests:"
 Write-Host "  python scripts/bootstrap_winget.py"
