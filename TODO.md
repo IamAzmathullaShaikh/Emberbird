@@ -920,7 +920,7 @@ recorded rather than fixed: because `compatibility/index.astro` and
 those two pages and skips all 10 documentation pages, so site search cannot find
 the docs.
 
-### Cycle WF-5 — Confirm the cleared gate in CI and repair the typecheck gate (2026-09-21)
+### Cycle WF-5 — Confirm the audit gate in CI and unblock the deploy chain (2026-09-21)
 - [x] Verified the WF-4 fix in CI instead of assuming it: run 35571100674 (push
       of `8bdf19b`) now **passes** step 5, "Dependency Security Audit" — the exact
       gate that had skipped every deployment — and for the first time the job
@@ -936,18 +936,36 @@ the docs.
 - [x] Fixed it at the gate rather than in the workflow: `typecheck` is now
       `astro sync && tsc --noEmit`, so it is self-sufficient locally and in CI
       and can no longer be satisfied by leftover local state.
-STATUS: COMPLETE · BLOCKERS: the deploy step is still skipped unless the
-`CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` secrets exist, so a green run
-still would not prove a live publication. · DEPENDENCIES: a push to `main`. ·
-FILES: `website/package.json`, `TODO.md` · TESTS ADDED: none — the fix restores
-an existing gate rather than adding coverage · VALIDATION: reproduced the CI
-failure locally by deleting `.astro/`, where `tsc` alone returns the identical 6
-errors (exit 2) while `npm run typecheck` now returns 0; audit gate exit 0;
-`npm test` 39/39; production build succeeds; identity inventory in sync
-(829 / 389) · RISKS: none known — the change only prepends a type-generation
-step to an unchanged checker · RESULT: the audit gate is confirmed green in CI
-and the typecheck gate blocking it is repaired, so the deploy step can be
-reached and exercised.
+- [x] Fixed the precondition that fix exposed. `astro sync` loads
+      `astro.config.mjs`, which asserts four environment variables and forbids
+      silent fallbacks per Configuration Governance, but they were only set on
+      the *build* step, so typecheck died before reaching `tsc`. They are now
+      defined once at job level, so typecheck, the prebuild importers and the
+      build share one source of truth.
+STATUS: COMPLETE and verified end to end in CI · BLOCKERS: none · DEPENDENCIES:
+none · FILES: `website/package.json`, `.github/workflows/website-deploy.yml`,
+`TODO.md` · TESTS ADDED: none — this work restores existing gates rather than
+adding coverage · VALIDATION: each CI failure was reproduced locally before
+being fixed — deleting `.astro/` made bare `tsc` return the identical 6 errors
+at exit 2, and with `.env` removed and no env vars the governance error matched
+CI verbatim while the workflow's four variables made `npm run typecheck` exit 0;
+audit gate exit 0; `npm test` 39/39; full Python battery 480 tests OK (19 skips);
+identity inventory in sync (829 / 389) · RISKS: a two-major Astro jump was
+verified by the build and unit tests, not by a browser test, so runtime
+behavior is asserted only as far as the emitted HTML goes · RESULT: workflow run
+35573126040 is **green at every step**, including step 12 "Deploy to Cloudflare
+Pages", which executed rather than skipping — proving the Cloudflare secrets are
+in fact configured. Wrangler reported `Success! Uploaded 25 files`, `Uploading
+_headers`, and `Deployment complete! ... https://62c6e16f.wsabuilds-website.pages.dev`,
+and that URL serves the live site (HTTP 200). The website publication path that
+had been dead since `cloudflare/pages-action` was deleted now works end to end.
+DISCOVERIES (recorded, not fixed): (1) because `compatibility/index.astro` and
+`troubleshoot/wizard.astro` declare `data-pagefind-body`, pagefind indexes *only*
+those two pages and skips all 10 documentation pages, so site search cannot find
+the docs; (2) the workflow runs `npm install` rather than `npm ci` while the
+prebuild importers rewrite tracked mirror files, so the runner tree is left dirty
+— wrangler warns about it harmlessly, but CI installs are therefore not
+lockfile-reproducible.
 
 ---
 
