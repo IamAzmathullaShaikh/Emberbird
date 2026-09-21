@@ -959,13 +959,63 @@ in fact configured. Wrangler reported `Success! Uploaded 25 files`, `Uploading
 _headers`, and `Deployment complete! ... https://62c6e16f.wsabuilds-website.pages.dev`,
 and that URL serves the live site (HTTP 200). The website publication path that
 had been dead since `cloudflare/pages-action` was deleted now works end to end.
-DISCOVERIES (recorded, not fixed): (1) because `compatibility/index.astro` and
+DISCOVERIES: (1) because `compatibility/index.astro` and
 `troubleshoot/wizard.astro` declare `data-pagefind-body`, pagefind indexes *only*
 those two pages and skips all 10 documentation pages, so site search cannot find
-the docs; (2) the workflow runs `npm install` rather than `npm ci` while the
-prebuild importers rewrite tracked mirror files, so the runner tree is left dirty
-— wrangler warns about it harmlessly, but CI installs are therefore not
-lockfile-reproducible.
+the docs — **fixed in WF-6, which found a deeper defect beneath it**; (2) the
+workflow runs `npm install` rather than `npm ci` while the prebuild importers
+rewrite tracked mirror files, so the runner tree is left dirty — wrangler warns
+about it harmlessly, but CI installs are therefore not lockfile-reproducible
+(still open).
+
+### Cycle WF-6 — Make the documentation findable in site search (2026-09-21)
+- [x] Fixed the indexing scope. Pagefind switches to marker-only indexing the
+      moment any page declares `data-pagefind-body`, and two isolated elements had
+      done exactly that — silently excluding the other 16 pages, 10 of them
+      documentation. The marker now lives once on the shared `<main>` in
+      `Layout.astro`, so header/footer chrome and the search modal itself stay
+      out, and the docs sidebar carries `data-pagefind-ignore` so the same nav
+      repeated across 10 pages cannot bury the article text. Indexed pages went
+      2 -> 18 and indexed words 439 -> 2092.
+- [x] Found the deeper defect underneath it, which no indexing change could have
+      fixed: the loader could never succeed in a production build. The bundled
+      dynamic `import()` was emitted as
+      `__vitePreload(() => import(spec), __VITE_PRELOAD__)`, and because the
+      specifier was runtime-computed Vite never substitutes that identifier, so
+      the loader threw a ReferenceError that its own bare `catch {}` swallowed —
+      leaving site search dead while a single console warning hinted at it.
+      Confirmed in the browser: `typeof __VITE_PRELOAD__` is `undefined`.
+- [x] Rebuilt the loader as `is:inline` — Astro's mechanism for scripts the
+      bundler must leave alone — with a plain string-literal specifier, since
+      `pagefind.js` only exists in dist/ after the post-build step. A
+      `new Function` shim was rejected because the CSP in `public/_headers`
+      allows no `'unsafe-eval'`.
+- [x] Fixed a latent race in the same handler: keystrokes arriving before the lazy
+      load finished were dropped, so the first query typed after opening the modal
+      returned nothing. The handler now awaits the load.
+- [x] Added `website/tests/search-index.test.mjs`, pinning the single marker
+      declaration and the unbundled loader. The guards were checked to be
+      non-vacuous: they reject the computed-specifier, bundled-script and
+      variable-specifier regressions while passing on the real source.
+STATUS: COMPLETE, verified in a browser and in CI · BLOCKERS: none ·
+DEPENDENCIES: none · FILES: `website/src/components/SearchModal.astro`,
+`website/src/layouts/Layout.astro`,
+`website/src/components/TroubleshootingWizard.astro`,
+`website/src/pages/{compatibility/index,troubleshoot/wizard,docs/[...slug]}.astro`,
+`website/tests/search-index.test.mjs` · TESTS ADDED: 3 (42 website tests total,
+all passing) · VALIDATION: in-browser against the built site — "magisk" returns 5
+results led by `/docs/getting-started/architecture/`, and a query dispatched
+before the index finished loading resolves to
+`/docs/configuration/play-integrity-setup/`; the console is clean, where the
+loader previously logged its warning on every open; `__VITE_PRELOAD__` is absent
+from the entire dist tree; typecheck 0; audit 0; build 18 pages / 2092 words; full
+Python battery 480 tests OK (19 skips); identity inventory in sync (829 / 389) ·
+RISKS: the loader was rewritten into plain JS because `is:inline` bypasses TS
+transpilation, so it is no longer type-checked — the new guards are what protect
+it instead · RESULT: workflow run 35574679210 is green at every step including the
+Cloudflare Pages deploy, which published 42 files to
+https://8612cf8c.wsabuilds-website.pages.dev, and that deployment reports
+`page_count: 18` — so the fix is live rather than local-only.
 
 ---
 
