@@ -869,6 +869,56 @@ so it must not be edited to track current progress · RESULT: `build.yml` and
 still genuinely red (see QG-4), so the FB exit checklist's CI-ratification line
 stays open.
 
+### Cycle WF-4 — Clear the website dependency gate blocking deployment (2026-09-21)
+- [x] Cleared the advisory set failing `npm audit --audit-level=critical` in
+      `website-deploy.yml`, which skipped the Cloudflare deploy step on every
+      run. Measured from the committed lockfile, the gate was red on 1 critical
+      (`astro` <=7.2.7 — XSS in `define:vars` via incomplete `</script>`
+      sanitization), 1 high (`sharp` <=0.35.4-rc.0 — inherited libvips
+      CVE-2026-33327/33328/35590/35591), 2 low (`esbuild` 0.27.3-0.28.0, and
+      `@astrojs/tailwind` itself). `astro` ^5.4.2 -> ^7.3.3 is the first release
+      line above the vulnerable range and pulls fixed `sharp` 0.35.4 / `esbuild`
+      0.28.2 transitively; the audit now reports total 0 at every severity.
+- [x] Removed `@astrojs/tailwind`, which was the structural blocker rather than
+      an incidental one: abandoned upstream, its latest release peers on
+      `astro ^3 || ^4 || ^5` only, and it carried its own advisory — so no fixed
+      Astro could be installed while it was present. Tailwind now runs through
+      Astro's built-in PostCSS pipeline (new `postcss.config.mjs`: `tailwindcss`
+      + `autoprefixer`) reading the existing `tailwind.config.mjs` unchanged.
+- [x] Migrated off the collection APIs Astro 6+ deleted, which the upgrade made
+      mandatory: `content.config.ts` uses the Content Layer `glob` loader and
+      `[...slug].astro` uses `render(entry)` / `entry.id` in place of
+      `entry.render()` / `entry.slug`. Entry ids stay relative to
+      `src/content/docs`, so the prebuild importer keeps writing the same mirror
+      and every URL is unchanged.
+STATUS: COMPLETE (local; CI unverified) · BLOCKERS: the deploy step remains gated
+on the `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` repo secrets — if unset
+the workflow skips deployment by design, so a green run alone does not prove a
+live publication. · DEPENDENCIES: a push to `main` for CI to verify the gate. ·
+FILES: `website/package.json`, `website/package-lock.json`,
+`website/astro.config.mjs`, `website/postcss.config.mjs` (new),
+`website/src/content.config.ts`, `website/src/lib/docs-pipeline.ts`,
+`website/src/pages/docs/[...slug].astro` · TESTS ADDED: none — the 39 existing
+website tests are the regression net · VALIDATION: audit total 0 across all
+severities (before, from the committed lockfile via
+`npm audit --package-lock-only`: 1 critical / 1 high / 2 low); `tsc --noEmit`
+clean; `npm test` 39/39; production `prebuild -> astro build -> pagefind`
+succeeds; 18 HTML pages emitted of which 10 are docs routes (identical to the
+pre-upgrade build); every `/docs/...` nav href in the built output resolves to a
+real page (0 broken); rendered headings match the source markdown exactly, so the
+Content Layer migration is lossless; Tailwind utilities and autoprefixer vendor
+prefixes present in the emitted CSS; full Python battery 480 tests OK (19 skips);
+`check_doc_links.py` 0 broken across 79 files; identity inventory in sync (829
+occurrences / 389 protected) · RISKS: this is a two-major Astro jump, so
+behavior beyond the build — the client-side pagefind UI and island hydration — is
+asserted only by the build and the unit suite, not by a browser test; the deploy
+run is its first real exercise · RESULT: the dependency gate is cleared and the
+repaired deploy step is unblocked. A pre-existing, unrelated defect was found and
+recorded rather than fixed: because `compatibility/index.astro` and
+`troubleshoot/wizard.astro` declare `data-pagefind-body`, pagefind indexes *only*
+those two pages and skips all 10 documentation pages, so site search cannot find
+the docs.
+
 ---
 
 ## Part VI — Master Roadmap (Program Pipeline)

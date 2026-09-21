@@ -1,21 +1,23 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import { getOrderedDocCategories, getAdjacentArticles } from '../../lib/docs-pipeline';
 
 export async function getStaticPaths() {
   const docs = await getCollection('docs');
   return docs.map((entry) => ({
-    params: { slug: entry.slug },
+    // Content Layer entries are addressed by `id`; `slug` was removed in
+    // Astro 6+ along with the legacy collection API.
+    params: { slug: entry.id },
     props: { entry }
   }));
 }
 
 const { entry } = Astro.props;
-const { Content } = await entry.render();
+const { Content } = await render(entry);
 
 const categories = await getOrderedDocCategories();
-const { prev, next } = await getAdjacentArticles(entry.slug);
+const { prev, next } = await getAdjacentArticles(entry.id);
 ---
 
 <Layout title={`${entry.data.title} - Emberbird Documentation`}>
@@ -38,7 +40,7 @@ const { prev, next } = await getAdjacentArticles(entry.slug);
                     <a
                       href={`/docs/${item.slug}`}
                       class={`text-sm block py-1 px-2.5 rounded-lg transition-colors ${
-                        item.slug === entry.slug
+                        item.slug === entry.id
                           ? 'bg-indigo-600/20 text-indigo-300 font-medium'
                           : 'text-slate-400 hover:text-white hover:bg-slate-900'
                       }`}

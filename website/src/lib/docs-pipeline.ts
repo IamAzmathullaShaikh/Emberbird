@@ -43,7 +43,9 @@ export async function getOrderedDocCategories(): Promise<CategoryGroup[]> {
       };
     }
     groups[category].articles.push({
-      slug: doc.slug,
+      // Content Layer entries expose `id` (path relative to the loader base);
+      // it is the same URL segment the legacy `slug` used to carry.
+      slug: doc.id,
       title: doc.data.title,
       description: doc.data.description
     });
@@ -61,7 +63,7 @@ export async function getAdjacentArticles(currentSlug: string): Promise<{
   const allDocs = await getCollection('docs');
   const sorted = allDocs.sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
 
-  const index = sorted.findIndex((doc) => doc.slug === currentSlug);
+  const index = sorted.findIndex((doc) => doc.id === currentSlug);
   if (index === -1) {
     return { prev: null, next: null };
   }
@@ -70,7 +72,7 @@ export async function getAdjacentArticles(currentSlug: string): Promise<{
   const nextDoc = index < sorted.length - 1 ? sorted[index + 1] : null;
 
   return {
-    prev: prevDoc ? { slug: prevDoc.slug, title: prevDoc.data.title } : null,
-    next: nextDoc ? { slug: nextDoc.slug, title: nextDoc.data.title } : null
+    prev: prevDoc ? { slug: prevDoc.id, title: prevDoc.data.title } : null,
+    next: nextDoc ? { slug: nextDoc.id, title: nextDoc.data.title } : null
   };
 }

@@ -5,8 +5,15 @@ import { glob } from 'astro/loaders';
 // authoritative repository records directly from compatibility/data/ so the
 // Compatibility Hub can never drift from the validated source of record.
 
+// Content Layer loader (the legacy `type: 'content'` collection API is gone in
+// Astro 6+). The prebuild importer writes the .md mirror into src/content/docs/,
+// so the entry id remains the path relative to that directory — URLs are
+// unchanged.
 const docsCollection = defineCollection({
-  type: 'content',
+  loader: glob({
+    pattern: '**/*.md',
+    base: new URL('./content/docs', import.meta.url)
+  }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
