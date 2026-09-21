@@ -1,6 +1,4 @@
-use crate::backup::{
-    check_wsa_running, copy_and_hash_vhdx, verify_vhdx_unlocked,
-};
+use crate::backup::{check_wsa_running, copy_and_hash_vhdx, verify_vhdx_unlocked};
 use crate::registry::list_backups;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};

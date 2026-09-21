@@ -48,7 +48,9 @@ pub struct StagedAsset {
 pub fn staging_root() -> PathBuf {
     if let Ok(local_app_data) = std::env::var("LOCALAPPDATA") {
         if !local_app_data.trim().is_empty() {
-            return PathBuf::from(local_app_data).join("Emberbird").join("staged");
+            return PathBuf::from(local_app_data)
+                .join("Emberbird")
+                .join("staged");
         }
     }
     std::env::temp_dir().join("emberbird-staged")
@@ -83,7 +85,11 @@ fn hex_string(bytes: &[u8]) -> String {
 /// Download `url`, stream it to the staging area with progress callbacks,
 /// verify SHA-256 against the registry hash, extract, and locate the
 /// AppxManifest. Any failure cleans up honestly.
-pub async fn stage_asset<F>(url: &str, expected_sha256: &str, on_progress: F) -> Result<StagedAsset, String>
+pub async fn stage_asset<F>(
+    url: &str,
+    expected_sha256: &str,
+    on_progress: F,
+) -> Result<StagedAsset, String>
 where
     F: Fn(&StageProgress),
 {
@@ -97,8 +103,13 @@ where
     }
 
     let root = staging_root();
-    std::fs::create_dir_all(&root)
-        .map_err(|e| format!("Failed to create staging directory {}: {}", root.display(), e))?;
+    std::fs::create_dir_all(&root).map_err(|e| {
+        format!(
+            "Failed to create staging directory {}: {}",
+            root.display(),
+            e
+        )
+    })?;
     let archive_path = root.join(&filename);
 
     // Phase 1: streamed download with rolling SHA-256.
@@ -259,10 +270,7 @@ mod tests {
     #[test]
     fn filename_from_url_extracts_registry_asset_names() {
         let url = "https://github.com/example/repo/releases/download/wsa-v2407.40000.4.0/WSA_2407.40000.4.0_x64.7z";
-        assert_eq!(
-            filename_from_url(url).unwrap(),
-            "WSA_2407.40000.4.0_x64.7z"
-        );
+        assert_eq!(filename_from_url(url).unwrap(), "WSA_2407.40000.4.0_x64.7z");
         assert!(filename_from_url("https://example.com/").is_err());
         assert_eq!(
             filename_from_url("https://example.com/a.7z?token=x").unwrap(),
@@ -273,7 +281,9 @@ mod tests {
     #[test]
     fn normalize_sha256_tolerates_prefix_and_case() {
         assert_eq!(
-            normalize_sha256("SHA256:ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789"),
+            normalize_sha256(
+                "SHA256:ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789"
+            ),
             "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
         );
         assert_eq!(normalize_sha256("  abcd  "), "abcd");

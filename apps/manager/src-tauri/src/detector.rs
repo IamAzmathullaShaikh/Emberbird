@@ -55,7 +55,9 @@ fn check_developer_mode() -> bool {
     use winreg::RegKey;
 
     let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
-    if let Ok(key) = hklm.open_subkey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock") {
+    if let Ok(key) =
+        hklm.open_subkey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock")
+    {
         if let Ok(val) = key.get_value::<u32, _>("AllowDevelopmentWithoutDevLicense") {
             return val == 1;
         }
@@ -105,7 +107,8 @@ fn check_virtualization() -> bool {
 #[cfg(windows)]
 fn check_processes() -> bool {
     use windows::Win32::System::Diagnostics::ToolHelp::{
-        CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W, TH32CS_SNAPPROCESS,
+        CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W,
+        TH32CS_SNAPPROCESS,
     };
 
     unsafe {

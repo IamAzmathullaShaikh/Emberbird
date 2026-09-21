@@ -93,7 +93,9 @@ pub fn published_wsa_releases_for_edition(edition: &str) -> Vec<RegistryRelease>
         Some(doc) => doc
             .releases
             .into_iter()
-            .filter(|r| r.status == "published" && r.tag.starts_with("wsa-v") && r.edition == edition)
+            .filter(|r| {
+                r.status == "published" && r.tag.starts_with("wsa-v") && r.edition == edition
+            })
             .collect(),
         None => Vec::new(),
     }

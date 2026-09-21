@@ -166,9 +166,7 @@ pub fn run_upgrade_preflight(package_path: Option<&str>) -> UpgradePreflight {
         );
     }
 
-    let has_existing_vhdx = get_default_vhdx_path()
-        .map(|p| p.exists())
-        .unwrap_or(false);
+    let has_existing_vhdx = get_default_vhdx_path().map(|p| p.exists()).unwrap_or(false);
 
     if let Some(pkg) = package_path {
         let pkg_path = Path::new(pkg);
@@ -212,9 +210,10 @@ pub fn execute_upgrade_orchestration(options: UpgradeOptions) -> Result<UpgradeR
 
     let mut backup_meta: Option<BackupMetadata> = None;
     if options.create_backup && preflight.has_existing_vhdx {
-        let note = options.backup_note.clone().or_else(|| {
-            Some("Automated safety backup before WSA package upgrade".to_string())
-        });
+        let note = options
+            .backup_note
+            .clone()
+            .or_else(|| Some("Automated safety backup before WSA package upgrade".to_string()));
 
         match create_vhdx_backup_impl(None, None, None, note, true) {
             Ok(meta) => {

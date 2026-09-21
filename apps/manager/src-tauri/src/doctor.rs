@@ -168,7 +168,8 @@ fn probe_hardware_virtualization() -> DoctorProbe {
                 DoctorProbeStatus::PASS,
                 DoctorProbeSeverity::CRITICAL,
                 "Hardware virtualization is enabled in BIOS/UEFI.".to_string(),
-                "Native IsProcessorFeaturePresent(PF_VIRT_FIRMWARE_ENABLED) returned true".to_string(),
+                "Native IsProcessorFeaturePresent(PF_VIRT_FIRMWARE_ENABLED) returned true"
+                    .to_string(),
             )
         } else {
             manual_fix(
@@ -436,8 +437,7 @@ fn probe_adb_loopback(port: u16) -> DoctorProbe {
             TITLE,
             DoctorProbeStatus::PASS,
             DoctorProbeSeverity::INFO,
-            "WSA ADB daemon is listening and accepting connections on 127.0.0.1:58526."
-                .to_string(),
+            "WSA ADB daemon is listening and accepting connections on 127.0.0.1:58526.".to_string(),
             format!("Port {} connected successfully.", port),
         )
     } else {
@@ -480,10 +480,15 @@ fn probe_vhdx_lock() -> DoctorProbe {
 
     let (_code, stdout, _) = execute(&["tasklist.exe", "/FO", "CSV", "/NH"]);
 
-    let active: Vec<&str> = ["WsaClient.exe", "vmcompute.exe", "vmmemWSL.exe", "WsaService.exe"]
-        .into_iter()
-        .filter(|proc_name| stdout.to_lowercase().contains(&proc_name.to_lowercase()))
-        .collect();
+    let active: Vec<&str> = [
+        "WsaClient.exe",
+        "vmcompute.exe",
+        "vmmemWSL.exe",
+        "WsaService.exe",
+    ]
+    .into_iter()
+    .filter(|proc_name| stdout.to_lowercase().contains(&proc_name.to_lowercase()))
+    .collect();
 
     if active.is_empty() {
         probe(
@@ -783,7 +788,8 @@ fn probe_storage_health() -> DoctorProbe {
 
     #[cfg(windows)]
     {
-        let free_bytes = crate::coordinator::get_available_disk_space_bytes(std::path::Path::new("C:\\"));
+        let free_bytes =
+            crate::coordinator::get_available_disk_space_bytes(std::path::Path::new("C:\\"));
 
         if let Some(bytes) = free_bytes {
             let free_gb = (bytes / (1024 * 1024 * 1024)) as i64;
@@ -794,7 +800,10 @@ fn probe_storage_health() -> DoctorProbe {
                     TITLE,
                     DoctorProbeStatus::PASS,
                     DoctorProbeSeverity::CRITICAL,
-                    format!("System drive has {} GB free space (>= 25 GB required).", free_gb),
+                    format!(
+                        "System drive has {} GB free space (>= 25 GB required).",
+                        free_gb
+                    ),
                     format!("Free disk capacity: {} GB", free_gb),
                 )
             } else if free_gb >= 10 {
@@ -821,7 +830,10 @@ fn probe_storage_health() -> DoctorProbe {
                         TITLE,
                         DoctorProbeStatus::FAIL,
                         DoctorProbeSeverity::CRITICAL,
-                        format!("Critically low disk space: only {} GB free (< 10 GB).", free_gb),
+                        format!(
+                            "Critically low disk space: only {} GB free (< 10 GB).",
+                            free_gb
+                        ),
                         "VHDX dynamic expansion will fail if host disk is exhausted.".to_string(),
                     ),
                     "Free at least 15 GB of space on drive C: immediately.",
@@ -884,7 +896,9 @@ mod tests {
     /// remediation command may ever delete, format, or truncate user data.
     #[test]
     fn remediation_commands_are_never_destructive() {
-        let destructive = ["del", "rm", "rmdir", "format", "diskpart", "truncate", "drop"];
+        let destructive = [
+            "del", "rm", "rmdir", "format", "diskpart", "truncate", "drop",
+        ];
         for p in run_doctor_scan() {
             if let Some(cmd) = &p.remediation_cmd {
                 let tokens: Vec<String> = cmd
@@ -909,7 +923,12 @@ mod tests {
     #[test]
     fn probe_output_is_zero_pii() {
         for p in run_doctor_scan() {
-            let dump = format!("{}{}{}", p.summary, p.details, p.remediation_cmd.unwrap_or_default());
+            let dump = format!(
+                "{}{}{}",
+                p.summary,
+                p.details,
+                p.remediation_cmd.unwrap_or_default()
+            );
             let lowered = dump.to_lowercase();
             for pattern in ["c:\\users\\", "/home/", "@gmail.com", "password"] {
                 assert!(

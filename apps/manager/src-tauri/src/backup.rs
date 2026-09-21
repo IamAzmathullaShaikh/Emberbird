@@ -54,7 +54,10 @@ pub fn request_wsa_shutdown() -> Result<(), String> {
 
 pub fn verify_vhdx_unlocked(path: &Path) -> Result<(), String> {
     if !path.exists() {
-        return Err(format!("Target VHDX file does not exist: {}", path.display()));
+        return Err(format!(
+            "Target VHDX file does not exist: {}",
+            path.display()
+        ));
     }
 
     match OpenOptions::new().read(true).open(path) {
@@ -121,11 +124,15 @@ pub fn get_default_vhdx_path() -> Option<PathBuf> {
 
 pub fn get_default_backup_dir() -> PathBuf {
     if let Ok(local_app_data) = std::env::var("LOCALAPPDATA") {
-        let emberbird_dir = PathBuf::from(&local_app_data).join("Emberbird").join("backups");
+        let emberbird_dir = PathBuf::from(&local_app_data)
+            .join("Emberbird")
+            .join("backups");
         if emberbird_dir.exists() {
             return emberbird_dir;
         }
-        let legacy_dir = PathBuf::from(&local_app_data).join("WSABuilds").join("backups");
+        let legacy_dir = PathBuf::from(&local_app_data)
+            .join("WSABuilds")
+            .join("backups");
         if legacy_dir.exists() {
             return legacy_dir;
         }
@@ -171,7 +178,10 @@ pub fn create_vhdx_backup_impl(
                 return Err("WSA is running and failed to shut down within timeout. Please close all Android apps first.".to_string());
             }
         } else {
-            return Err("WSA is currently running. Cold backup requires shutting down WSA first.".to_string());
+            return Err(
+                "WSA is currently running. Cold backup requires shutting down WSA first."
+                    .to_string(),
+            );
         }
     }
 

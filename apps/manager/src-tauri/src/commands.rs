@@ -1,16 +1,16 @@
 use crate::backup::{create_vhdx_backup_impl, BackupResult};
-use crate::downloader::{stage_asset, StagedAsset, STAGE_PROGRESS_EVENT};
 use crate::coordinator::{
     execute_upgrade_orchestration, run_upgrade_preflight, UpgradeOptions, UpgradePreflight,
     UpgradeResult,
 };
 use crate::detector::{detect_subsystem, WsaStatus};
+use crate::doctor::DoctorProbe;
+use crate::downloader::{stage_asset, StagedAsset, STAGE_PROGRESS_EVENT};
 use crate::env::{resolve_environment, ManagerEnvConfig};
 use crate::registry::{list_backups, prune_backups as prune_backups_impl, RestoreCandidate};
 use crate::registry_truth::latest_published_wsa_release;
 use crate::releases::{clean_version, is_update_available, ReleaseInfo, UpdateStatus};
 use crate::restore::{execute_restore_impl, RestoreResult};
-use crate::doctor::DoctorProbe;
 
 #[tauri::command]
 pub fn detect_wsa_status() -> Result<WsaStatus, String> {
@@ -84,9 +84,8 @@ pub async fn download_and_stage_release(
     edition: String,
     app_handle: tauri::AppHandle,
 ) -> Result<StagedAsset, String> {
-    let doc = crate::registry_truth::load_registry().ok_or_else(|| {
-        "Registry unavailable: releases.json not found or unreadable".to_string()
-    })?;
+    let doc = crate::registry_truth::load_registry()
+        .ok_or_else(|| "Registry unavailable: releases.json not found or unreadable".to_string())?;
     let release = doc
         .releases
         .iter()
@@ -158,7 +157,9 @@ pub fn execute_upgrade(options: UpgradeOptions) -> Result<UpgradeResult, String>
 }
 
 #[tauri::command]
-pub fn install_wsa_package(package_path: String) -> Result<crate::installer::InstallResult, String> {
+pub fn install_wsa_package(
+    package_path: String,
+) -> Result<crate::installer::InstallResult, String> {
     let p = std::path::Path::new(&package_path);
     let manifest = if p.is_file() {
         p.to_path_buf()
@@ -173,7 +174,7 @@ pub async fn launch_wsa(target: Option<String>) -> Result<(), String> {
     #[cfg(windows)]
     {
         let uri = target.unwrap_or_else(|| "wsa://settings".to_string());
-        
+
         // 1. Direct invocation via shell to avoid powershell overhead where possible
         std::process::Command::new("cmd")
             .args(["/C", &format!("start \"\" \"{}\"", uri)])

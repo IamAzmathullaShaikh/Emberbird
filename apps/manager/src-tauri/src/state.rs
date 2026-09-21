@@ -222,7 +222,11 @@ pub fn min_windows_build() -> u32 {
             .as_str()?
             .to_string();
         let parts: Vec<&str> = raw.split('.').collect();
-        let build = if parts.len() >= 3 { parts[2] } else { raw.as_str() };
+        let build = if parts.len() >= 3 {
+            parts[2]
+        } else {
+            raw.as_str()
+        };
         build.parse().ok()
     }
     parse(EMBEDDED_VERSION_JSON).unwrap_or(19045)
@@ -402,7 +406,10 @@ mod tests {
         // deployment/version.json — no independent hardcoded version may exist.
         let embedded = parse_embedded_baseline(EMBEDDED_VERSION_JSON)
             .expect("deployment/version.json must carry subsystem_baseline.wsa_version");
-        assert_eq!(embedded, subsystem_baseline_version().expect("baseline available"));
+        assert_eq!(
+            embedded,
+            subsystem_baseline_version().expect("baseline available")
+        );
         assert_eq!(embedded, "2407.40000.4.0");
     }
 

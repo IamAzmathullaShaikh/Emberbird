@@ -114,7 +114,11 @@ pub fn register_wsa_package(manifest_path: &Path) -> Result<InstallResult, Strin
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            if stderr.contains("0x80073D28") || stderr.to_lowercase().contains("administrator privileges required") {
+            if stderr.contains("0x80073D28")
+                || stderr
+                    .to_lowercase()
+                    .contains("administrator privileges required")
+            {
                 // Attempt to request UAC elevation via Start-Process -Verb RunAs
                 let escaped = manifest_str.replace('\'', "''");
                 let elev_cmd = format!(
@@ -129,7 +133,9 @@ pub fn register_wsa_package(manifest_path: &Path) -> Result<InstallResult, Strin
                         return Ok(InstallResult {
                             success: true,
                             package_path: manifest_str,
-                            message: "WSA package registered successfully with administrator elevation".to_string(),
+                            message:
+                                "WSA package registered successfully with administrator elevation"
+                                    .to_string(),
                         });
                     }
                 }
