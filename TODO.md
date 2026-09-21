@@ -997,6 +997,15 @@ about it harmlessly, but CI installs are therefore not lockfile-reproducible
       declaration and the unbundled loader. The guards were checked to be
       non-vacuous: they reject the computed-specifier, bundled-script and
       variable-specifier regressions while passing on the real source.
+- [x] Wired that coverage guard into CI so it cannot skip there. `npm test` runs
+      before the build, so the guard skipped in that step and the gate passed
+      whether or not the index covered the site. The post-build verification step
+      now runs `npm run verify:index` with `PAGEFIND_REQUIRE_BUILD=1`, turning a
+      missing build into a hard failure instead of a silent skip. That step was
+      also advisory before — it merely warned when the pagefind directory was
+      absent, so a site with dead search could ship. It now fails on a missing
+      dist/, a missing index, or an index that does not cover every built page,
+      all before the deploy step.
 STATUS: COMPLETE, verified in a browser and in CI · BLOCKERS: none ·
 DEPENDENCIES: none · FILES: `website/src/components/SearchModal.astro`,
 `website/src/layouts/Layout.astro`,
@@ -1015,7 +1024,14 @@ transpilation, so it is no longer type-checked — the new guards are what prote
 it instead · RESULT: workflow run 35574679210 is green at every step including the
 Cloudflare Pages deploy, which published 42 files to
 https://8612cf8c.wsabuilds-website.pages.dev, and that deployment reports
-`page_count: 18` — so the fix is live rather than local-only.
+`page_count: 18` — so the fix is live rather than local-only. The CI gating was
+re-verified on run 35575185180, whose log shows the unit suite skipping the
+coverage test (`skipped 1`) while the post-build gate runs all three assertions
+for real (`tests 3, pass 3, skipped 0`) ahead of a successful deploy — closing the
+gap where the gate could pass without inspecting anything. The three modes were
+also checked locally: build present passes 3/3, index removed with
+`PAGEFIND_REQUIRE_BUILD=1` exits 1 with the reason, and a plain local `npm test`
+still skips rather than failing on an unbuilt tree.
 
 ---
 
