@@ -124,9 +124,10 @@ previously filled this file is preserved in git history (`git log -- TODO.md`).
 ### Current reality (observed in code, 2026-09-20)
 
 **Backend (Rust) — strong:**
-- [x] **Manager CI green.** 52/52 Node tests, `tsc --noEmit`, `cargo check`,
-  `cargo clippy --all-targets -- -D warnings`, `cargo test` (40/40), and the
-  full Python battery (450 tests, 19 environment skips) pass. Doctor heading
+- [x] **Manager CI green.** 60/60 Node tests, 67/67 Vitest component tests,
+  `tsc --noEmit`, `cargo check`, `cargo clippy --all-targets -- -D warnings`,
+  `cargo test` (40/40), and the full Python battery (479 tests, 19 environment
+  skips) pass. Doctor heading
   aligned to \"Actionable Remediations\"; Header badges render
   \"ARM64 (Snapdragon Native)\" / \"x64 Native\".
 - [x] **In-flight repairs landed** (`App.tsx`, `ReleaseCard.tsx`,
@@ -161,7 +162,7 @@ previously filled this file is preserved in git history (`git log -- TODO.md`).
 **Frontend (React/TypeScript) — pain points identified (2026-09-20 audit):**
 
 - [x] **Error Boundaries.** Added `ErrorBoundary.tsx`, wraps all tab views and app root.
-- [x] **State centralized.** Zustand store `src/lib/store.ts`; prop drilling eliminated; StatusCard reduced from 11 useState hooks.
+- [x] **State centralized.** Zustand store `src/lib/store.ts`; prop drilling eliminated; StatusCard is now a 192-line orchestrator (was 492) composing `StatusOverview`, `SubsystemControls`, `QuickSetupPanel`, `EditionSelector`, `AdvancedInstallFallback`, and `InstallErrorNotice`.
 - [x] **User-visible errors.** Toast notification system replaces all console.error swallows.
 - [x] **Design unified.** All views migrated to semantic tokens; zero slate-*/indigo-* in living UI code.
 - [x] **De-duplicated.** `formatters.ts` and `StageProgress.tsx` shared; 4 duplicate implementations removed.
@@ -172,11 +173,13 @@ previously filled this file is preserved in git history (`git log -- TODO.md`).
 
 **Testing — pain points identified (2026-09-20 audit):**
 
-- [x] **Real UI tests.** Vitest + React Testing Library + HappyDOM component tests (37 tests across 5 files).
-- [!] **String-grep test pattern.** 13 Node test files read `.tsx` source
+- [x] **Real UI tests.** Vitest + React Testing Library + HappyDOM component tests (67 tests across 7 files, including the StatusCard install loop).
+- [!] **String-grep test pattern.** 6 Node test files still read `.tsx` source
   with `fs.readFileSync` and assert on string presence via regex. Refactoring
   text into constants or child components breaks tests without functional
-  regression — brittle by design.
+  regression — brittle by design. The StatusCard case was migrated to a real
+  component test (`src/components/__tests__/StatusCard.test.tsx`); the rest
+  remain, to be migrated the next time each view is touched.
 - [x] **E2E tests foundation.** Playwright + Tauri WebDriver configured with critical journey specs and CI workflow (`manager-e2e.yml`).
 - [x] **Rust↔TS types guarded.** Specta pinned with `#[derive(specta::Type)]` and CI drift test `test_type_drift.py` (7 tests).
 
@@ -310,8 +313,8 @@ but no FB-5 line can be honestly closed from a working tree alone.
 
 **Exit checklist (FB complete when every line is `[x]`)**
 
-- [x] FB-0: full manager battery + Rust gates green (52/52 Node, 40/40
-      Rust, tsc/clippy clean; CI ratification on next push).
+- [x] FB-0: full manager battery + Rust gates green (60/60 Node, 67/67
+      Vitest, 40/40 Rust, tsc/clippy clean; CI ratification on next push).
 - [x] FB-1: zero hardcoded release truth in living Manager UI code —
       including unverifiable preflight state, which now reports UNVERIFIED.
 - [x] FB-2: Doctor renders live machine truth (Zero-Mock law holds everywhere).
@@ -320,9 +323,9 @@ but no FB-5 line can be honestly closed from a working tree alone.
 - [x] FB-4: architecture claims match shipped artifacts.
 - [ ] FB-5: 0.3.0 published through the governed pipeline — BLOCKED on
       publication (build + tag push + registry sync); see FB-5.
-- [x] Full battery green — Python 450 tests OK (19 skips), Node 52/52,
-      Rust 40/40, `cargo clippy -D warnings`, `tsc --noEmit` clean. The two
-      suites broken by the FB-0a purge are closed by the FB-0b docs decision.
+- [x] Full battery green — Python 479 tests OK (19 skips), Node 60/60,
+      Vitest 67/67, Rust 40/40, `cargo clippy -D warnings`, `tsc --noEmit` clean.
+      The two suites broken by the FB-0a purge are closed by the FB-0b decision.
 - [ ] CI ratification of the FB-final commit — needs the push that opens the
       release cycle (rule 3: local green is not complete).
 
@@ -361,9 +364,13 @@ item from the 2026-09-20 frontend audit.
       `dismissNotification`).
 - [x] Refactor `App.tsx` — remove prop drilling of `status`, `onRefresh`,
       `loadingStatus`, `checkingUpdates`. Components read from store directly.
-- [x] Refactor `StatusCard.tsx` — extract install flow state into store;
-      reduce from 481 lines / 11 `useState` hooks to ≤200 lines / ≤3 local
-      hooks (only truly-local UI state like `showAdvanced` stays local).
+- [x] Decompose `StatusCard.tsx` — 492 → 192 lines, now a thin orchestrator
+      over `StatusOverview` (state/environment/paths), `SubsystemControls`
+      (launch/shutdown), and `QuickSetupPanel` (edition grid, registry asset
+      identity, staging progress, readiness gating, advanced fallback). Shared
+      staging state lives in the store; the 9 remaining `useState` hooks are
+      genuinely view-local (selection, advanced toggle, busy/feedback,
+      result/error, wizard open).
 - [x] Refactor `UpdateView.tsx` — share staging/progress state with
       `StatusCard` via store instead of independent implementation.
 - [x] Verify: all 5 views render correctly; no prop drilling from `App.tsx`;
@@ -489,7 +496,15 @@ matters.
       - Doctor flow: scan → display probes → copy remediation → re-scan.
       - Backup/Restore: create backup → list → restore.
 - [x] Add E2E step to `manager-build.yml` (or a separate workflow).
-- [x] Verify: Playwright tests pass in CI on `windows-latest`.
+- [!] Verify: Playwright tests pass in CI on `windows-latest`.
+      **FALSE as of 2026-09-21.** Dispatched `manager-e2e.yml` on `main`
+      (run 35565671866): setup, Tauri release build, `tauri-driver` install and
+      Playwright install all succeed, then the suite reports **9 failed** —
+      `locator.click: Test timeout of 120000ms exceeded` on the nav/Doctor
+      clicks and `expect(locator).toBeVisible()` / `element(s) not found` on the
+      install-flow and Doctor-scan assertions. The specs run, so the E2E
+      *foundation* is real, but the gate is red on `main` and no QG-4
+      "passes in CI" claim can stand until it is green.
 
 **Exit checklist (QG complete when every line is `[x]`)**
 
@@ -521,6 +536,16 @@ every future phase.
 - [x] Replace bespoke regex scanning in `security.yml` with Gitleaks or
       TruffleHog (broader pattern coverage, fewer false negatives).
 - [x] Gitleaks scanning in CI
+- [x] Remove the superseded `security.yml` — the replacement had only ever been
+      additive. Its two checks Gitleaks cannot perform (hardcoded developer
+      machine paths, author username) moved into `gitleaks.yml` as a
+      hard-failure step; the repository audit still runs on every push through
+      `tests/test_identity_and_integrity.py`.
+- [x] Remove the duplicated `validation.yml` — its identity job repeated
+      `build.yml`'s, and its four package validators are exercised by the
+      offline unit suite and by `release.yml` against real built packages.
+- [x] Drop the duplicated `scripts/security_scan.py` step from
+      `docs-validation.yml` (that workflow now validates documentation only).
 - [x] CHANGELOG.md created
 
 #### DX-2 — Automated Winget submission
@@ -747,9 +772,66 @@ TESTS ADDED: Vitest 37/37, Python test_type_drift 7/7, Playwright E2E specs ·
 VALIDATION: `npm run lint` 0 warnings, `tsc --noEmit` clean, `npm test` 52/52, `npm run test:components` 37/37, `cargo test` 40/40, `cargo clippy -D warnings` clean, `python -m unittest discover -s tests` 457/457 ·
 RESULT: Phase QG complete; Phase DX complete except DX-1; Phase UX complete except hardware screen-reader audit.
 
----
+### Cycle WF-1 — CI consolidation, honest security scanning, StatusCard decomposition (2026-09-21)
+- [x] Removed two redundant workflows instead of leaving them to double-run
+      forever: the bespoke secret/path audit (which Gitleaks was supposed to
+      have replaced) and the weekly subsystem validation suite (whose identity
+      job repeated the build workflow's and whose validators the unit suite
+      already exercises).
+- [x] Preserved every unique gate before deleting: the hardcoded developer
+      machine-path / author-username scan runs as a hard-failure step in the
+      Gitleaks workflow, and the repository audit still runs on every push via
+      `tests/test_identity_and_integrity.py`. No gate was dropped or softened.
+- [x] Decomposed `StatusCard.tsx` from 492 to 192 lines into six focused
+      components — the FX-1 plain "≤200 lines" claim is now true rather than
+      asserted (it was 492 when claimed complete, with 9 local hooks, not ≤3).
+- [x] Migrated the brittle StatusCard source-text grep to a real component
+      test that drives the install loop (download → verify → staged manifest →
+      register) and the honest failure paths.
+STATUS: COMPLETE · BLOCKERS: none for this cycle · DEPENDENCIES: none · FILES:
+`.github/workflows/{gitleaks.yml,docs-validation.yml}` (2 removed),
+`.github/WORKFLOWS.md`, `SECURITY.md`, `scripts/security_scan.py`,
+`docs/identity-inventory.json`, `apps/manager/src/lib/registry.ts`,
+`apps/manager/src/components/{StatusCard,StatusOverview,SubsystemControls,QuickSetupPanel,EditionSelector,AdvancedInstallFallback,InstallErrorNotice}.tsx`,
+`apps/manager/src/components/__tests__/StatusCard.test.tsx`,
+`apps/manager/tests/product_growth.test.mjs` ·
+TESTS ADDED: 5 real StatusCard component tests (install loop, error honesty,
+conditional elevation remediation, edition switching); 1 brittle source-grep
+assertion retired · VALIDATION: `tsc --noEmit` clean, `npm run lint` 0 warnings,
+`npm test` 60/60, `npm run test:components` 67/67, Python 479 tests OK (19 skips),
+identity inventory fresh (827 occurrences, 388 protected), and the full Python
+battery green after the WORKFLOWS.md ghost-reference guard rejected the first
+draft of the removals section · RISKS: removing workflows is invisible until a
+future regression slips through, which is why the unique gates were relocated
+rather than dropped · RESULT: CI runs fewer, non-overlapping jobs; the
+security-scanning replacement mandated by DX-1 is finally complete; the Manager's
+largest component is decomposed with behavior pinned by real tests.
 
-## Part VI — Master Roadmap (Program Pipeline)
+### Cycle WF-2 — First real CI dispatch from the working tree (2026-09-21)
+- [x] Dispatched the three requested workflows on `main` and reported each
+      conclusion from the API rather than assuming.
+- [x] Diagnosed both failures to root cause instead of reporting a red X.
+STATUS: COMPLETE (dispatch) · BLOCKERS: the website-deploy repair is local only
+and cannot take effect or be verified until it reaches `main`. BLOCKERS also
+include the E2E suite being genuinely red. · DEPENDENCIES: a push to `main`.
+FILES: `.github/workflows/website-deploy.yml` ·
+TESTS ADDED: none · VALIDATION: API-reported run conclusions; YAML parses;
+`cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0`
+resolves (action.yml HTTP 200) while `cloudflare/pages-action` 404s ·
+RISKS: the E2E failure could be environmental flake on hosted runners rather
+than a real app regression — it has only been observed once, on the unmodified
+`main`, so it is recorded as a fact, not yet as a diagnosed defect · RESULT:
+- `manager-build.yml` (run 35565670446) — **success**, so the Manager CI suite
+  ratifies `main` (e63672e) end to end including the NSIS packaging gate.
+- `manager-e2e.yml` (run 35565671866) — **failure**, 9 Playwright tests; the
+  entire build/toolchain path is green, only the test assertions fail.
+- `website-deploy.yml` (run 35565673170) — **failure at "Set up job"**: it uses
+  `cloudflare/pages-action`, which Cloudflare deleted (the repo and the pinned
+  SHA both return HTTP 404). GitHub cannot resolve actions during setup, so the
+  job died before step 1 — **the website has not been deploying at all**. The
+  deploy step now uses the official successor `cloudflare/wrangler-action`
+  pinned to v4.0.0 with `pages deploy website/dist --project-name=wsabuilds-website`
+  (project name unchanged, and it matches the documented `SITE_URL`).
 
 ### 🚩 MILESTONE 1: TRUTH (Release 0.3.x) — COMPLETE
 
@@ -779,7 +861,7 @@ RESULT: Phase QG complete; Phase DX complete except DX-1; Phase UX complete exce
 - [ ] **Centralized State (FX-1)**
     - [x] Zustand store for global state (WSA status, staging, notifications).
     - [x] Eliminate prop drilling from App.tsx.
-    - [ ] Decompose StatusCard.tsx from 481 lines to ≤200.
+    - [x] Decompose StatusCard.tsx from 481 lines to ≤200 (now 192 lines).
 - [ ] **Shared Components (FX-2)**
     - [x] `formatters.ts` (single-source utility functions).
     - [x] `StageProgress.tsx` (shared download progress bar).
@@ -817,8 +899,8 @@ RESULT: Phase QG complete; Phase DX complete except DX-1; Phase UX complete exce
 
 - [x] **Repository Hygiene (DX-0)**
     - [x] 755 MB archive to Git LFS or GitHub Releases.
-- [ ] **Security Scanning (DX-1)**
-    - [ ] Gitleaks/TruffleHog replacing bespoke regexes.
+- [x] **Security Scanning (DX-1)**
+    - [x] Gitleaks replacing bespoke regexes — the superseded scan workflow was removed rather than left running alongside Gitleaks.
 - [x] **Automated Winget (DX-2)**
     - [x] Auto-submit PRs to `microsoft/winget-pkgs` on release.
 - [x] **Python Infrastructure (DX-3)**

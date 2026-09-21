@@ -10,19 +10,34 @@ The `.github/` directory manages GitHub Actions workflows, community issue templ
 |---|---|---|---|
 | **`build.yml`** | Code Quality, ShellCheck, compileall, and offline unit test suite. | Push / PR on `master`, `main` | `ubuntu-latest` |
 | **`registry-drift.yml`** | Registry Reality Sync (P1.1): regenerates the release registry from published GitHub reality and gates on drift via the Release Engine; opens/updates a `registry-drift` issue with the delta — never auto-commits. | Daily cron / workflow_dispatch | `ubuntu-latest` |
-| **`docs-validation.yml`** | Markdown link integrity auditor and secret scanner. | Push / PR on `master`, `experimental`, `feature/*` | `ubuntu-22.04` |
+| **`docs-validation.yml`** | Markdown link integrity auditor. | Push / PR on `master`, `experimental`, `feature/*` | `ubuntu-22.04` |
 | **`compatibility-validation.yml`** | Automated JSON schema validator for app compatibility submissions. | PR on `compatibility/data/**` | `ubuntu-latest` |
 | **`manager-build.yml`** | Native desktop client typecheck, clippy, ESLint, Vitest, and Rust unit test suite. Includes `cargo fmt --check` and `tauri build` packaging gate. | Push / PR on `apps/manager/**` | `windows-latest` |
 | **`manager-e2e.yml`** | End-to-end Playwright + Tauri WebDriver test suite for critical user journeys (QG-4). Builds the release binary, installs `tauri-driver`, and runs E2E specs. | Push on `master`, `main`, `apps/manager/**` / workflow_dispatch | `windows-latest` |
 | **`website-deploy.yml`** | Static site generation, Pagefind search indexing, and Cloudflare Pages deployment. | Push on `master`, `website/**`, `docs/**`, `services/analytics/**` | `ubuntu-22.04` |
 | **`winget-release.yml`** | Desktop manager packaging, portable ZIP archive bundling, Winget manifest staging, and automated PR to `microsoft/winget-pkgs` (DX-2). | Push on `v*` tags | `windows-latest` |
 | **`release.yml`** | 3-stage WSA package compilation, validation, and release publishing. | Push on `Windows_*`, `wsa-v*` tags | `ubuntu-latest` |
-| **`validation.yml`** | Deep subsystem and package integrity testing suite. | Weekly cron / workflow_dispatch | `ubuntu-latest` & Windows |
 | **`runtime-compatibility.yml`** | Executable GOVERNANCE.md Appendix D: runtime compatibility harness against a live WSA instance, plus report/submission schema validation. | Push / PR (harness paths) / workflow_dispatch | `ubuntu-latest` (live probes need a self-hosted WSA runner) |
-| **`security.yml`** | Scheduled secret, credential, and path audit. | Weekly cron / workflow_dispatch | `ubuntu-latest` |
-| **`gitleaks.yml`** | Secret and credential leak detection using Gitleaks (DX-1). Runs on every push/PR and weekly full-history scan. | Push (all branches) / PR / weekly cron | `ubuntu-latest` |
+| **`gitleaks.yml`** | Secret and credential leak detection using Gitleaks (DX-1), plus the preserved hardcoded developer-machine-path / username gate. Runs on every push/PR and weekly full-history scan. | Push (all branches) / PR / weekly cron | `ubuntu-latest` |
 | **`update.yml`** | Automated update discovery for Microsoft FE3, Magisk, and GApps. | Scheduled cron | `ubuntu-latest` |
 | **`upstream-sync.yml`** | Upstream repository tracking and synchronization. | Scheduled cron | `ubuntu-latest` |
+
+### Removed workflows (deliberate, not silently dropped)
+
+Two redundant workflows have been removed, and each had unique coverage that was
+folded into a surviving workflow rather than dropped:
+
+- **The scheduled secret/credential/path audit** — DX-1 requires the Gitleaks
+  workflow to *replace* the bespoke regex scanning, but the old file was left
+  behind when Gitleaks was added, so the replacement was never completed. Its
+  two checks that Gitleaks cannot perform (hardcoded developer machine paths and
+  the author username) moved into the Gitleaks workflow as a hard-failure step.
+- **The weekly subsystem validation suite** — fully duplicated: its
+  package-identity step repeated the build workflow's identity job, and its four
+  package validators are already exercised by the offline unit suite the build
+  workflow runs (and against real built packages by the release workflow).
+
+The per-cycle record of these removals lives in the `TODO.md` ledger.
 
 ---
 

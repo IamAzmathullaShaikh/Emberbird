@@ -44,11 +44,8 @@ jobs:
           echo "[*] Auditing local markdown links across repository..."
           python scripts/check_doc_links.py
 
-      - name: Security & Secret Scan
-        run: |
-          echo "[*] Auditing repository documentation for credentials and machine paths..."
-          python scripts/security_scan.py
-
+      # Secret/credential scanning is owned by gitleaks.yml (DX-1) and is not
+      # duplicated here. This workflow validates documentation only.
       - name: Validation Complete
         run: |
-          echo "[+] Documentation validation passed successfully with 0 broken links and clean security audit."
+          echo "[+] Documentation validation passed successfully with 0 broken links."

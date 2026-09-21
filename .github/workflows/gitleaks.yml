@@ -3,7 +3,11 @@ name: Gitleaks Secret Scan
 # DX-1: Automated secret/credential leak detection.
 # Runs on every push and PR. Catches accidentally committed keys, tokens,
 # passwords, and connection strings before they reach the public repo.
-# Uses the official Gitleaks action (zricethezav/gitleaks-action).
+# Uses the official Gitleaks action (gitleaks/gitleaks-action).
+#
+# This workflow also carries the repository hygiene gate that lived in the
+# removed `security.yml`: Gitleaks cannot see hardcoded developer machine
+# paths or author usernames, so that check is kept here as a hard failure.
 
 on:
   push:
@@ -35,6 +39,36 @@ jobs:
         with:
           # Full history scan for scheduled runs; shallow for PRs/pushes
           fetch-depth: ${{ github.event_name == 'schedule' && 0 || 1 }}
+
+      # --- Repository hygiene gate (preserved from the removed security.yml) ---
+      # Gitleaks detects secrets; it cannot detect a hardcoded developer machine
+      # path or author username. These are the only checks that were unique to
+      # security.yml, so they are retained as a hard failure here.
+      - name: Developer Machine Path & Username Scan
+        run: |
+          set -euo pipefail
+
+          echo "Scanning for hardcoded developer machine paths..."
+          PATHS=$(git grep -E -I -n "(C:[\\/][Uu]sers[\\/]|/home/)[A-Za-z0-9_-]+" \
+            -- ":(exclude).github/workflows/gitleaks.yml" \
+               ":(exclude)scripts/security_scan.py" \
+               ":(exclude)tests/**" \
+               ":(exclude)docs/**" || true)
+
+          echo "Scanning for the repository author's local username..."
+          USERNAMES=$(git grep -n "BangerSoul" \
+            -- ":(exclude).github/workflows/gitleaks.yml" \
+               ":(exclude)scripts/security_scan.py" \
+               ":(exclude)tests/**" \
+               ":(exclude)docs/**" || true)
+
+          if [ -n "$PATHS" ] || [ -n "$USERNAMES" ]; then
+            echo "::error::Machine-specific developer path or username detected!"
+            [ -n "$PATHS" ] && echo "$PATHS"
+            [ -n "$USERNAMES" ] && echo "$USERNAMES"
+            exit 1
+          fi
+          echo "[+] No machine-specific paths or usernames detected. Clean."
 
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2

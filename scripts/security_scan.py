@@ -34,8 +34,10 @@ MACHINE_PATH_PATTERNS = [
 ]
 
 # Files/paths always excluded from security scans (to prevent self-triggers)
+# The Gitleaks workflow legitimately contains token-format literals and the
+# author-username gate, so it is excluded the same way security.yml once was.
 EXCLUDED_PATHS = {
-    ".github/workflows/security.yml",
+    ".github/workflows/gitleaks.yml",
     "scripts/security_scan.py",
 }
 

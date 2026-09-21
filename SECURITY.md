@@ -55,9 +55,11 @@ The platform aggregates public telemetry only through the opt-in analytics servi
 - **Download Verification**: Users and consumers verify package hashes before extraction using `Get-FileHash -Algorithm SHA256`.
 
 ### 3.4 Automated Secret & Credential Scanning
-Every commit and pull request runs `scripts/security_scan.py` and GitHub Actions secret scanners (`.github/workflows/security.yml`) to ensure:
+Every commit and pull request runs `scripts/security_scan.py` and the Gitleaks secret scanner (`.github/workflows/gitleaks.yml`) to ensure:
 - Zero personal access tokens, API keys, private keys, or credentials exist in the tree.
-- Zero private host machine paths are committed.
+- Zero private host machine paths or developer usernames are committed.
+
+`gitleaks.yml` is the single owner of secret scanning: it runs Gitleaks on every push/PR plus a weekly full-history scan, and additionally executes the hardcoded-machine-path / developer-username gate that Gitleaks cannot perform.
 
 ### 3.5 Third-Party Component Provenance
 Emberbird redistributes unmodified Microsoft WSA packages alongside patched ramdisks containing:

@@ -262,3 +262,29 @@ export function recommendedWsaLabel(): string {
   if (!asset) return '—';
   return `${asset.edition === 'banking' ? 'Banking' : 'Standard'} Edition ${asset.wsa_version}`;
 }
+
+/**
+ * FB-4 — Root/GApps copy for an edition, derived from the registry row that
+ * publishes it. Deliberately explicit about missing truth: an edition the
+ * registry does not describe is labeled as such rather than guessed.
+ */
+export function editionFlavors(edition: WsaEdition): { root: string; gapps: string } {
+  const asset = resolveEditionAsset(edition);
+  const root =
+    asset?.root_solution === 'magisk'
+      ? 'Pre-rooted with Magisk'
+      : asset?.root_solution === 'kernelsu'
+        ? 'Pre-rooted with KernelSU'
+        : asset?.root_solution === 'none'
+          ? 'Unrooted system'
+          : 'Root flavor per registry';
+  const gapps =
+    asset?.gapps_variant === 'pico'
+      ? 'OpenGApps Pico'
+      : asset?.gapps_variant === 'mindthegapps'
+        ? 'MindTheGapps'
+        : asset?.gapps_variant === 'none'
+          ? 'no Google Apps'
+          : 'Google services';
+  return { root, gapps };
+}
