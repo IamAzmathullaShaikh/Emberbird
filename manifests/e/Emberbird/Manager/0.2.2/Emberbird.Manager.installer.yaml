@@ -11,10 +11,8 @@ InstallModes:
 Installers:
   - Architecture: x64
     InstallerType: nullsoft
-    InstallerUrl: https://github.com/IamAzmathullaShaikh/Emberbird/releases/download/v0.2.2/EmberbirdManager-Setup-0.2.2-x64.exe
-    # SHA256 is filled by winget-release.yml after the NSIS installer is built and signed.
-    # Run: scripts/bootstrap_winget.py after publishing the GitHub Release to regenerate.
-    InstallerSha256: "0000000000000000000000000000000000000000000000000000000000000000"
+    InstallerUrl: https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/v0.2.2/WSABuildsManager-Setup-0.2.2-x64.exe
+    InstallerSha256: "887443bad0aeb3eec04ff367b4768edad2cc0e1b2fcd6b9b255f5bfd3181466a"
     Scope: user
 ManifestType: installer
 ManifestVersion: 1.6.0

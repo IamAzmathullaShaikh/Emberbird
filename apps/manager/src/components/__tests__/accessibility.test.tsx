@@ -12,10 +12,10 @@
  * Color contrast is excluded (dark mode design tokens are validated separately).
  * Screen reader hardware audit is a separate manual step (requires NVDA/Narrator).
  */
-import React from 'react';
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
 import axe from 'axe-core';
+import type { StageProgress } from '../../lib/types';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Alert } from '../ui/Alert';
@@ -70,9 +70,8 @@ describe('Accessibility — UI Primitives', () => {
 });
 
 describe('Accessibility — StageProgressBar', () => {
-  const mockProgress = {
+  const mockProgress: StageProgress = {
     phase: 'downloading',
-    progress_percent: 45,
     received_bytes: 400_000_000,
     total_bytes: 900_000_000,
     message: 'Downloading WSA…',

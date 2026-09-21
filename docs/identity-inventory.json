@@ -5,27 +5,27 @@
     "m4": "Release History Is Immutable",
     "s1": "Historical Identity Preservation — Emberbird may replace branding; it may not erase history"
   },
-  "generated_at": "2026-09-20T06:28:56Z",
+  "generated_at": "2026-09-21T05:08:25Z",
   "totals": {
-    "files": 142,
-    "occurrences": 815,
+    "files": 144,
+    "occurrences": 827,
     "by_token": {
-      "MagiskOnWSA": 46,
+      "MagiskOnWSA": 51,
       "MagiskOnWSALocal": 65,
-      "WSABuilds": 704
+      "WSABuilds": 711
     },
     "by_class": {
-      "doc-prose": 60,
+      "doc-prose": 64,
       "historical-doc": 345,
-      "identifier": 186,
+      "identifier": 188,
       "package-name": 51,
-      "path-reference": 59,
-      "upstream-attribution": 40,
+      "path-reference": 62,
+      "upstream-attribution": 43,
       "url": 60,
       "user-facing": 9,
       "workflow-name": 5
     },
-    "protected_occurrences": 385
+    "protected_occurrences": 388
   },
   "files": [
     {
@@ -105,6 +105,47 @@
           "token": "WSABuilds",
           "class": "workflow-name",
           "context": "name: Sync with MustardChef/WSABuilds"
+        }
+      ]
+    },
+    {
+      "path": "CHANGELOG.md",
+      "count": 7,
+      "occurrences": [
+        {
+          "token": "MagiskOnWSA",
+          "class": "upstream-attribution",
+          "context": "- MagiskOnWSA lineage (MustardChef attribution preserved per Rule 12)."
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "## [Pre-0.2.0] — Legacy WSABuilds"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "- Initial Winget manifest submission (`WSABuilds.WSABuildsManager`)."
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "- WSABuilds packaging scripts and compatibility hub."
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "- Winget manifest: `WSABuilds.WSABuildsManager 0.2.0`."
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "- Initial Winget manifest submission (`WSABuilds.WSABuildsManager`)."
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "- Winget manifest: `WSABuilds.WSABuildsManager 0.2.0`."
         }
       ]
     },
@@ -247,12 +288,22 @@
     },
     {
       "path": "TODO.md",
-      "count": 2,
+      "count": 4,
       "occurrences": [
         {
           "token": "MagiskOnWSA",
           "class": "upstream-attribution",
           "context": "(WSABuilds, MagiskOnWSA lineage, MustardChef, Microsoft WSA) remain"
+        },
+        {
+          "token": "MagiskOnWSA",
+          "class": "upstream-attribution",
+          "context": "- [x] Document `MagiskOnWSA/` and `MagiskOnWSAOld/` as upstream tracking"
+        },
+        {
+          "token": "MagiskOnWSA",
+          "class": "upstream-attribution",
+          "context": "- [x] Document `MagiskOnWSA/` and `MagiskOnWSAOld/` as upstream tracking"
         },
         {
           "token": "WSABuilds",
@@ -3412,6 +3463,27 @@
       ]
     },
     {
+      "path": "pyproject.toml",
+      "count": 3,
+      "occurrences": [
+        {
+          "token": "MagiskOnWSA",
+          "class": "identifier",
+          "context": "\"MagiskOnWSA\","
+        },
+        {
+          "token": "MagiskOnWSA",
+          "class": "path-reference",
+          "context": "\"MagiskOnWSAOld\","
+        },
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "\"WSABuilds\","
+        }
+      ]
+    },
+    {
       "path": "scripts/assemble_production_release.py",
       "count": 4,
       "occurrences": [
@@ -4022,7 +4094,7 @@
         {
           "token": "WSABuilds",
           "class": "url",
-          "context": "\"source_url\": \"https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/wsa-v2311.40000.5.0/WSA_2407.40000.4.0_x64_vanilla.7z\","
+          "context": "\"source_url\": \"https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/wsa-v2407.40000.4.0/WSA_2407.40000.4.0_x64_vanilla.7z\","
         }
       ]
     },
