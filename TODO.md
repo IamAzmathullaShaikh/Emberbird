@@ -891,7 +891,8 @@ stays open.
       `entry.render()` / `entry.slug`. Entry ids stay relative to
       `src/content/docs`, so the prebuild importer keeps writing the same mirror
       and every URL is unchanged.
-STATUS: COMPLETE (local; CI unverified) · BLOCKERS: the deploy step remains gated
+STATUS: COMPLETE (audit gate confirmed in CI — see WF-5) · BLOCKERS: the deploy
+step remains gated
 on the `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` repo secrets — if unset
 the workflow skips deployment by design, so a green run alone does not prove a
 live publication. · DEPENDENCIES: a push to `main` for CI to verify the gate. ·
@@ -918,6 +919,35 @@ recorded rather than fixed: because `compatibility/index.astro` and
 `troubleshoot/wizard.astro` declare `data-pagefind-body`, pagefind indexes *only*
 those two pages and skips all 10 documentation pages, so site search cannot find
 the docs.
+
+### Cycle WF-5 — Confirm the cleared gate in CI and repair the typecheck gate (2026-09-21)
+- [x] Verified the WF-4 fix in CI instead of assuming it: run 35571100674 (push
+      of `8bdf19b`) now **passes** step 5, "Dependency Security Audit" — the exact
+      gate that had skipped every deployment — and for the first time the job
+      progressed past it.
+- [x] Diagnosed the next failing step, "TypeScript Type Checking", to root cause:
+      `tsc --noEmit` needs the `astro:content` / `astro/client` virtual-module
+      types that only `astro sync` generates, into the gitignored
+      `website/.astro/types.d.ts`. That file cannot exist in a clean checkout, so
+      the gate failed on 6 errors that are invisible on any machine where
+      `astro sync` has run — the same invisible-precondition class as the
+      docs-mirror guard cleared in WF-3, and the reason a local pass proved
+      nothing.
+- [x] Fixed it at the gate rather than in the workflow: `typecheck` is now
+      `astro sync && tsc --noEmit`, so it is self-sufficient locally and in CI
+      and can no longer be satisfied by leftover local state.
+STATUS: COMPLETE · BLOCKERS: the deploy step is still skipped unless the
+`CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` secrets exist, so a green run
+still would not prove a live publication. · DEPENDENCIES: a push to `main`. ·
+FILES: `website/package.json`, `TODO.md` · TESTS ADDED: none — the fix restores
+an existing gate rather than adding coverage · VALIDATION: reproduced the CI
+failure locally by deleting `.astro/`, where `tsc` alone returns the identical 6
+errors (exit 2) while `npm run typecheck` now returns 0; audit gate exit 0;
+`npm test` 39/39; production build succeeds; identity inventory in sync
+(829 / 389) · RISKS: none known — the change only prepends a type-generation
+step to an unchanged checker · RESULT: the audit gate is confirmed green in CI
+and the typecheck gate blocking it is repaired, so the deploy step can be
+reached and exercised.
 
 ---
 
