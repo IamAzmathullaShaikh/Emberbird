@@ -1,5 +1,12 @@
 ---
 // SearchModal.astro - Pagefind Static Search Integration
+//
+// The loader is `is:inline` on purpose: `pagefind.js` only exists inside dist/
+// after the post-build `pagefind --site dist` step, so no bundler may resolve or
+// rewrite it. A bundled dynamic `import()` gets wrapped by Vite's preload helper
+// as `import() -> __vitePreload(..., __VITE_PRELOAD__)`, and since the specifier
+// is runtime-computed Vite never substitutes that identifier, leaving a
+// ReferenceError that the catch below used to swallow silently.
 ---
 
 <div id="search-modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-start justify-center pt-20 px-4">
@@ -23,70 +30,96 @@
   </div>
 </div>
 
-<script>
-  let pagefindLoaded = false;
-  let pagefindInstance: any = null;
+<script is:inline>
+  (function () {
+    var pagefindPromise = null;
+    var pagefindInstance = null;
 
-  async function loadPagefind() {
-    if (pagefindLoaded) return;
-    try {
-      // Lazy load Pagefind from static dist directory. Specifier is computed
-      // so Rollup cannot statically resolve it (pagefind.js only exists in
-      // dist after `pagefind --site dist` runs post-build).
-      const spec = ['/pagefind/pagefind.js'].join('');
-      const pagefind = await import(/* @vite-ignore */ spec);
-      await pagefind.init();
-      pagefindInstance = pagefind;
-      pagefindLoaded = true;
-    } catch (e) {
-      console.warn('Pagefind index not found. Run "npx pagefind --site dist" after build.');
-    }
-  }
-
-  const modal = document.getElementById('search-modal');
-  const input = document.getElementById('search-input') as HTMLInputElement;
-  const resultsContainer = document.getElementById('search-results');
-
-  function openSearch() {
-    modal?.classList.remove('hidden');
-    input?.focus();
-    loadPagefind();
-  }
-
-  function closeSearch() {
-    modal?.classList.add('hidden');
-  }
-
-  window.addEventListener('open-search', openSearch);
-
-  window.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-      e.preventDefault();
-      openSearch();
-    }
-    if (e.key === 'Escape') {
-      closeSearch();
-    }
-  });
-
-  document.getElementById('search-close')?.addEventListener('click', closeSearch);
-
-  input?.addEventListener('input', async (e) => {
-    const query = (e.target as HTMLInputElement).value.trim();
-    if (!query || !pagefindInstance || !resultsContainer) return;
-
-    const search = await pagefindInstance.search(query);
-    if (!search.results.length) {
-      resultsContainer.innerHTML = '<div class="text-xs text-slate-500 text-center py-4">No results found.</div>';
-      return;
+    function loadPagefind() {
+      if (pagefindPromise) return pagefindPromise;
+      pagefindPromise = (async function () {
+        try {
+          var pagefind = await import('/pagefind/pagefind.js');
+          await pagefind.init();
+          pagefindInstance = pagefind;
+          return pagefind;
+        } catch (e) {
+          console.warn('Pagefind index not found. Run "npx pagefind --site dist" after build.', e);
+          return null;
+        }
+      })();
+      return pagefindPromise;
     }
 
-    const fiveResults = await Promise.all(search.results.slice(0, 5).map((r: any) => r.data()));
-    resultsContainer.innerHTML = fiveResults.map((r: any) => `
-      <a href="${r.url}" class="block p-3 rounded-lg hover:bg-slate-800/60 transition-colors">
-        <div class="font-semibold text-white">${r.meta.title || r.url}</div>
-        <div class="text-xs text-slate-400 mt-1">${r.excerpt}</div>
-      </a>
-    `).join('');
-  });
+    var modal = document.getElementById('search-modal');
+    var input = document.getElementById('search-input');
+    var resultsContainer = document.getElementById('search-results');
+
+    function openSearch() {
+      if (modal) modal.classList.remove('hidden');
+      if (input) input.focus();
+      loadPagefind();
+    }
+
+    function closeSearch() {
+      if (modal) modal.classList.add('hidden');
+    }
+
+    window.addEventListener('open-search', openSearch);
+
+    window.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        openSearch();
+      }
+      if (e.key === 'Escape') {
+        closeSearch();
+      }
+    });
+
+    var closeButton = document.getElementById('search-close');
+    if (closeButton) closeButton.addEventListener('click', closeSearch);
+
+    if (input) {
+      input.addEventListener('input', async function (e) {
+        var query = e.target.value.trim();
+        if (!query || !resultsContainer) {
+          if (resultsContainer && !query) {
+            resultsContainer.innerHTML =
+              '<div class="text-xs text-slate-500 text-center py-6">Type a query to search Emberbird documentation.</div>';
+          }
+          return;
+        }
+
+        // Await the lazy load here too: keystrokes that arrive before the index
+        // finishes loading used to be dropped on the floor, so the first query
+        // typed right after opening the modal returned nothing.
+        var pagefind = pagefindInstance || (await loadPagefind());
+        if (!pagefind) {
+          resultsContainer.innerHTML =
+            '<div class="text-xs text-slate-500 text-center py-4">Search index unavailable.</div>';
+          return;
+        }
+
+        var search = await pagefind.search(query);
+        if (!search.results.length) {
+          resultsContainer.innerHTML =
+            '<div class="text-xs text-slate-500 text-center py-4">No results found.</div>';
+          return;
+        }
+
+        var fiveResults = await Promise.all(search.results.slice(0, 5).map(function (r) { return r.data(); }));
+        resultsContainer.innerHTML = fiveResults
+          .map(function (r) {
+            return (
+              '<a href="' + r.url + '" class="block p-3 rounded-lg hover:bg-slate-800/60 transition-colors">' +
+              '<div class="font-semibold text-white">' + (r.meta.title || r.url) + '</div>' +
+              '<div class="text-xs text-slate-400 mt-1">' + r.excerpt + '</div>' +
+              '</a>'
+            );
+          })
+          .join('');
+      });
+    }
+  })();
 </script>

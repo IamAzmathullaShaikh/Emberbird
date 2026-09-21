@@ -62,7 +62,14 @@ const {
       </div>
     </header>
 
-    <main class="flex-grow">
+    <!--
+      Pagefind indexing contract: declaring `data-pagefind-body` anywhere opts
+      the *entire site* into marker-only indexing — Pagefind then indexes only
+      pages carrying the attribute. It is declared exactly once here, on the
+      shared content root, so every page is indexed and the header/footer chrome
+      (and the search modal itself) never is.
+    -->
+    <main class="flex-grow" data-pagefind-body>
       <slot />
     </main>
 

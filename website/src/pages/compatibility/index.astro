@@ -157,7 +157,7 @@ const submitIssueUrl = `${env.PUBLIC_GITHUB_REPO_URL}/issues/new?template=compat
     </div>
 
     <!-- Application Records Grid -->
-    <div id="compat-grid" class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6" data-pagefind-body>
+    <div id="compat-grid" class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
       {records.map((record) => {
         const badge = getStatusBadgeClass(record.compatibility_status);
         return (
