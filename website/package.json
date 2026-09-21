@@ -14,7 +14,8 @@
     "import-analytics": "node scripts/import-analytics.mjs",
     "prebuild": "node scripts/import-docs.mjs && node scripts/import-compatibility.mjs && node scripts/import-analytics.mjs",
     "typecheck": "astro sync && tsc --noEmit",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "verify:index": "node --test tests/search-index.test.mjs"
   },
   "dependencies": {
     "astro": "^7.3.3",

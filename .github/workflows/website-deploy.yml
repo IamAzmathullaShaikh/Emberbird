@@ -91,18 +91,28 @@ jobs:
 
       - name: Verify Build Output & Search Index
         working-directory: website
+        env:
+          # Demand a build: this gate must fail rather than skip when there is no
+          # dist/ to inspect, otherwise it would pass vacuously in CI.
+          PAGEFIND_REQUIRE_BUILD: '1'
         run: |
           if [ ! -d "dist" ]; then
             echo "[-] Build failed: dist directory not found."
             exit 1
           fi
           echo "[+] Build output verified in website/dist/."
-          
-          if [ -d "dist/pagefind" ]; then
-            echo "[+] Pagefind search index validated successfully in website/dist/pagefind/."
-          else
-            echo "[!] Pagefind directory not generated (post-build indexing optional in non-production runs)."
+
+          if [ ! -d "dist/pagefind" ]; then
+            echo "[-] Pagefind index missing: the site would ship with dead search."
+            exit 1
           fi
+          echo "[+] Pagefind search index present in website/dist/pagefind/."
+
+          # Asserts every built page is actually present in that index. The
+          # underlying contract is easy to break invisibly: pagefind indexes only
+          # pages carrying data-pagefind-body once any page declares it.
+          echo "[*] Asserting search index coverage..."
+          npm run verify:index
 
       - name: Check Cloudflare Configuration
         id: cfconfig

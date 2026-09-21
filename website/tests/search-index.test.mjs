@@ -70,13 +70,23 @@ test('the pagefind loader is inlined verbatim so the bundler cannot rewrite it',
   );
 });
 
-// Verifies the indexing contract end to end once a build exists. `npm test` runs
-// before the build in CI, so this is skipped rather than failed when dist/ is
-// absent — the source guards above always run.
+// Verifies the indexing contract end to end against a real build. `npm test` runs
+// before the build, so locally this skips when dist/ is absent; the source guards
+// above always run. Set PAGEFIND_REQUIRE_BUILD=1 (as the deploy workflow does in
+// its post-build verification step) to demand a build and fail loudly without
+// one, which is what stops this gate from passing vacuously in CI.
+const BUILD_REQUIRED = process.env.PAGEFIND_REQUIRE_BUILD === '1';
+
 test('every built page is present in the pagefind index', (t) => {
   const distDir = path.join(websiteRoot, 'dist');
   const entryFile = path.join(distDir, 'pagefind', 'pagefind-entry.json');
   if (!fs.existsSync(entryFile)) {
+    if (BUILD_REQUIRED) {
+      assert.fail(
+        `PAGEFIND_REQUIRE_BUILD is set but no search index exists at ${entryFile}. ` +
+          'Run `npm run build` first: the site would otherwise ship with dead search.'
+      );
+    }
     t.skip('no dist/ build present; run `npm run build` first');
     return;
   }
@@ -93,6 +103,9 @@ test('every built page is present in the pagefind index', (t) => {
   assert.equal(
     pageCount,
     htmlPages.length,
-    `pagefind indexed ${pageCount} pages but ${htmlPages.length} HTML pages were built`
+    `pagefind indexed ${pageCount} page(s) but ${htmlPages.length} HTML page(s) were built. ` +
+      'A page is missing from search — check that it renders through Layout.astro, whose ' +
+      'data-pagefind-body marker is what opts a page in. Exclude a page deliberately with ' +
+      'data-pagefind-ignore rather than letting it drop out silently.'
   );
 });
