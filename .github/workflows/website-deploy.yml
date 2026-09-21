@@ -31,6 +31,16 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 20
 
+    # Configuration Governance: astro.config.mjs asserts these four variables and
+    # forbids silent fallbacks. Every step that loads the config (astro sync during
+    # typecheck, the prebuild importers, astro build) needs them, so they are
+    # defined once here instead of only on the build step.
+    env:
+      SITE_URL: ${{ vars.SITE_URL || 'https://wsabuilds-website.pages.dev' }}
+      PUBLIC_GITHUB_REPO: ${{ github.repository }}
+      PUBLIC_GITHUB_REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+      PUBLIC_RELEASES_URL: ${{ github.server_url }}/${{ github.repository }}/releases
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4 tag head 2026-09-14
@@ -76,11 +86,6 @@ jobs:
 
       - name: Build Static Site & Search Index
         working-directory: website
-        env:
-          SITE_URL: ${{ vars.SITE_URL || 'https://wsabuilds-website.pages.dev' }}
-          PUBLIC_GITHUB_REPO: ${{ github.repository }}
-          PUBLIC_GITHUB_REPO_URL: ${{ github.server_url }}/${{ github.repository }}
-          PUBLIC_RELEASES_URL: ${{ github.server_url }}/${{ github.repository }}/releases
         run: |
           npm run build
 
