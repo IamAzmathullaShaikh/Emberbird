@@ -1,0 +1,51 @@
+name: Gitleaks Secret Scan
+
+# DX-1: Automated secret/credential leak detection.
+# Runs on every push and PR. Catches accidentally committed keys, tokens,
+# passwords, and connection strings before they reach the public repo.
+# Uses the official Gitleaks action (zricethezav/gitleaks-action).
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [master, main]
+  schedule:
+    # Full history scan weekly (Sunday 02:00 UTC)
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+
+concurrency:
+  group: gitleaks-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write  # for SARIF upload
+
+jobs:
+  gitleaks:
+    name: Secret Leak Detection (Gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          # Full history scan for scheduled runs; shallow for PRs/pushes
+          fetch-depth: ${{ github.event_name == 'schedule' && 0 || 1 }}
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GITLEAKS_LICENSE is required for org repos; skip for public repos.
+          # GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+      - name: Upload SARIF Report
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: results.sarif
+        continue-on-error: true  # [ADVISORY] SARIF upload is best-effort

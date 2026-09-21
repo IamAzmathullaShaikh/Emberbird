@@ -24,7 +24,7 @@ jobs:
   validate-manager:
     name: Build, Typecheck & Test (Windows)
     runs-on: windows-latest
-    timeout-minutes: 25
+    timeout-minutes: 45
 
     steps:
       - name: Checkout Repository
@@ -52,17 +52,36 @@ jobs:
         run: |
           npm install
 
-      - name: Frontend Test Suite
+      - name: Frontend Contract Test Suite
         working-directory: apps/manager
         run: |
-          echo "[*] Executing manager frontend unit tests..."
+          echo "[*] Executing manager frontend contract tests (node --test)..."
           npm run test
+
+      - name: Frontend Component Test Suite (Vitest + RTL)
+        working-directory: apps/manager
+        run: |
+          echo "[*] Executing manager component tests (vitest)..."
+          npm run test:components
 
       - name: Frontend TypeScript Type Checking
         working-directory: apps/manager
         run: |
           echo "[*] Executing manager TypeScript typecheck..."
           npm run typecheck
+
+      - name: TypeScript and React Lint
+        run: npm run lint
+        working-directory: apps/manager
+        continue-on-error: true
+        # [ADVISORY] until lint baseline is clean
+
+      - name: Python Lint (ruff)
+        run: |
+          pip install ruff --quiet
+          ruff check scripts/ tests/ --exit-zero
+        # [ADVISORY] Rule 20: running ruff in advisory mode until baseline is established.
+        # Remove --exit-zero once all scripts are clean.
 
       - name: Cargo Check
         working-directory: apps/manager/src-tauri
@@ -76,11 +95,23 @@ jobs:
           echo "[*] Running cargo clippy linter..."
           cargo clippy -- -D warnings
 
+      - name: Check Rust formatting
+        run: cargo fmt --all -- --check
+        working-directory: apps/manager/src-tauri
+
       - name: Cargo Test Suite
         working-directory: apps/manager/src-tauri
         run: |
           echo "[*] Running native Rust unit tests..."
           cargo test --verbose
+
+      - name: Tauri Build (NSIS packaging gate)
+        # QG-0: Catch packaging failures in CI, not at release time.
+        # This builds the full Tauri app including NSIS installer.
+        working-directory: apps/manager
+        run: |
+          echo "[*] Building Tauri application (NSIS packaging gate)..."
+          npx tauri build --bundles nsis
 
       - name: Verification Summary
         run: |

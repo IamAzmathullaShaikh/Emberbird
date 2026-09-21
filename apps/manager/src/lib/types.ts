@@ -28,9 +28,11 @@ export interface ReleaseAsset {
   size: number;
   browser_download_url: string;
   architecture: 'x64' | 'arm64' | 'unknown';
-  /** 'unknown' = not derivable from the filename (e.g. manager archives). */
+  /** Registry row truth; 'unknown' when the row declares no root solution. */
   root_flavor: 'Magisk' | 'KernelSU' | 'None' | 'unknown';
   gapps_flavor: 'Pico' | 'MindTheGapps' | 'None' | 'unknown';
+  /** Registry edition this asset belongs to (subsystem rows only). */
+  edition?: 'standard' | 'banking';
 }
 
 export interface ReleaseInfo {
@@ -104,12 +106,16 @@ export interface RestoreResult {
 }
 
 export interface UpgradePreflight {
-  windows_version_ok: boolean;
-  windows_build: number;
+  /** null = the host build could not be read (UNVERIFIED — never a pass). */
+  windows_version_ok: boolean | null;
+  windows_build: number | null;
+  /** Minimum supported build from preflight truth — the UI renders this, not a hardcoded string. */
+  required_windows_build: number;
   dev_mode_ok: boolean;
   virtualization_ok: boolean;
-  disk_space_ok: boolean;
-  free_disk_bytes: number;
+  /** null = free space could not be measured (UNVERIFIED — never a pass). */
+  disk_space_ok: boolean | null;
+  free_disk_bytes: number | null;
   required_disk_bytes: number;
   wsa_running: boolean;
   has_existing_vhdx: boolean;
@@ -135,6 +141,26 @@ export interface InstallResult {
   success: boolean;
   package_path: string;
   message: string;
+}
+
+/** FB-3 — phases of the download→verify→extract→stage pipeline. */
+export type StagePhase = 'downloading' | 'verifying' | 'extracting' | 'done';
+
+/** Progress payload emitted on the `stage-progress` Tauri event. */
+export interface StageProgress {
+  phase: StagePhase;
+  received_bytes: number;
+  total_bytes: number;
+  message: string;
+}
+
+/** Result of download_and_stage_release: a verified, extracted package. */
+export interface StagedAsset {
+  archive_path: string;
+  staged_path: string;
+  manifest_path: string;
+  sha256: string;
+  size_bytes: number;
 }
 
 export interface DoctorProbe {

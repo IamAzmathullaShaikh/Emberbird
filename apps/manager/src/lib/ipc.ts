@@ -9,6 +9,9 @@ import type {
   UpgradeOptions,
   UpgradeResult,
   InstallResult,
+  StagedAsset,
+  StageProgress,
+  DoctorProbe,
 } from './types';
 
 declare global {
@@ -17,8 +20,13 @@ declare global {
   }
 }
 
+/** True inside a real Tauri webview; false in browser/dev mode. */
+function hasTauriBackend(): boolean {
+  return typeof window !== 'undefined' && Boolean(window.__TAURI_INTERNALS__);
+}
+
 async function invokeTauri<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
-  if (typeof window !== 'undefined' && window.__TAURI_INTERNALS__) {
+  if (hasTauriBackend()) {
     const { invoke } = await import('@tauri-apps/api/core');
     return invoke<T>(cmd, args);
   }
@@ -26,8 +34,6 @@ async function invokeTauri<T>(cmd: string, args?: Record<string, unknown>): Prom
   // Throw error instead of returning mock data to ensure the app doesn't lie during development
   throw new Error(`Tauri backend not detected. Command '${cmd}' cannot be executed in browser mode.`);
 }
-
-// mockInvoke is now deprecated and removed to ensure truth in status detection.
 
 export async function detectWsaStatus(): Promise<WsaStatus> {
   return invokeTauri<WsaStatus>('detect_wsa_status');
@@ -37,9 +43,12 @@ export async function checkForUpdates(): Promise<UpdateStatus> {
   return invokeTauri<UpdateStatus>('check_for_updates');
 }
 
-// E3C.4: the legacy latest-releases IPC wrapper was removed — the Rust
-// command it wrapped was a stub returning `[]` (zero discovery), and release
-// truth now resolves from the bundled Ember Registry via `lib/registry.ts`.
+export async function runDoctorScan(): Promise<DoctorProbe[]> {
+  return invokeTauri<DoctorProbe[]>('run_doctor_scan');
+}
+
+// E3C.4: the legacy latest-releases IPC wrapper was removed — release truth
+// now resolves from the bundled Ember Registry via `lib/registry.ts`.
 
 export async function validateEnvironment(): Promise<ManagerEnvConfig> {
   return invokeTauri<ManagerEnvConfig>('validate_manager_env');
@@ -87,6 +96,35 @@ export async function installWsaPackage(
   });
 }
 
+/**
+ * FB-3 — Resolve the published registry asset for (release_tag, edition),
+ * stream it to the staging area with SHA-256 verification, extract it, and
+ * return the staged manifest path. Progress arrives via `stage-progress`
+ * events when running inside Tauri; in browser mode the wrapper still throws
+ * (Zero-Mock law).
+ */
+export async function downloadAndStageRelease(
+  releaseTag: string,
+  edition: string,
+  onProgress?: (p: StageProgress) => void
+): Promise<StagedAsset> {
+  let unlisten: (() => void) | null = null;
+  if (onProgress && hasTauriBackend()) {
+    const { listen } = await import('@tauri-apps/api/event');
+    unlisten = await listen<StageProgress>('stage-progress', (event) =>
+      onProgress(event.payload)
+    );
+  }
+  try {
+    return await invokeTauri<StagedAsset>('download_and_stage_release', {
+      release_tag: releaseTag,
+      edition,
+    });
+  } finally {
+    if (unlisten) unlisten();
+  }
+}
+
 export async function launchWsa(target?: string): Promise<void> {
   return invokeTauri<void>('launch_wsa', { target });
 }
@@ -95,3 +133,11 @@ export async function shutdownWsa(): Promise<void> {
   return invokeTauri<void>('shutdown_wsa');
 }
 
+/**
+ * Returns the host machine's CPU architecture as reported by the Rust
+ * runtime (`std::env::consts::ARCH`). Examples: "x86_64", "aarch64".
+ * Rule 17: no UA string guessing — architecture is a real system probe.
+ */
+export async function getHostArch(): Promise<string> {
+  return invokeTauri<string>('get_host_arch');
+}

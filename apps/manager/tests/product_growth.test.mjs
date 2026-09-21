@@ -5,7 +5,12 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { installWsaPackage } from '../src/lib/ipc.ts';
-import { latestReleasesFromRegistry, releasesFromRegistry } from '../src/lib/registry.ts';
+import {
+  latestReleasesFromRegistry,
+  releasesFromRegistry,
+  recommendedWsaAsset,
+  recommendedWsaLabel,
+} from '../src/lib/registry.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -29,12 +34,36 @@ test('Observatory recommended release is resolved from registry truth', () => {
   assert.ok(allWsa.length >= 2, 'Must include published WSA releases');
 });
 
+test('recommended WSA asset is the policy edition at its registry version', () => {
+  const asset = recommendedWsaAsset();
+  assert.ok(asset, 'recommended asset must resolve from the registry');
+  assert.equal(asset.edition, 'standard', 'Standard Edition is the policy recommendation');
+  assert.equal(asset.release_tag, 'wsa-v2407.40000.4.0');
+  assert.equal(
+    recommendedWsaLabel(),
+    `Standard Edition ${asset.wsa_version}`,
+    'label must name the recommended edition with the registry version'
+  );
+});
+
 test('StatusCard defines Quick Setup Wizard and edition options', () => {
   const code = readFileSync(resolve(__dirname, '../src/components/StatusCard.tsx'), 'utf-8');
   assert.ok(code.includes('Quick Setup') && code.includes('One-Click Installer'), 'StatusCard must define quick installer');
   assert.ok(code.includes('Standard Edition'), 'Must offer Standard Edition');
   assert.ok(code.includes('Banking Edition'), 'Must offer Banking Edition');
   assert.ok(code.includes('installWsaPackage'), 'Must invoke installWsaPackage IPC');
+});
+
+test('Header version badge derives from the built app identity, never a literal', () => {
+  const code = readFileSync(resolve(__dirname, '../src/components/Header.tsx'), 'utf-8');
+  assert.ok(
+    code.includes("from '@tauri-apps/api/app'"),
+    'Header must read the running app version from Tauri'
+  );
+  assert.ok(
+    !/v0\.\d+\.\d+/.test(code),
+    'no release version literal may live in living UI code'
+  );
 });
 
 test('Header defines architecture intelligence and Snapdragon native badge', () => {
@@ -46,7 +75,14 @@ test('Header defines architecture intelligence and Snapdragon native badge', () 
 test('ReleaseCard defines Observatory recommendation and architecture filter', () => {
   const code = readFileSync(resolve(__dirname, '../src/components/ReleaseCard.tsx'), 'utf-8');
   assert.ok(code.includes('Observatory Recommended'), 'Must surface Observatory badge');
-  assert.ok(code.includes('Standard Edition 2407.40000.4.0'), 'Must recommend standard 2407');
+  assert.ok(
+    code.includes('recommendedWsaLabel'),
+    'Must derive the recommended edition label from registry truth (FB-1: no hardcoded release versions in UI)'
+  );
+  assert.ok(
+    !code.includes('Standard Edition 2407.40000.4.0'),
+    'Recommended label must be registry-derived, never hardcoded'
+  );
   assert.ok(code.includes('Architecture Filter:'), 'Must provide architecture filter');
   assert.ok(code.includes('Snapdragon X Elite'), 'Must detail Snapdragon compatibility');
 });

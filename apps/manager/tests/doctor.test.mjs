@@ -18,16 +18,29 @@ test('Header component defines doctor navigation tab', () => {
   assert.match(headerContent, /label:\s*'Doctor'/, 'Header tab label is Doctor');
 });
 
-test('DoctorView component defines all diagnostic probes PRB-01 through PRB-12', () => {
+test('ipc exposes runDoctorScan bound to the Rust command', () => {
+  const ipc = fs.readFileSync(path.join(managerSrc, 'lib/ipc.ts'), 'utf8');
+  assert.match(ipc, /runDoctorScan/, 'ipc exports the doctor scan wrapper');
+  assert.match(
+    ipc,
+    /invokeTauri<DoctorProbe\[\]>\('run_doctor_scan'\)/,
+    'wrapper invokes the run_doctor_scan backend command'
+  );
+});
+
+test('DoctorView scans through the ipc wrapper and renders failures honestly', () => {
   const doctorPath = path.join(managerSrc, 'components/DoctorView.tsx');
   assert.ok(fs.existsSync(doctorPath), 'DoctorView.tsx component exists');
   const content = fs.readFileSync(doctorPath, 'utf8');
-  for (let i = 1; i <= 12; i++) {
-    const probeId = `PRB-${String(i).padStart(2, '0')}`;
-    assert.match(content, new RegExp(probeId), `DoctorView defines ${probeId}`);
-  }
+  assert.match(content, /runDoctorScan/, 'DoctorView scans through the typed ipc wrapper');
+  assert.ok(
+    !content.includes('@tauri-apps/api/core'),
+    'DoctorView must not invoke Tauri directly'
+  );
   assert.match(content, /Ember Doctor/, 'Renders Ember Doctor header');
   assert.match(content, /Actionable Remediations/, 'Includes Actionable Remediations section');
+  assert.match(content, /scan failed/i, 'Renders an explicit scan-failure state (Zero-Mock law)');
+  assert.match(content, /Retry Scan/, 'Offers a retry after a failed scan');
 });
 
 test('App component mounts DoctorView on activeTab doctor', () => {

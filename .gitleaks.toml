@@ -1,0 +1,39 @@
+# .gitleaks.toml — Gitleaks configuration for Emberbird.
+# Defines allowlists for known-safe patterns that would otherwise false-positive.
+
+title = "Emberbird Gitleaks Configuration"
+
+[allowlist]
+  description = "Emberbird false-positive suppressions"
+
+  # Paths that contain test fixtures, hashes, and example data
+  paths = [
+    '''tests/''',
+    '''data/releases/''',
+    '''scripts/test_''',
+    '''\.md$''',
+  ]
+
+  # Known-safe regex patterns
+  regexes = [
+    # SHA-256 hashes in release registry (never secrets)
+    '''[0-9a-f]{64}''',
+    # GitHub Actions workflow_dispatch example values
+    '''GITHUB_OUTPUT''',
+    # Rust test fixture strings
+    '''cccccccc''',
+    # Test token patterns used in contract tests
+    '''fake\.url''',
+  ]
+
+  # Git commits that are known-safe (add with `git log --oneline`)
+  commits = []
+
+  stopwords = [
+    "example",
+    "placeholder",
+    "fixture",
+    "test_",
+    "fake",
+    "dummy",
+  ]

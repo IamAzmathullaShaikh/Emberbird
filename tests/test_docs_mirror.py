@@ -33,6 +33,11 @@ ALLOWLIST_UNMIRRORED = {
     "README.md",  # docs/ index; the website has its own portal navigation
     "LICENSE_AUDIT.md",
     "ATTRIBUTION.md",
+    "ADR.md",  # Architecture Decision Records register
+    "CONSUMER_MATRIX.md",  # S4 consumer purity matrix (E1.5)
+    "HISTORICAL_PRESERVATION.md",  # G3 historical preservation manifest (E5.5)
+    "LEARNING_PATH.md",  # Role-based learning guides
+    "research/ANDROID14_FEASIBILITY.md",  # Phase R1 research report (Project Genesis)
     # Generated outputs written into docs/ by scripts (release_pipeline.py,
     # validate_live_installation.py, generate_compatibility_report.py);
     # gitignored — never committed, never mirrored.

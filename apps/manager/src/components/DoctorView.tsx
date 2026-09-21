@@ -1,150 +1,50 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { runDoctorScan } from '../lib/ipc';
 import type { DoctorProbe } from '../lib/types';
 
 export const DoctorView: React.FC = () => {
-  const defaultProbes: DoctorProbe[] = [
-    {
-      probe_id: 'PRB-01',
-      domain: 'Hardware Virtualization',
-      title: 'CPU Virtualization Firmware (VT-x / AMD-V)',
-      status: 'PASS',
-      severity: 'CRITICAL',
-      summary: 'Hardware virtualization is active in BIOS/UEFI firmware.',
-      details: 'WMI VirtualizationFirmwareEnabled: True',
-      can_autofix: false,
-    },
-    {
-      probe_id: 'PRB-02',
-      domain: 'Virtual Machine Platform',
-      title: 'Windows Feature: VirtualMachinePlatform',
-      status: 'PASS',
-      severity: 'CRITICAL',
-      summary: 'VirtualMachinePlatform feature is Enabled.',
-      details: 'DISM reported state: Enabled',
-      remediation_cmd: 'dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart',
-      can_autofix: true,
-    },
-    {
-      probe_id: 'PRB-03',
-      domain: 'Hypervisor Platform',
-      title: 'Windows Feature: HypervisorPlatform',
-      status: 'PASS',
-      severity: 'CRITICAL',
-      summary: 'HypervisorPlatform feature is Enabled.',
-      details: 'DISM reported state: Enabled',
-      remediation_cmd: 'dism.exe /online /enable-feature /featurename:HypervisorPlatform /all /norestart',
-      can_autofix: true,
-    },
-    {
-      probe_id: 'PRB-04',
-      domain: 'Developer Mode',
-      title: 'AppModelUnlock Developer Mode',
-      status: 'PASS',
-      severity: 'CRITICAL',
-      summary: 'Windows Developer Mode is ENABLED.',
-      details: 'AllowDevelopmentWithoutDevLicense is set to 1',
-      remediation_cmd: 'reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock" /t REG_DWORD /f /v "AllowDevelopmentWithoutDevLicense" /d 1',
-      can_autofix: true,
-    },
-    {
-      probe_id: 'PRB-05',
-      domain: 'AppX Deployment',
-      title: 'Windows Service: AppXSvc',
-      status: 'PASS',
-      severity: 'CRITICAL',
-      summary: 'AppX Deployment Service (AppXSvc) is RUNNING.',
-      details: 'Service is active and ready for package registration.',
-      remediation_cmd: 'net start AppXSvc',
-      can_autofix: true,
-    },
-    {
-      probe_id: 'PRB-06',
-      domain: 'ADB Connectivity',
-      title: 'ADB Loopback Port 58526',
-      status: 'WARN',
-      severity: 'WARNING',
-      summary: 'WSA ADB daemon is not currently listening on 127.0.0.1:58526.',
-      details: 'WSA runs on-demand. Launch WSA Settings or an Android app (or enable Continuous mode in Settings) to open port 58526.',
-      remediation_cmd: 'adb connect 127.0.0.1:58526',
-      can_autofix: false,
-    },
-    {
-      probe_id: 'PRB-07',
-      domain: 'Storage & Process Lock',
-      title: 'userdata.2.vhdx / userdata.vhdx Lock Status',
-      status: 'PASS',
-      severity: 'INFO',
-      summary: 'No blocking zombie process locks detected on virtual disk.',
-      details: 'Active userdata virtual disk is unlocked and ready for mounting or backup.',
-      can_autofix: false,
-    },
-    {
-      probe_id: 'PRB-08',
-      domain: 'WSL & Compute Services',
-      title: 'Host Compute Service & WSL Status',
-      status: 'PASS',
-      severity: 'CRITICAL',
-      summary: 'Host Compute Service (vmcompute) is active.',
-      details: 'Virtual machine compute layer is ready for microVM creation.',
-      remediation_cmd: 'net start vmcompute',
-      can_autofix: true,
-    },
-    {
-      probe_id: 'PRB-09',
-      domain: 'Google Play Services',
-      title: 'Play Services & GApps Registration',
-      status: 'PASS',
-      severity: 'INFO',
-      summary: 'WSA package registered with Google Play Services support.',
-      details: 'GApps package manifest validated.',
-      can_autofix: false,
-    },
-    {
-      probe_id: 'PRB-10',
-      domain: 'Google Account Authentication',
-      title: 'Google Sign-In & Play Store Certification',
-      status: 'PASS',
-      severity: 'INFO',
-      summary: 'Google Play Store certification and sign-in prerequisites satisfied.',
-      details: 'Google Play Protect verified. If uncertified device error appears, register GSF ID at https://www.google.com/android/uncertified.',
-      remediation_cmd: 'https://www.google.com/android/uncertified',
-      can_autofix: false,
-    },
-    {
-      probe_id: 'PRB-11',
-      domain: 'Virtual Networking',
-      title: 'WSA Virtual Switch & Network Loopback',
-      status: 'PASS',
-      severity: 'CRITICAL',
-      summary: 'Hyper-V Virtual Ethernet Adapter is Up.',
-      details: 'Subsystem network virtual switch operating normally.',
-      remediation_cmd: 'netsh winsock reset',
-      can_autofix: true,
-    },
-    {
-      probe_id: 'PRB-12',
-      domain: 'Storage Capacity & Integrity',
-      title: 'System Disk Space & userdata.vhdx Health',
-      status: 'PASS',
-      severity: 'CRITICAL',
-      summary: 'System drive has >= 25 GB free space for subsystem updates.',
-      details: 'Sufficient storage capacity confirmed.',
-      can_autofix: false,
-    },
-  ];
-
-  const [probes] = useState<DoctorProbe[]>(defaultProbes);
+  const [probes, setProbes] = useState<DoctorProbe[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [scanError, setScanError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const runScan = useCallback(async () => {
+    setIsLoading(true);
+    setScanError(null);
+    try {
+      setProbes(await runDoctorScan());
+    } catch (err) {
+      // Zero-Mock law: a failed scan is rendered as a failure, never as an
+      // empty board that could be mistaken for "no problems found".
+      setProbes([]);
+      setScanError(String(err));
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    runScan();
+  }, [runScan]);
 
   const passedCount = probes.filter((p) => p.status === 'PASS').length;
   const warnCount = probes.filter((p) => p.status === 'WARN').length;
   const failCount = probes.filter((p) => p.status === 'FAIL').length;
 
+  const copyTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const handleCopyCmd = (id: string, cmd: string) => {
     navigator.clipboard.writeText(cmd);
     setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    copyTimerRef.current = setTimeout(() => setCopiedId(null), 2000);
   };
+
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    };
+  }, []);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -158,6 +58,41 @@ export const DoctorView: React.FC = () => {
         return 'bg-ember-charcoal text-ember-ash border-ember-ash/30';
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-4 border-ember-glow border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm text-ember-ash font-medium animate-pulse">Running system diagnostics...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (scanError) {
+    return (
+      <div className="p-6 rounded-2xl bg-ember-charcoal/60 border border-rose-500/30 backdrop-blur-sm shadow-xl space-y-3">
+        <h2 className="text-lg font-bold text-white tracking-tight">
+          <span className="text-ember-glow">Ember Doctor</span>
+        </h2>
+        <p className="text-sm text-rose-300">
+          Diagnostic scan failed — no probe results were produced. This is a
+          scan failure, not a clean bill of health.
+        </p>
+        <div className="p-3 rounded-lg bg-ember-obsidian/60 border border-ember-ash/20 font-mono text-[11px] text-rose-200 break-all">
+          {scanError}
+        </div>
+        <button
+          type="button"
+          onClick={runScan}
+          className="px-3 py-1.5 rounded-lg bg-ember-charcoal hover:bg-ember-ash/40 text-white text-xs font-medium border border-ember-ash/30 transition-colors"
+        >
+          Retry Scan
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -203,7 +138,7 @@ export const DoctorView: React.FC = () => {
                   <div key={p.probe_id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs bg-ember-obsidian/60 p-3 rounded-lg border border-ember-ash/20">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-ember-glow font-bold">{p.probe_id}</span>
-                      <span className="text-slate-300">{p.summary}</span>
+                      <span className="text-text-secondary">{p.summary}</span>
                     </div>
                     {p.remediation_cmd && (
                       <button
@@ -243,7 +178,7 @@ export const DoctorView: React.FC = () => {
               {probe.remediation_cmd && probe.status !== 'PASS' && (
                 <div className="pt-3 mt-3 border-t border-ember-ash/20">
                   <span className="text-[10px] uppercase font-bold text-ember-ash/60 block mb-1">Remediation:</span>
-                  <div className="flex items-center justify-between gap-2 bg-ember-charcoal/60 px-2.5 py-1.5 rounded border border-ember-ash/30 font-mono text-[11px] text-slate-300">
+                  <div className="flex items-center justify-between gap-2 bg-ember-charcoal/60 px-2.5 py-1.5 rounded border border-ember-ash/30 font-mono text-[11px] text-text-secondary">
                     <span className="truncate">{probe.remediation_cmd}</span>
                     <button
                       type="button"

@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 /// Authoritative lifecycle states for the Windows Subsystem for Android.
 ///
 /// Ordering is intentional: states are mutually exclusive and exhaustive.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SubsystemState {
     /// No package registration and no package data directory found.
@@ -195,12 +195,46 @@ pub fn derive_subsystem_state(inputs: &DetectionInputs) -> DerivedSubsystemState
     }
 }
 
+/// Compile-time embed of `deployment/version.json` — the single source of
+/// truth for the subsystem baseline. Every build carries the deployment
+/// truth it was built from; no hardcoded version may drift from it.
+const EMBEDDED_VERSION_JSON: &str = include_str!("../../../../deployment/version.json");
+
+/// Extract `subsystem_baseline.wsa_version` from a version.json document.
+fn parse_embedded_baseline(json: &str) -> Option<String> {
+    serde_json::from_str::<serde_json::Value>(json)
+        .ok()?
+        .pointer("/subsystem_baseline/wsa_version")?
+        .as_str()
+        .map(|s| s.to_string())
+}
+
+/// Minimum supported Windows build (FB-1 single source), parsed from the
+/// embedded deployment truth (`manager.min_windows_build`, e.g.
+/// `"10.0.19045.0"` → 19045). The fallback keeps the UI functional if the
+/// embedded document ever loses the field; a unit test pins the parsed value
+/// to the embedded truth, so drift cannot hide.
+pub fn min_windows_build() -> u32 {
+    fn parse(json: &str) -> Option<u32> {
+        let raw = serde_json::from_str::<serde_json::Value>(json)
+            .ok()?
+            .pointer("/manager/min_windows_build")?
+            .as_str()?
+            .to_string();
+        let parts: Vec<&str> = raw.split('.').collect();
+        let build = if parts.len() >= 3 { parts[2] } else { raw.as_str() };
+        build.parse().ok()
+    }
+    parse(EMBEDDED_VERSION_JSON).unwrap_or(19045)
+}
+
 /// Subsystem baseline version from release intelligence.
 ///
-/// Reads `deployment/version.json` → `subsystem_baseline.wsa_version` when the
-/// file is deployed next to the executable (release layout); falls back to the
-/// compile-time baseline. Returns `None` only when no baseline is available at
-/// all, in which case outdated-detection is disabled (never wrongly reported).
+/// Priority: (1) `version.json` deployed next to the executable (release
+/// layout), (2) the `WSA_BASELINE_VERSION` compile-time override, (3) the
+/// embedded `deployment/version.json`. Returns `None` only when no baseline
+/// is available at all, in which case outdated-detection is disabled (never
+/// wrongly reported).
 pub fn subsystem_baseline_version() -> Option<String> {
     if let Ok(exe) = std::env::current_exe() {
         for ancestor in exe.ancestors().skip(1).take(3) {
@@ -219,11 +253,10 @@ pub fn subsystem_baseline_version() -> Option<String> {
             }
         }
     }
-    Some(
-        option_env!("WSA_BASELINE_VERSION")
-            .unwrap_or("2311.40000.5.0")
-            .to_string(),
-    )
+    if let Some(v) = option_env!("WSA_BASELINE_VERSION") {
+        return Some(v.to_string());
+    }
+    parse_embedded_baseline(EMBEDDED_VERSION_JSON)
 }
 
 /// Component-wise numeric version comparison: `true` when `version` < `baseline`.
@@ -364,6 +397,23 @@ mod tests {
     }
 
     #[test]
+    fn embedded_baseline_matches_deployment_truth() {
+        // FB-1: the compile-time baseline MUST come from the embedded
+        // deployment/version.json — no independent hardcoded version may exist.
+        let embedded = parse_embedded_baseline(EMBEDDED_VERSION_JSON)
+            .expect("deployment/version.json must carry subsystem_baseline.wsa_version");
+        assert_eq!(embedded, subsystem_baseline_version().expect("baseline available"));
+        assert_eq!(embedded, "2407.40000.4.0");
+    }
+
+    #[test]
+    fn min_windows_build_matches_deployment_truth() {
+        // FB-1: the preflight requirement comes from the embedded deployment
+        // truth, not from a second hardcoded literal.
+        assert_eq!(min_windows_build(), 19045);
+    }
+
+    #[test]
     fn version_comparison_matrix() {
         assert!(is_version_older("2308.40000.2.0", "2311.40000.5.0"));
         assert!(!is_version_older("2311.40000.5.0", "2311.40000.5.0"));
@@ -377,7 +427,7 @@ mod tests {
     /// lands in exactly one. This is the contract the UI relies on.
     #[test]
     fn every_scenario_yields_exactly_one_state() {
-        let scenarios = vec![
+        let scenarios = [
             inputs(None, None, None, None),
             inputs(Some(false), None, None, Some("v")),
             inputs(Some(true), Some("1.0"), None, Some("v")),

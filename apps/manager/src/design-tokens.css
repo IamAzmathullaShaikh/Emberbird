@@ -1,0 +1,39 @@
+/* Emberbird Design Tokens — CSS custom properties bridging Tailwind to native CSS. */
+:root {
+  --color-surface: #0A0A0B;
+  --color-surface-raised: #161618;
+  --color-surface-sunken: #050506;
+  --color-accent: #FF5F1F;
+  --color-accent-hover: #FF7A45;
+  --color-accent-active: #CC4C19;
+  --color-text-primary: #F5F5F5;
+  --color-text-secondary: #A1A1AA;
+  --color-text-muted: #4A4A4A;
+  --color-status-pass: #22C55E;
+  --color-status-warn: #EAB308;
+  --color-status-fail: #EF4444;
+  --color-status-unknown: #71717A;
+  --color-border: #4A4A4A;
+  --color-border-focus: #FF5F1F;
+  --color-border-subtle: #2A2A2C;
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+  --easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Windows High Contrast mode */
+@media (forced-colors: active) {
+  button, [role="button"] { border: 1px solid ButtonText; }
+  [role="progressbar"] { border: 1px solid Highlight; }
+  .animate-spin { border-color: ButtonText; border-top-color: transparent; }
+}

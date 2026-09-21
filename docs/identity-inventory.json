@@ -5,27 +5,27 @@
     "m4": "Release History Is Immutable",
     "s1": "Historical Identity Preservation — Emberbird may replace branding; it may not erase history"
   },
-  "generated_at": "2026-09-19T08:10:31Z",
+  "generated_at": "2026-09-20T06:28:56Z",
   "totals": {
-    "files": 139,
-    "occurrences": 819,
+    "files": 142,
+    "occurrences": 815,
     "by_token": {
-      "MagiskOnWSA": 54,
-      "MagiskOnWSALocal": 69,
-      "WSABuilds": 696
+      "MagiskOnWSA": 46,
+      "MagiskOnWSALocal": 65,
+      "WSABuilds": 704
     },
     "by_class": {
-      "doc-prose": 50,
+      "doc-prose": 60,
       "historical-doc": 345,
-      "identifier": 187,
+      "identifier": 186,
       "package-name": 51,
-      "path-reference": 58,
-      "upstream-attribution": 55,
-      "url": 59,
+      "path-reference": 59,
+      "upstream-attribution": 40,
+      "url": 60,
       "user-facing": 9,
       "workflow-name": 5
     },
-    "protected_occurrences": 400
+    "protected_occurrences": 385
   },
   "files": [
     {
@@ -247,182 +247,33 @@
     },
     {
       "path": "TODO.md",
-      "count": 35,
+      "count": 2,
       "occurrences": [
         {
           "token": "MagiskOnWSA",
+          "class": "upstream-attribution",
+          "context": "(WSABuilds, MagiskOnWSA lineage, MustardChef, Microsoft WSA) remain"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "upstream-attribution",
+          "context": "(WSABuilds, MagiskOnWSA lineage, MustardChef, Microsoft WSA) remain"
+        }
+      ]
+    },
+    {
+      "path": "WINDOWS11_BUILD_GUIDE.md",
+      "count": 2,
+      "occurrences": [
+        {
+          "token": "WSABuilds",
           "class": "doc-prose",
-          "context": "instructed `cd MagiskOnWSA` and referenced `MagiskOnWSA/scripts/...`"
-        },
-        {
-          "token": "MagiskOnWSA",
-          "class": "path-reference",
-          "context": "(`MagiskOnWSA/scripts/build.sh`, `config.sh`, GApps/registry plumbing)"
-        },
-        {
-          "token": "MagiskOnWSA",
-          "class": "path-reference",
-          "context": "- [x] **Moves** (762 renames, one surgical commit): `MagiskOnWSA/scripts/` →"
-        },
-        {
-          "token": "MagiskOnWSA",
-          "class": "path-reference",
-          "context": "`MagiskOnWSA/scripts/` → `tools/` (4 protected files via index surgery:"
-        },
-        {
-          "token": "MagiskOnWSA",
-          "class": "path-reference",
-          "context": "instructed `cd MagiskOnWSA` and referenced `MagiskOnWSA/scripts/...`"
-        },
-        {
-          "token": "MagiskOnWSA",
-          "class": "upstream-attribution",
-          "context": "**Root cause**: the E2 restructure moved `MagiskOnWSA/scripts/*` → `tools/` and `tools/core/`, and `MagiskOnWSA/{bin,installer,xml}` → `upstream/{bin,installer,xml}`, but never rep"
-        },
-        {
-          "token": "MagiskOnWSA",
-          "class": "upstream-attribution",
-          "context": "**Root cause**: the E2 restructure moved `MagiskOnWSA/scripts/*` → `tools/` and `tools/core/`, and `MagiskOnWSA/{bin,installer,xml}` → `upstream/{bin,installer,xml}`, but never rep"
-        },
-        {
-          "token": "MagiskOnWSA",
-          "class": "upstream-attribution",
-          "context": "MagiskOnWSA, MagiskOnWSALocal lineage), verbatim AGPL license, and per-release"
-        },
-        {
-          "token": "MagiskOnWSA",
-          "class": "upstream-attribution",
-          "context": "MagiskOnWSA/scripts toolchain→tools, upstream remainder→upstream), with"
-        },
-        {
-          "token": "MagiskOnWSA",
-          "class": "upstream-attribution",
-          "context": "S1 in executable form — MustardChef, WSABuilds lineage, MagiskOnWSA/MagiskOnWSALocal"
-        },
-        {
-          "token": "MagiskOnWSA",
-          "class": "upstream-attribution",
-          "context": "names (WSABuilds, MagiskOnWSA lineage, MustardChef, Microsoft"
-        },
-        {
-          "token": "MagiskOnWSA",
-          "class": "upstream-attribution",
-          "context": "tracked text files for `WSABuilds` / `MagiskOnWSALocal` / `MagiskOnWSA` and"
-        },
-        {
-          "token": "MagiskOnWSALocal",
-          "class": "upstream-attribution",
-          "context": "- **LEGAL/ATTRIBUTION REVIEW**: upstream names (MagiskOnWSALocal, WSABuilds,"
-        },
-        {
-          "token": "MagiskOnWSALocal",
-          "class": "upstream-attribution",
-          "context": "MagiskOnWSA, MagiskOnWSALocal lineage), verbatim AGPL license, and per-release"
-        },
-        {
-          "token": "MagiskOnWSALocal",
-          "class": "upstream-attribution",
-          "context": "S1 in executable form — MustardChef, WSABuilds lineage, MagiskOnWSA/MagiskOnWSALocal"
-        },
-        {
-          "token": "MagiskOnWSALocal",
-          "class": "upstream-attribution",
-          "context": "the MagiskOnWSALocal lineage row and the metamorphosis legal statement;"
-        },
-        {
-          "token": "MagiskOnWSALocal",
-          "class": "upstream-attribution",
-          "context": "tracked text files for `WSABuilds` / `MagiskOnWSALocal` / `MagiskOnWSA` and"
+          "context": "cd WSABuilds"
         },
         {
           "token": "WSABuilds",
           "class": "doc-prose",
-          "context": "- [x] **README Excellence Programme** — Rebuilt `README.md` into the 20 mandated sections with modern Mermaid architecture and release lifecycle diagrams, Tier-1 edition comparison"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "doc-prose",
-          "context": "- [x] Deferred by design: `WSABuilds Manager` product + `WSABuildsManager`"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "doc-prose",
-          "context": "- [x] Deferred by design: `WSABuilds Manager` product + `WSABuildsManager`"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "doc-prose",
-          "context": "39 workflow-name occurrences triaged. KEEP classes: `WSABuildsManager`"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "doc-prose",
-          "context": "Inherited from the WSABuilds Master Governance Framework v5.1 era. These"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "doc-prose",
-          "context": "`docs/ATTRIBUTION.md` (WSABuilds ancestry, embedded components, tooling)."
-        },
-        {
-          "token": "WSABuilds",
-          "class": "doc-prose",
-          "context": "artifacts/product (E5), `WSABuilds.WSABuildsManager` + `manifests/w/`"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "doc-prose",
-          "context": "mapping for E2 (Documentation→docs/archive, WSABuilds Utilities→utilities,"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "path-reference",
-          "context": "artifacts/product (E5), `WSABuilds.WSABuildsManager` + `manifests/w/`"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "upstream-attribution",
-          "context": "(E5), repo URLs + `cd WSABuilds` (E4), `MustardChef/WSABuilds` (S1),"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "upstream-attribution",
-          "context": "(E5), repo URLs + `cd WSABuilds` (E4), `MustardChef/WSABuilds` (S1),"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "upstream-attribution",
-          "context": "(WSABuilds/MustardChef) plus ATTRIBUTION and HISTORICAL_PRESERVATION docs;"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "upstream-attribution",
-          "context": "- **LEGAL/ATTRIBUTION REVIEW**: upstream names (MagiskOnWSALocal, WSABuilds,"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "upstream-attribution",
-          "context": "S1 in executable form — MustardChef, WSABuilds lineage, MagiskOnWSA/MagiskOnWSALocal"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "upstream-attribution",
-          "context": "`docs/archive/`, `WSABuilds Utilities/` → `utilities/`, legacy upstream"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "upstream-attribution",
-          "context": "`docs/archive/`, `WSABuilds Utilities/` → `utilities/`, upstream scripts →"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "upstream-attribution",
-          "context": "names (WSABuilds, MagiskOnWSA lineage, MustardChef, Microsoft"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "upstream-attribution",
-          "context": "tracked text files for `WSABuilds` / `MagiskOnWSALocal` / `MagiskOnWSA` and"
+          "context": "cd WSABuilds"
         }
       ]
     },
@@ -940,6 +791,52 @@
       ]
     },
     {
+      "path": "docs/ADR.md",
+      "count": 8,
+      "occurrences": [
+        {
+          "token": "MagiskOnWSA",
+          "class": "path-reference",
+          "context": "- **Context**: The legacy directory structure had overlapping concerns (`Documentation/`, `MagiskOnWSA/scripts/`, `WSABuilds Utilities/`)."
+        },
+        {
+          "token": "MagiskOnWSA",
+          "class": "upstream-attribution",
+          "context": "| [ADR-003](#adr-003-historical-identity-preservation--s1-attribution) | Historical Identity Preservation & S1 Attribution | **ADOPTED** | 2026-09 | Upstream lineage (MustardChef, "
+        },
+        {
+          "token": "MagiskOnWSALocal",
+          "class": "upstream-attribution",
+          "context": "- **Decision**: Attribution to MustardChef, WSABuilds, MagiskOnWSALocal, topjohnwu (Magisk), and Microsoft is legally protected and tested by CI (`test_attribution_preservation.py`"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "- **Context**: Publishing under the legacy package identifier `WSABuilds.WSABuildsManager` prevents proper platform branding."
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "- **Context**: The legacy directory structure had overlapping concerns (`Documentation/`, `MagiskOnWSA/scripts/`, `WSABuilds Utilities/`)."
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "- **Context**: Publishing under the legacy package identifier `WSABuilds.WSABuildsManager` prevents proper platform branding."
+        },
+        {
+          "token": "WSABuilds",
+          "class": "upstream-attribution",
+          "context": "- **Decision**: Attribution to MustardChef, WSABuilds, MagiskOnWSALocal, topjohnwu (Magisk), and Microsoft is legally protected and tested by CI (`test_attribution_preservation.py`"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "upstream-attribution",
+          "context": "| [ADR-003](#adr-003-historical-identity-preservation--s1-attribution) | Historical Identity Preservation & S1 Attribution | **ADOPTED** | 2026-09 | Upstream lineage (MustardChef, "
+        }
+      ]
+    },
+    {
       "path": "docs/ARCHITECTURE.md",
       "count": 5,
       "occurrences": [
@@ -1013,6 +910,117 @@
           "token": "WSABuilds",
           "class": "upstream-attribution",
           "context": "| Upstream WSABuilds issue tracker | Product pillars in `docs/EMBERBIRD_CHARTER.md` |"
+        }
+      ]
+    },
+    {
+      "path": "docs/HISTORICAL_PRESERVATION.md",
+      "count": 21,
+      "occurrences": [
+        {
+          "token": "MagiskOnWSA",
+          "class": "doc-prose",
+          "context": "MagiskOnWSA / WSABuilds lineage (see `docs/archive/` and `docs/BRAND.md` §6)."
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "MagiskOnWSA / WSABuilds lineage (see `docs/archive/` and `docs/BRAND.md` §6)."
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| 0.2.0 | `v0.2.0` | `WSABuildsManager-Setup-0.2.0-x64.exe`, portable + checksums sidecars | see `manifests/w/WSABuilds/WSABuildsManager/0.2.0/` |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| 0.2.0 | `v0.2.0` | `WSABuildsManager-Setup-0.2.0-x64.exe`, portable + checksums sidecars | see `manifests/w/WSABuilds/WSABuildsManager/0.2.0/` |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| 0.2.1 | `v0.2.1` | `WSABuildsManager-Setup-0.2.1-x64.exe`, portable + checksums sidecars | see `manifests/w/WSABuilds/WSABuildsManager/0.2.1/` |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| 0.2.1 | `v0.2.1` | `WSABuildsManager-Setup-0.2.1-x64.exe`, portable + checksums sidecars | see `manifests/w/WSABuilds/WSABuildsManager/0.2.1/` |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| 0.2.2 | `v0.2.2` | `WSABuildsManager-Setup-0.2.2-x64.exe`, `WSABuildsManager-Portable-0.2.2-x64.zip`, `WSABuildsManager-0.2.2-checksums.txt` | `887443bad0aeb3eec04ff367b4768edad2"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| 0.2.2 | `v0.2.2` | `WSABuildsManager-Setup-0.2.2-x64.exe`, `WSABuildsManager-Portable-0.2.2-x64.zip`, `WSABuildsManager-0.2.2-checksums.txt` | `887443bad0aeb3eec04ff367b4768edad2"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| 0.2.2 | `v0.2.2` | `WSABuildsManager-Setup-0.2.2-x64.exe`, `WSABuildsManager-Portable-0.2.2-x64.zip`, `WSABuildsManager-0.2.2-checksums.txt` | `887443bad0aeb3eec04ff367b4768edad2"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| Artifact prefix | `WSABuildsManager-` (Setup / Portable / checksums) | Frozen — published asset filenames are immutable |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| Package identifier | `WSABuilds.WSABuildsManager` | Frozen — manifests preserved under `manifests/w/WSABuilds/WSABuildsManager/` |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| Package identifier | `WSABuilds.WSABuildsManager` | Frozen — manifests preserved under `manifests/w/WSABuilds/WSABuildsManager/` |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| Product name | `WSABuilds Manager` | Frozen |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| Publisher | `WSABuilds` | Frozen |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "| `manifests/w/WSABuilds/WSABuildsManager/*/…locale.en-US.yaml` | `License: Apache-2.0` (the repository was and is AGPL-3.0) | Frozen verbatim — what was published is what was publ"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "| 0.2.0 | `v0.2.0` | `WSABuildsManager-Setup-0.2.0-x64.exe`, portable + checksums sidecars | see `manifests/w/WSABuilds/WSABuildsManager/0.2.0/` |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "| 0.2.1 | `v0.2.1` | `WSABuildsManager-Setup-0.2.1-x64.exe`, portable + checksums sidecars | see `manifests/w/WSABuilds/WSABuildsManager/0.2.1/` |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "| Package identifier | `WSABuilds.WSABuildsManager` | Frozen — manifests preserved under `manifests/w/WSABuilds/WSABuildsManager/` |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "| Package identifier | `WSABuilds.WSABuildsManager` | Frozen — manifests preserved under `manifests/w/WSABuilds/WSABuildsManager/` |"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "path-reference",
+          "context": "| `manifests/w/WSABuilds/WSABuildsManager/*/…locale.en-US.yaml` | `License: Apache-2.0` (the repository was and is AGPL-3.0) | Frozen verbatim — what was published is what was publ"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "url",
+          "context": "Release URLs (redirect-safe): `https://github.com/IamAzmathullaShaikh/WSABuilds/releases/tag/v<version>`."
         }
       ]
     },
@@ -4214,7 +4222,7 @@
     },
     {
       "path": "tests/test_e5_distribution_identity.py",
-      "count": 12,
+      "count": 10,
       "occurrences": [
         {
           "token": "WSABuilds",
@@ -4244,11 +4252,6 @@
         {
           "token": "WSABuilds",
           "class": "identifier",
-          "context": "self.assertIn(\"WSABuilds.WSABuildsManager\", hp)"
-        },
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
           "context": "self.assertNotIn(\"WSABuildsManager-\", wf)"
         },
         {
@@ -4260,11 +4263,6 @@
           "token": "WSABuilds",
           "class": "path-reference",
           "context": "OLD_PKG = \"WSABuilds.WSABuildsManager\""
-        },
-        {
-          "token": "WSABuilds",
-          "class": "path-reference",
-          "context": "self.assertIn(\"WSABuilds.WSABuildsManager\", hp)"
         },
         {
           "token": "WSABuilds",

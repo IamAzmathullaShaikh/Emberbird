@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Header } from './components/Header';
 import { StatusCard } from './components/StatusCard';
 import { ReleaseCard } from './components/ReleaseCard';
@@ -7,104 +7,86 @@ import { RestoreView } from './components/RestoreView';
 import { UpdateView } from './components/UpdateView';
 import { LicensesView } from './components/LicensesView';
 import { DoctorView } from './components/DoctorView';
-import { detectWsaStatus, checkForUpdates } from './lib/ipc';
-import { normalizeStatusPayload } from './lib/state';
-import type { WsaStatus, UpdateStatus, NavigationTab } from './lib/types';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { Toast } from './components/Toast';
+import { useEmberStore } from './lib/store';
 
 export const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<NavigationTab>('dashboard');
-  const [status, setStatus] = useState<WsaStatus | null>(null);
-  const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null);
-  const [loadingStatus, setLoadingStatus] = useState(false);
-  const [checkingUpdates, setCheckingUpdates] = useState(false);
-
-  const refreshStatus = async () => {
-    setLoadingStatus(true);
-    try {
-      const res = await detectWsaStatus();
-      setStatus(normalizeStatusPayload(res));
-    } catch (err) {
-      console.error('Failed to detect WSA status:', err);
-      setStatus(normalizeStatusPayload(null));
-    } finally {
-      setLoadingStatus(false);
-    }
-  };
-
-  const handleCheckUpdates = async () => {
-    setCheckingUpdates(true);
-    try {
-      const res = await checkForUpdates();
-      setUpdateStatus(res);
-    } catch (err) {
-      console.error('Failed to check updates:', err);
-    } finally {
-      setCheckingUpdates(false);
-    }
-  };
+  const activeTab = useEmberStore((s) => s.activeTab);
+  const refreshStatus = useEmberStore((s) => s.refreshStatus);
+  const checkForUpdates = useEmberStore((s) => s.checkForUpdates);
+  const notifications = useEmberStore((s) => s.notifications);
+  const dismissNotification = useEmberStore((s) => s.dismissNotification);
 
   useEffect(() => {
     refreshStatus();
-    handleCheckUpdates();
+    checkForUpdates();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div className="flex flex-col h-screen bg-ember-obsidian text-slate-100 font-sans selection:bg-ember-glow/30">
-      <Header
-        status={status}
-        onRefresh={refreshStatus}
-        loading={loadingStatus}
-        activeTab={activeTab}
-        onSelectTab={setActiveTab}
-      />
+    <div className="flex flex-col h-screen bg-ember-obsidian text-text-primary font-sans selection:bg-ember-glow/30">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-accent focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold"
+      >
+        Skip to main content
+      </a>
+      <Header />
 
-      <main className="flex-1 overflow-y-auto p-6 max-w-6xl mx-auto w-full space-y-6">
+      <main id="main-content" role="main" className="flex-1 overflow-y-auto p-6 max-w-6xl mx-auto w-full space-y-6">
         {activeTab === 'dashboard' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-            {/* Primary Status Widget - Large Span */}
             <div className="lg:col-span-8 space-y-6">
-               <StatusCard status={status} onRefresh={refreshStatus} />
+              <ErrorBoundary label="Dashboard">
+                <StatusCard />
+              </ErrorBoundary>
             </div>
-
-            {/* Secondary Intelligence Widget - Side Span */}
             <div className="lg:col-span-4 space-y-6">
-               <ReleaseCard
-                 status={status}
-                 updateStatus={updateStatus}
-                 onCheckUpdates={handleCheckUpdates}
-                 checking={checkingUpdates}
-               />
+              <ErrorBoundary label="Release Info">
+                <ReleaseCard />
+              </ErrorBoundary>
             </div>
           </div>
         )}
 
         {activeTab === 'updates' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <UpdateView onUpgradeSuccess={refreshStatus} />
+            <ErrorBoundary label="Updates">
+              <UpdateView />
+            </ErrorBoundary>
           </div>
         )}
 
         {activeTab === 'backups' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <BackupView status={status} />
+            <ErrorBoundary label="Backups">
+              <BackupView />
+            </ErrorBoundary>
           </div>
         )}
 
         {activeTab === 'restore' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <RestoreView status={status} onRestoreComplete={refreshStatus} />
+            <ErrorBoundary label="Restore">
+              <RestoreView />
+            </ErrorBoundary>
           </div>
         )}
 
         {activeTab === 'doctor' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <DoctorView />
+            <ErrorBoundary label="Doctor">
+              <DoctorView />
+            </ErrorBoundary>
           </div>
         )}
 
         {activeTab === 'licenses' && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <LicensesView />
+            <ErrorBoundary label="Licenses">
+              <LicensesView />
+            </ErrorBoundary>
           </div>
         )}
 
@@ -113,6 +95,8 @@ export const App: React.FC = () => {
           <span>Obsidian Edition • Architecture v5.0</span>
         </footer>
       </main>
+
+      <Toast notifications={notifications} onDismiss={dismissNotification} />
     </div>
   );
 };

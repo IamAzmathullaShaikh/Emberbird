@@ -23,6 +23,8 @@ reqwest = { version = "0.12", features = ["json"] }
 semver = "1.0"
 sha2 = "0.10"
 chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
+specta = { version = "=2.0.0-rc.22", features = ["derive"] }
+tauri-specta = { version = "=2.0.0-rc.21", features = ["derive", "typescript"] }
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.52"

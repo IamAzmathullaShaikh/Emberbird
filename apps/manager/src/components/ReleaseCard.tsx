@@ -1,16 +1,23 @@
 import React, { useState } from 'react';
 import { projectSubsystemStatus } from '../lib/state';
-import type { WsaStatus, UpdateStatus } from '../lib/types';
+import { recommendedWsaAsset, recommendedWsaLabel, publishedWsaArchitectures } from '../lib/registry';
+import { useEmberStore } from '../lib/store';
 
-interface ReleaseCardProps {
-  status: WsaStatus | null;
-  updateStatus: UpdateStatus | null;
-  onCheckUpdates: () => void;
-  checking: boolean;
-}
-
-export const ReleaseCard: React.FC<ReleaseCardProps> = ({ status, updateStatus, onCheckUpdates, checking }) => {
+export const ReleaseCard: React.FC = () => {
+  const status = useEmberStore((s) => s.wsaStatus);
+  const updateStatus = useEmberStore((s) => s.updateStatus);
+  const checking = useEmberStore((s) => s.checkingUpdates);
+  const onCheckUpdates = useEmberStore((s) => s.checkForUpdates);
   const [selectedArch, setSelectedArch] = useState<'all' | 'x64' | 'arm64'>('all');
+
+  // FB-1/FB-4: recommendation and architecture coverage derive from registry
+  // truth. The compatibility pill shows the registry tag — no unverifiable
+  // hardcoded percentage.
+  const recommended = recommendedWsaAsset();
+  const recommendedLabel = recommendedWsaLabel();
+  const recommendedTag = recommended?.release_tag;
+  const shippedArchs = publishedWsaArchitectures();
+  const archOptions: Array<'all' | 'x64' | 'arm64'> = ['all', ...shippedArchs];
 
   const projected = projectSubsystemStatus(status);
   const installedLabel = projected.presentation.mayShowVersion
@@ -40,16 +47,20 @@ export const ReleaseCard: React.FC<ReleaseCardProps> = ({ status, updateStatus, 
             <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-ember-glow text-ember-obsidian shadow-sm">
               Observatory Recommended
             </span>
-            <span className="font-bold text-xs text-white">
-              Standard Edition 2407.40000.4.0
+            <span className="font-bold text-xs text-text-primary">
+              {recommendedLabel}
             </span>
           </div>
-          <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-            88.3% Verified Compatibility
+          <span className="text-[11px] font-mono text-status-pass bg-status-pass/10 px-2 py-0.5 rounded border border-status-pass/20">
+            {recommendedTag ?? 'Registry unavailable'}
           </span>
         </div>
         <p className="text-[11px] text-ember-ash leading-relaxed">
-          Curated release baseline: Android 13 LTS kernel, verified Play Integrity baseline, native DirectX 12 GPU acceleration, and certified Magisk 27.0 root.
+          {`Curated release baseline: Android 13 LTS kernel, verified Play Integrity baseline, native DirectX 12 GPU acceleration, and ${
+            recommended?.root_solution === 'magisk'
+              ? 'Magisk root pre-installed'
+              : 'an unrooted system image'
+          }.`}
         </p>
       </div>
 
@@ -58,7 +69,7 @@ export const ReleaseCard: React.FC<ReleaseCardProps> = ({ status, updateStatus, 
         <div className="flex items-center justify-between">
           <span className="text-xs text-ember-ash font-medium">Architecture Filter:</span>
           <div className="flex items-center gap-1 bg-ember-obsidian p-1 rounded-lg border border-ember-ash/20">
-            {(['all', 'x64', 'arm64'] as const).map((arch) => (
+            {archOptions.map((arch) => (
               <button
                 key={arch}
                 type="button"
@@ -66,7 +77,7 @@ export const ReleaseCard: React.FC<ReleaseCardProps> = ({ status, updateStatus, 
                 className={`px-2.5 py-0.5 rounded text-[11px] font-mono transition-all duration-200 ${
                   selectedArch === arch
                     ? 'bg-ember-glow text-ember-obsidian font-bold shadow-sm'
-                    : 'text-ember-ash hover:text-white hover:bg-ember-ash/20'
+                    : 'text-ember-ash hover:text-text-primary hover:bg-ember-ash/20'
                 }`}
               >
                 {arch === 'all' ? 'All' : arch.toUpperCase()}
@@ -75,16 +86,16 @@ export const ReleaseCard: React.FC<ReleaseCardProps> = ({ status, updateStatus, 
           </div>
         </div>
 
-        {selectedArch === 'arm64' && (
+        {selectedArch === 'arm64' && shippedArchs.includes('arm64') && (
           <div className="p-3 rounded-lg bg-ember-glow/5 border border-ember-glow/20 text-[11px] text-ember-ash">
             <span className="font-bold text-ember-glow">Snapdragon X Elite / Copilot+ PC: </span>
             ARM64 builds execute with native ARM64 virtualization and zero x64 emulation overhead, preserving battery life and performance.
           </div>
         )}
 
-        {selectedArch === 'x64' && (
+        {selectedArch === 'x64' && shippedArchs.includes('x64') && (
           <div className="p-3 rounded-lg bg-ember-obsidian/50 border border-ember-ash/20 text-[11px] text-ember-ash">
-            <span className="font-bold text-white">Intel Core & AMD Ryzen: </span>
+            <span className="font-bold text-text-primary">Intel Core & AMD Ryzen: </span>
             x64 builds are compiled with AVX2 optimizations and DirectX 12 hardware acceleration.
           </div>
         )}
@@ -95,7 +106,7 @@ export const ReleaseCard: React.FC<ReleaseCardProps> = ({ status, updateStatus, 
           <div className="flex items-center justify-between p-4 rounded-xl bg-ember-obsidian/60 border border-ember-ash/30">
             <div className="flex flex-col">
               <div className="text-ember-ash text-[10px] uppercase tracking-wider font-medium">Current Engine Build</div>
-              <div className="font-mono text-sm font-bold text-white mt-0.5">
+              <div className="font-mono text-sm font-bold text-text-primary mt-0.5">
                 {installedLabel}
               </div>
             </div>

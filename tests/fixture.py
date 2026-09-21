@@ -48,8 +48,8 @@ FIXTURE = {
             ]
         },
         {
-            "release_id": "wsa-2311-banking",
-            "tag": "wsa-v2311.40000.5.0",
+            "release_id": "wsa-2407-banking",
+            "tag": "wsa-v2407.40000.4.0",
             "kind": "subsystem",
             "wsa_version": "2407.40000.4.0",
             "channel": "retail",
@@ -58,23 +58,23 @@ FIXTURE = {
             "root_solution": "none",
             "gapps_variant": "pico",
             "status": "published",
-            "published_at": "2026-09-13T23:06:31Z",
+            "published_at": "2026-09-18T14:12:49Z",
             "provenance": {
                 "tool": "tests/fixture.py",
                 "mode": "test-fixture",
-                "generated_at": "2026-09-15T00:00:00Z",
+                "generated_at": "2026-09-18T00:00:00Z",
             },
             "assets": [
                 {
                     "filename": "WSA_2407.40000.4.0_x64_vanilla.7z",
-                    "sha256": "fc671cdab4d486a0a830196957cf9614f320fe8936d5d6d22f25cf62298c0cac",
+                    "sha256": "0e275361fba545c3fca7db15ee16dff8f426b37c7cc899d58ddda1937f24a878",
                     "arch": "x64",
                     "role": "package",
-                    "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/wsa-v2311.40000.5.0/WSA_2407.40000.4.0_x64_vanilla.7z",
+                    "source_url": "https://github.com/IamAzmathullaShaikh/WSABuilds/releases/download/wsa-v2407.40000.4.0/WSA_2407.40000.4.0_x64_vanilla.7z",
                     "source_type": "derived",
-                    "hash_source": "published-manifest",
-                    "verified_at": "2026-09-15T00:00:00Z",
-                    "size_bytes": 755302772
+                    "hash_source": "computed",
+                    "verified_at": "2026-09-18T14:12:49Z",
+                    "size_bytes": 776168810
                 }
             ]
         },

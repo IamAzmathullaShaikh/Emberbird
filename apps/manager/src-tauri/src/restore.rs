@@ -8,7 +8,7 @@ use std::fs::{self, File};
 use std::io::Read;
 use std::path::{Path, PathBuf};
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, specta::Type)]
 pub struct RestorePreflight {
     pub can_restore: bool,
     pub candidate_id: String,
@@ -20,7 +20,7 @@ pub struct RestorePreflight {
     pub errors: Vec<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, specta::Type)]
 pub struct RestoreResult {
     pub success: bool,
     pub candidate_id: String,

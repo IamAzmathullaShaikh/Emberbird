@@ -53,7 +53,7 @@ jobs:
         working-directory: website
         run: |
           echo "[*] Running npm dependency audit for critical vulnerabilities..."
-          npm audit --audit-level=critical || true
+          npm audit --audit-level=critical
 
       - name: Execute Unit Test Suite
         working-directory: website
@@ -65,7 +65,8 @@ jobs:
         working-directory: website
         run: |
           echo "[*] Executing TypeScript typecheck..."
-          npm run typecheck || true
+          # Rule 20: gate is enforced. Fix any TS errors before deploying.
+          npm run typecheck
 
       - name: Prebuild Documentation Import
         working-directory: website

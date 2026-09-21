@@ -1,4 +1,5 @@
 use crate::backup::{create_vhdx_backup_impl, BackupResult};
+use crate::downloader::{stage_asset, StagedAsset, STAGE_PROGRESS_EVENT};
 use crate::coordinator::{
     execute_upgrade_orchestration, run_upgrade_preflight, UpgradeOptions, UpgradePreflight,
     UpgradeResult,
@@ -9,10 +10,20 @@ use crate::registry::{list_backups, prune_backups as prune_backups_impl, Restore
 use crate::registry_truth::latest_published_wsa_release;
 use crate::releases::{clean_version, is_update_available, ReleaseInfo, UpdateStatus};
 use crate::restore::{execute_restore_impl, RestoreResult};
+use crate::doctor::DoctorProbe;
 
 #[tauri::command]
 pub fn detect_wsa_status() -> Result<WsaStatus, String> {
     Ok(detect_subsystem())
+}
+
+#[tauri::command]
+pub async fn run_doctor_scan() -> Result<Vec<DoctorProbe>, String> {
+    // The probe engine spawns PowerShell/DISM/sc/tasklist and can take many
+    // seconds; run it on the blocking pool so the UI thread never freezes.
+    tauri::async_runtime::spawn_blocking(crate::doctor::run_doctor_scan)
+        .await
+        .map_err(|e| format!("Doctor scan task failed: {}", e))
 }
 
 #[tauri::command]
@@ -58,39 +69,51 @@ pub async fn check_for_updates() -> Result<UpdateStatus, String> {
 }
 
 #[tauri::command]
-pub async fn get_latest_releases() -> Result<Vec<ReleaseInfo>, String> {
-    // Registry-Driven Truth: enumerate published WSA releases from the bundled
-    // registry. An empty registry is an honest empty list — no fabrication.
-    let doc = crate::registry_truth::load_registry()
-        .ok_or_else(|| "Registry unavailable: releases.json not found or unreadable".to_string())?;
-    Ok(doc
-        .releases
-        .iter()
-        .filter(|r| r.status == "published" && r.tag.starts_with("wsa-v"))
-        .map(|r| ReleaseInfo {
-            tag_name: r.tag.clone(),
-            name: r.release_id.clone(),
-            published_at: r.published_at.clone(),
-            body: String::new(),
-            assets: r
-                .assets
-                .iter()
-                .map(|a| crate::releases::ReleaseAsset {
-                    name: a.filename.clone(),
-                    size: a.size_bytes,
-                    browser_download_url: a.source_url.clone(),
-                    architecture: a.arch.clone(),
-                    root_flavor: String::new(),
-                    gapps_flavor: String::new(),
-                })
-                .collect(),
-        })
-        .collect())
-}
-
-#[tauri::command]
 pub fn validate_manager_env() -> Result<ManagerEnvConfig, String> {
     resolve_environment()
+}
+
+/// FB-3 — Close the install loop: resolve the published registry asset for
+/// (release_tag, edition), stream it to the staging area with progress
+/// events, SHA-256-verify against the registry hash, extract, and return the
+/// staged manifest path ready for `install_wsa_package`. Registry-Driven
+/// Truth: an unknown tag/edition is an error, never a guessed URL.
+#[tauri::command]
+pub async fn download_and_stage_release(
+    release_tag: String,
+    edition: String,
+    app_handle: tauri::AppHandle,
+) -> Result<StagedAsset, String> {
+    let doc = crate::registry_truth::load_registry().ok_or_else(|| {
+        "Registry unavailable: releases.json not found or unreadable".to_string()
+    })?;
+    let release = doc
+        .releases
+        .iter()
+        .find(|r| r.status == "published" && r.tag == release_tag && r.edition == edition)
+        .ok_or_else(|| {
+            format!(
+                "No published registry asset for tag '{}' with edition '{}'",
+                release_tag, edition
+            )
+        })?;
+    let asset = release
+        .assets
+        .iter()
+        .find(|a| a.role == "package")
+        .ok_or_else(|| {
+            format!(
+                "Registry release '{}' carries no package asset to stage",
+                release.release_id
+            )
+        })?;
+
+    let window = app_handle.clone();
+    stage_asset(&asset.source_url, &asset.sha256, move |progress| {
+        use tauri::Emitter;
+        let _ = window.emit(STAGE_PROGRESS_EVENT, progress);
+    })
+    .await
 }
 
 #[tauri::command]
@@ -178,4 +201,12 @@ pub async fn launch_wsa(target: Option<String>) -> Result<(), String> {
 #[tauri::command]
 pub fn shutdown_wsa() -> Result<(), String> {
     crate::backup::request_wsa_shutdown()
+}
+
+/// Returns the host CPU architecture as reported by the Rust runtime.
+/// Used by the frontend to display the correct architecture badge
+/// without guessing from the User-Agent string (Rule 17 — no UA heuristics).
+#[tauri::command]
+pub fn get_host_arch() -> &'static str {
+    std::env::consts::ARCH
 }

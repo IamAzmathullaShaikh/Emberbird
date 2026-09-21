@@ -426,3 +426,48 @@ jobs:
           name: winget-manifests
           path: winget_bundle/**
           retention-days: 14
+
+  submit-winget-pr:
+    # DX-2: Automated Winget PR submission to microsoft/winget-pkgs.
+    # Runs only on real tag pushes, after the GitHub Release is published.
+    # Requires WINGET_TOKEN secret (a PAT with public_repo on a contributor account).
+    # Falls back gracefully if the secret is absent — manifests are still uploaded
+    # as artifacts for manual submission.
+    name: Submit Winget PR (DX-2)
+    needs: [publish-manager-release, prepare-winget]
+    runs-on: windows-latest
+    timeout-minutes: 10
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4 tag head 2026-09-14
+        with:
+          fetch-depth: 1
+
+      - name: Check for Winget Token
+        id: winget-guard
+        shell: pwsh
+        env:
+          WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:WINGET_TOKEN)) {
+            Write-Host "[i] WINGET_TOKEN secret not configured."
+            Write-Host "[i] Winget PR submission skipped. Add WINGET_TOKEN (a PAT with public_repo scope on"
+            Write-Host "[i] a GitHub account that can open PRs to microsoft/winget-pkgs) to enable auto-submission."
+            "enabled=false" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host "[+] WINGET_TOKEN present — automated PR submission enabled."
+            "enabled=true" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Submit Winget PR via winget-releaser
+        # DX-2: Uses vedantmgoyal9/winget-releaser which auto-detects package ID + version
+        # from the GitHub Release and opens a PR to microsoft/winget-pkgs.
+        if: steps.winget-guard.outputs.enabled == 'true'
+        uses: vedantmgoyal9/winget-releaser@main
+        with:
+          identifier: IamAzmathullaShaikh.EmberbirdManager
+          token: ${{ secrets.WINGET_TOKEN }}

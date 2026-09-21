@@ -26,8 +26,8 @@ export interface SubsystemStatePresentation {
 const PRESENTATIONS: Record<SubsystemState, SubsystemStatePresentation> = {
   NOT_INSTALLED: {
     label: 'Not Installed',
-    badgeClass: 'bg-slate-800 text-slate-300 border border-slate-700',
-    dotClass: 'bg-slate-500',
+    badgeClass: 'bg-surface-raised text-text-secondary border border-border-DEFAULT',
+    dotClass: 'bg-text-muted',
     usable: false,
     mayShowVersion: false,
     guidance: 'Deploy a Emberbird edition to begin.',
@@ -42,8 +42,8 @@ const PRESENTATIONS: Record<SubsystemState, SubsystemStatePresentation> = {
   },
   INSTALLED_OUTDATED: {
     label: 'Installed (Outdated)',
-    badgeClass: 'bg-indigo-500/10 text-indigo-300 border border-indigo-500/30',
-    dotClass: 'bg-indigo-400',
+    badgeClass: 'bg-status-warn/10 text-status-warn border border-status-warn/30',
+    dotClass: 'bg-status-warn',
     usable: true,
     mayShowVersion: true,
     guidance: 'A newer supported baseline is available. Check the Updates tab.',
@@ -58,8 +58,8 @@ const PRESENTATIONS: Record<SubsystemState, SubsystemStatePresentation> = {
   },
   UNKNOWN: {
     label: 'Unknown',
-    badgeClass: 'bg-slate-800 text-slate-400 border border-slate-700',
-    dotClass: 'bg-slate-600',
+    badgeClass: 'bg-surface-raised text-text-muted border border-border-DEFAULT',
+    dotClass: 'bg-text-muted',
     usable: false,
     mayShowVersion: false,
     guidance: 'Detection failed. Refresh to retry.',

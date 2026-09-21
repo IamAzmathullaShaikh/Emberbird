@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::env;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, specta::Type)]
 pub struct ManagerEnvConfig {
     pub github_repo: String,
     pub repo_url: String,

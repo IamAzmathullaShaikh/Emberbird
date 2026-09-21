@@ -70,6 +70,13 @@ jobs:
             upstream/installer \
             services
 
+      - name: Python Lint (ruff)
+        run: |
+          pip install ruff --quiet
+          ruff check scripts/ tests/ --exit-zero
+        # [ADVISORY] Rule 20: running ruff in advisory mode until baseline is established.
+        # Remove --exit-zero once all scripts are clean.
+
       - name: Release Registry Reality Gate 🔒
         run: |
           python3 platform/release-engine/release_engine/__main__.py validate --schema

@@ -5,14 +5,20 @@ use std::path::{Path, PathBuf};
 
 pub const REQUIRED_DISK_SPACE_BYTES: u64 = 25 * 1024 * 1024 * 1024; // 25 GB
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, specta::Type)]
 pub struct UpgradePreflight {
-    pub windows_version_ok: bool,
-    pub windows_build: u32,
+    /// `None` = the host build could not be read. Unverifiable is never a pass
+    /// (Zero-Mock law): the UI renders UNVERIFIED, not a green check.
+    pub windows_version_ok: Option<bool>,
+    pub windows_build: Option<u32>,
+    /// Minimum supported build (registry/preflight truth — FB-1). The UI must
+    /// render this instead of a hardcoded requirement string.
+    pub required_windows_build: u32,
     pub dev_mode_ok: bool,
     pub virtualization_ok: bool,
-    pub disk_space_ok: bool,
-    pub free_disk_bytes: u64,
+    /// `None` = free space could not be measured (UNVERIFIED, never a pass).
+    pub disk_space_ok: Option<bool>,
+    pub free_disk_bytes: Option<u64>,
     pub required_disk_bytes: u64,
     pub wsa_running: bool,
     pub has_existing_vhdx: bool,
@@ -21,14 +27,14 @@ pub struct UpgradePreflight {
     pub can_upgrade: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, specta::Type)]
 pub struct UpgradeOptions {
     pub package_path: String,
     pub create_backup: bool,
     pub backup_note: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, specta::Type)]
 pub struct UpgradeResult {
     pub success: bool,
     pub backup_metadata: Option<BackupMetadata>,
@@ -36,8 +42,17 @@ pub struct UpgradeResult {
     pub message: String,
 }
 
+/// Tri-state requirement evaluation: `None` means the underlying probe could
+/// not observe the host, so no verdict may be claimed; `Some(false)` fails,
+/// `Some(true)` passes. Every preflight requirement routes through here so
+/// "could not measure" can never be rendered as "met".
+fn verify_requirement<T: PartialOrd>(value: Option<T>, required: T) -> Option<bool> {
+    value.map(|v| v >= required)
+}
+
+/// Free bytes on the volume containing `path`. `None` = measurement failed.
 #[cfg(windows)]
-pub fn get_available_disk_space_bytes(path: &Path) -> u64 {
+pub fn get_available_disk_space_bytes(path: &Path) -> Option<u64> {
     use std::os::windows::ffi::OsStrExt;
     use windows::core::PCWSTR;
     use windows::Win32::Storage::FileSystem::GetDiskFreeSpaceExW;
@@ -59,49 +74,55 @@ pub fn get_available_disk_space_bytes(path: &Path) -> u64 {
         )
         .is_ok()
         {
-            free_bytes_available_to_caller
+            Some(free_bytes_available_to_caller)
         } else {
-            50 * 1024 * 1024 * 1024
+            None
         }
     }
 }
 
 #[cfg(not(windows))]
-pub fn get_available_disk_space_bytes(_path: &Path) -> u64 {
-    50 * 1024 * 1024 * 1024
+pub fn get_available_disk_space_bytes(_path: &Path) -> Option<u64> {
+    None
 }
 
+/// Windows build read from the registry. `None` = unreadable, which stays
+/// UNVERIFIED instead of falling back to an assumed build number.
 #[cfg(windows)]
-pub fn check_windows_build_number() -> (bool, u32) {
+pub fn check_windows_build_number() -> Option<u32> {
     use winreg::enums::*;
     use winreg::RegKey;
 
     let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
-    if let Ok(key) = hklm.open_subkey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion") {
-        if let Ok(build_str) = key.get_value::<String, _>("CurrentBuild") {
-            if let Ok(build_num) = build_str.parse::<u32>() {
-                return (build_num >= 19045, build_num);
-            }
-        }
-    }
-    (true, 22631)
+    let key = hklm
+        .open_subkey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion")
+        .ok()?;
+    let build_str = key.get_value::<String, _>("CurrentBuild").ok()?;
+    build_str.parse::<u32>().ok()
 }
 
 #[cfg(not(windows))]
-pub fn check_windows_build_number() -> (bool, u32) {
-    (true, 22631)
+pub fn check_windows_build_number() -> Option<u32> {
+    None
 }
 
 pub fn run_upgrade_preflight(package_path: Option<&str>) -> UpgradePreflight {
     let mut warnings = Vec::new();
     let mut errors = Vec::new();
 
-    let (windows_version_ok, windows_build) = check_windows_build_number();
-    if !windows_version_ok {
-        errors.push(format!(
-            "Windows build {} is unsupported. Windows 10 Build 19045+ or Windows 11 Build 22000+ is required.",
-            windows_build
-        ));
+    let required_windows_build = crate::state::min_windows_build();
+    let windows_build = check_windows_build_number();
+    let windows_version_ok = verify_requirement(windows_build, required_windows_build);
+    match (windows_version_ok, windows_build) {
+        (Some(false), Some(build)) => errors.push(format!(
+            "Windows build {} is unsupported. Windows 10 Build {}+ or Windows 11 Build 22000+ is required.",
+            build, required_windows_build
+        )),
+        (None, _) => warnings.push(
+            "Windows build number could not be read from the registry; the build requirement is UNVERIFIED."
+                .to_string(),
+        ),
+        _ => {}
     }
 
     let status = crate::detector::detect_subsystem();
@@ -123,12 +144,19 @@ pub fn run_upgrade_preflight(package_path: Option<&str>) -> UpgradePreflight {
 
     let system_drive = Path::new("C:\\");
     let free_disk_bytes = get_available_disk_space_bytes(system_drive);
-    let disk_space_ok = free_disk_bytes >= REQUIRED_DISK_SPACE_BYTES;
-    if !disk_space_ok {
-        warnings.push(format!(
-            "Available disk space ({} GB) is below the recommended 25 GB.",
-            free_disk_bytes / (1024 * 1024 * 1024)
-        ));
+    let disk_space_ok = verify_requirement(free_disk_bytes, REQUIRED_DISK_SPACE_BYTES);
+    let required_disk_gb = REQUIRED_DISK_SPACE_BYTES / (1024 * 1024 * 1024);
+    match (disk_space_ok, free_disk_bytes) {
+        (Some(false), Some(free)) => warnings.push(format!(
+            "Available disk space ({} GB) is below the recommended {} GB.",
+            free / (1024 * 1024 * 1024),
+            required_disk_gb
+        )),
+        (None, _) => warnings.push(format!(
+            "Free disk space could not be measured; the {} GB requirement is UNVERIFIED.",
+            required_disk_gb
+        )),
+        _ => {}
     }
 
     if status.is_running {
@@ -156,6 +184,7 @@ pub fn run_upgrade_preflight(package_path: Option<&str>) -> UpgradePreflight {
     UpgradePreflight {
         windows_version_ok,
         windows_build,
+        required_windows_build,
         dev_mode_ok,
         virtualization_ok,
         disk_space_ok,
@@ -218,7 +247,43 @@ mod tests {
     fn test_upgrade_preflight_evaluation() {
         let preflight = run_upgrade_preflight(None);
         assert_eq!(preflight.required_disk_bytes, 25 * 1024 * 1024 * 1024);
-        assert!(preflight.windows_build > 0);
+        // The verdict exists only when the probe read the host.
+        assert_eq!(
+            preflight.windows_version_ok.is_some(),
+            preflight.windows_build.is_some(),
+            "an unreadable build probe must stay UNVERIFIED, never a pass"
+        );
+        assert_eq!(
+            preflight.disk_space_ok.is_some(),
+            preflight.free_disk_bytes.is_some(),
+            "an unmeasurable disk probe must stay UNVERIFIED, never a pass"
+        );
+    }
+
+    #[test]
+    fn test_unverified_requirement_is_never_a_pass() {
+        assert_eq!(verify_requirement(None::<u32>, 19045), None);
+        assert_eq!(verify_requirement(Some(19044u32), 19045), Some(false));
+        assert_eq!(verify_requirement(Some(19045u32), 19045), Some(true));
+    }
+
+    #[test]
+    fn test_unverified_probes_warn_instead_of_passing_silently() {
+        let preflight = run_upgrade_preflight(None);
+        if preflight.windows_version_ok.is_none() {
+            assert!(preflight.windows_build.is_none());
+            assert!(
+                preflight.warnings.iter().any(|w| w.contains("UNVERIFIED")),
+                "an unreadable build probe must surface a warning"
+            );
+        }
+        if preflight.disk_space_ok.is_none() {
+            assert!(preflight.free_disk_bytes.is_none());
+            assert!(
+                preflight.warnings.iter().any(|w| w.contains("UNVERIFIED")),
+                "an unmeasurable disk probe must surface a warning"
+            );
+        }
     }
 
     #[test]

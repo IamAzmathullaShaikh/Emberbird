@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, specta::Type)]
 pub struct ReleaseAsset {
     pub name: String,
     pub size: u64,
@@ -10,7 +10,7 @@ pub struct ReleaseAsset {
     pub gapps_flavor: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, specta::Type)]
 pub struct ReleaseInfo {
     pub tag_name: String,
     pub name: String,
@@ -19,7 +19,7 @@ pub struct ReleaseInfo {
     pub assets: Vec<ReleaseAsset>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, specta::Type)]
 pub struct UpdateStatus {
     pub update_available: bool,
     pub current_version: String,

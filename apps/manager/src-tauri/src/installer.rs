@@ -19,7 +19,7 @@ pub struct InstallProgress {
     pub message: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, specta::Type)]
 pub struct InstallResult {
     pub success: bool,
     pub package_path: String,
@@ -36,6 +36,18 @@ pub fn verify_developer_mode() -> Result<(), String> {
     Ok(())
 }
 
+/// Upper bound on directories visited while hunting for the manifest. WSA
+/// archives nest the package a few levels below the archive root; anything
+/// deeper than this is an unexpected tree, not a package.
+const MAX_MANIFEST_SEARCH_DIRS: usize = 20_000;
+
+/// Locate `AppxManifest.xml` for a package root.
+///
+/// The single manifest locator for the whole app: preflight validation, the
+/// upgrade coordinator, and the download→stage pipeline all resolve manifests
+/// through here. WSA archives nest the package below wrapper folders, so the
+/// search is depth-agnostic — but bounded, so a wrong path cannot walk an
+/// unexpected tree forever.
 pub fn find_appx_manifest(package_dir: &Path) -> Result<PathBuf, String> {
     if !package_dir.exists() {
         return Err(format!(
@@ -44,26 +56,35 @@ pub fn find_appx_manifest(package_dir: &Path) -> Result<PathBuf, String> {
         ));
     }
 
-    let direct_manifest = package_dir.join("AppxManifest.xml");
-    if direct_manifest.exists() {
-        return Ok(direct_manifest);
-    }
+    let mut stack = vec![package_dir.to_path_buf()];
+    let mut visited = 0usize;
+    while let Some(dir) = stack.pop() {
+        visited += 1;
+        if visited > MAX_MANIFEST_SEARCH_DIRS {
+            return Err(format!(
+                "AppxManifest.xml search exceeded {} directories under {}; aborting",
+                MAX_MANIFEST_SEARCH_DIRS,
+                package_dir.display()
+            ));
+        }
 
-    // Search 1 level down
-    if let Ok(entries) = std::fs::read_dir(package_dir) {
-        for entry in entries.flatten() {
-            let p = entry.path();
-            if p.is_dir() {
-                let sub_manifest = p.join("AppxManifest.xml");
-                if sub_manifest.exists() {
-                    return Ok(sub_manifest);
+        let candidate = dir.join("AppxManifest.xml");
+        if candidate.exists() {
+            return Ok(candidate);
+        }
+
+        if let Ok(entries) = std::fs::read_dir(&dir) {
+            for entry in entries.flatten() {
+                let p = entry.path();
+                if p.is_dir() {
+                    stack.push(p);
                 }
             }
         }
     }
 
     Err(format!(
-        "AppxManifest.xml not found in package directory: {}",
+        "AppxManifest.xml not found anywhere under package directory: {}",
         package_dir.display()
     ))
 }
@@ -162,6 +183,21 @@ mod tests {
         let sub = temp_dir.join("WSA_Extracted");
         fs::create_dir_all(&sub).unwrap();
         let manifest = sub.join("AppxManifest.xml");
+        fs::write(&manifest, b"<Package></Package>").unwrap();
+
+        let found = find_appx_manifest(&temp_dir).unwrap();
+        assert_eq!(found, manifest);
+
+        let _ = fs::remove_dir_all(&temp_dir);
+    }
+
+    #[test]
+    fn test_find_appx_manifest_deeply_nested() {
+        // Real WSA archives nest the package several folders below the root.
+        let temp_dir = std::env::temp_dir().join("wsabuilds_test_manifest_deep");
+        let deep = temp_dir.join("WSA_Extracted").join("WSA_2407").join("x64");
+        fs::create_dir_all(&deep).unwrap();
+        let manifest = deep.join("AppxManifest.xml");
         fs::write(&manifest, b"<Package></Package>").unwrap();
 
         let found = find_appx_manifest(&temp_dir).unwrap();

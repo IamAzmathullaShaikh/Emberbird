@@ -1,6 +1,6 @@
 use crate::state::{derive_subsystem_state, DetectionInputs, SubsystemState};
 use serde::{Deserialize, Serialize};
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, specta::Type)]
 pub struct WsaStatus {
     pub installed: bool,
     pub package_version: Option<String>,
