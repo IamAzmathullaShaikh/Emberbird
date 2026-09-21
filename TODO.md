@@ -833,6 +833,46 @@ than a real app regression — it has only been observed once, on the unmodified
   pinned to v4.0.0 with `pages deploy website/dist --project-name=wsabuilds-website`
   (project name unchanged, and it matches the documented `SITE_URL`).
 
+### Cycle WF-3 — Clear the two structural CI blockers on `main` (2026-09-21)
+- [x] Fixed `build.yml`'s single failure. `test_docs_mirror` required the
+      generated, gitignored reports (`LIVE_INSTALLATION_REPORT.md`,
+      `COMPATIBILITY_REPORT.md`, `RELEASE_HEALTH_REPORT.md`) to exist, while
+      `.gitignore` guarantees they never can in a clean checkout — the guard
+      was unsatisfiable by construction. That is exactly why it passed on a
+      maintainer's laptop (files generated locally) and failed in every CI run.
+      The allowlist is now split into committed docs that must exist and
+      generated artifacts that must *not* be required to, with a new
+      `test_generated_docs_are_gitignored` pinning the real reason they are
+      exempt instead of assuming it.
+- [x] Cleared `docs-validation.yml`'s three dangling links. Two pointed at the
+      project charter, which the FB-0a purge removed as "dead governance" even
+      though `CONTRIBUTING.md` still names it as required reading for the
+      doctrine it defines — it is restored from `244fad2` (118 lines, every
+      referenced file verified to exist). The third pointed at a dated
+      branch-cleanup evidence report whose content is spent; that reference now
+      targets the living branching strategy in `CONTRIBUTING.md`.
+- [x] Repaired a self-inflicted defect: the WF-2 record edit had removed the
+      `## Part VI — Master Roadmap` heading. The todo contract tests do not pin
+      level-2 part headings, so only re-reading the file caught it.
+STATUS: COMPLETE · BLOCKERS: none for these two workflows · DEPENDENCIES: none
+· FILES: `tests/test_docs_mirror.py`, `docs/EMBERBIRD_CHARTER.md` (restored),
+`docs/LEARNING_PATH.md`, `docs/identity-inventory.json`, `TODO.md` ·
+TESTS ADDED: `test_generated_docs_are_gitignored` (verified to discriminate:
+`git check-ignore` exits 0 for the generated path and 1 for a committed one) ·
+VALIDATION: `check_doc_links.py` 0 broken links across 79 files; docs-mirror
+guard 6/6; full Python battery 480 tests OK (19 skips); identity inventory fresh
+at 829 occurrences / 389 protected (the restored charter carries one protected
+upstream-attribution line) · RISKS: the charter's Phase-0 success
+criteria are historical and read as such — it is a charter, not a status page,
+so it must not be edited to track current progress · RESULT: `build.yml` and
+`docs-validation.yml` have no remaining known failures; `manager-e2e.yml` is
+still genuinely red (see QG-4), so the FB exit checklist's CI-ratification line
+stays open.
+
+---
+
+## Part VI — Master Roadmap (Program Pipeline)
+
 ### 🚩 MILESTONE 1: TRUTH (Release 0.3.x) — COMPLETE
 
 **Objective:** Remove all \"marketing\" state and establish a baseline of honesty.

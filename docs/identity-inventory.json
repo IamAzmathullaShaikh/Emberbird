@@ -5,27 +5,27 @@
     "m4": "Release History Is Immutable",
     "s1": "Historical Identity Preservation — Emberbird may replace branding; it may not erase history"
   },
-  "generated_at": "2026-09-21T05:32:44Z",
+  "generated_at": "2026-09-21T06:45:05Z",
   "totals": {
-    "files": 144,
-    "occurrences": 827,
+    "files": 145,
+    "occurrences": 829,
     "by_token": {
       "MagiskOnWSA": 51,
       "MagiskOnWSALocal": 65,
-      "WSABuilds": 711
+      "WSABuilds": 713
     },
     "by_class": {
-      "doc-prose": 64,
+      "doc-prose": 65,
       "historical-doc": 345,
       "identifier": 188,
       "package-name": 51,
       "path-reference": 62,
-      "upstream-attribution": 43,
+      "upstream-attribution": 44,
       "url": 60,
       "user-facing": 9,
       "workflow-name": 5
     },
-    "protected_occurrences": 388
+    "protected_occurrences": 389
   },
   "files": [
     {
@@ -961,6 +961,22 @@
           "token": "WSABuilds",
           "class": "upstream-attribution",
           "context": "| Upstream WSABuilds issue tracker | Product pillars in `docs/EMBERBIRD_CHARTER.md` |"
+        }
+      ]
+    },
+    {
+      "path": "docs/EMBERBIRD_CHARTER.md",
+      "count": 2,
+      "occurrences": [
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "- **Not a fork war.** Upstream WSABuilds is treated as a respected ancestor;"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "upstream-attribution",
+          "context": "March 2025. The upstream community build project (WSABuilds) carries that"
         }
       ]
     },

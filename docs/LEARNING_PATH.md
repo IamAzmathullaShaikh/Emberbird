@@ -76,5 +76,5 @@ Welcome to **Project Emberbird**! This guide outlines the most effective learnin
    - Version seam: `deployment/version.json`.
    - Winget manifest validation: `python scripts/validate_distribution.py`.
 4. **Branch & History Stewardship**:
-   - Review [BRANCH_HYGIENE.md](BRANCH_HYGIENE.md) and [HISTORICAL_PRESERVATION.md](HISTORICAL_PRESERVATION.md).
+   - Review [CONTRIBUTING.md](../CONTRIBUTING.md) (branching strategy) and [HISTORICAL_PRESERVATION.md](HISTORICAL_PRESERVATION.md).
    - Never delete tags, published releases, attribution, or historical manifests (M4/S1).
