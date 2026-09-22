@@ -15,7 +15,7 @@
  */
 import { chromium, test as base, type Browser, type Page } from '@playwright/test';
 import { spawn, type ChildProcess } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 
 import {
@@ -28,6 +28,7 @@ import {
   resolveAppBinary,
   unattachedPageMessage,
   webview2DebugEnv,
+  webview2ProfileDir,
   workerCdpPort,
   type ChildObservation,
 } from './attach';
@@ -111,6 +112,10 @@ async function launchApplication(appPath: string, port: number): Promise<AppSess
       `No compiled application at ${appPath}. Run \`npx tauri build\`, or set EMBERBIRD_E2E_APP to the executable path.`
     );
   }
+
+  // The per-worker profile directory must exist before WebView2 starts;
+  // a missing parent directory is another silent-startup failure mode.
+  mkdirSync(webview2ProfileDir(port), { recursive: true });
 
   const child = spawn(appPath, [], {
     stdio: 'pipe',

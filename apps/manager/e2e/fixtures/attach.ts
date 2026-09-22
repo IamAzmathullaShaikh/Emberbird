@@ -6,6 +6,9 @@
  * build, which is not where these rules are worth checking.
  */
 
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 /**
  * WebView2 is Chromium-based and therefore honours Chromium's debugging
  * switch, which is how Playwright reaches the application at all.
@@ -47,8 +50,29 @@ export function resolveAppBinary(
  */
 const NON_APP_PAGE_PREFIXES = ['about:', 'data:', 'chrome-error:', 'edge-error:', 'file:'];
 
-export function webview2DebugEnv(port: number = DEFAULT_CDP_PORT): Record<string, string> {
-  return { WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${port}` };
+export function webview2DebugEnv(
+  port: number = DEFAULT_CDP_PORT,
+  profileBase: string = join(tmpdir(), 'emberbird-e2e-webview2'),
+): Record<string, string> {
+  return {
+    WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${port} --user-data-dir=${webview2ProfileDir(port, profileBase)}`,
+  };
+}
+
+/**
+ * Per-worker WebView2 profile directory. Reused CI runners can carry a stale
+ * lock in the default profile folder under %LOCALAPPDATA%, and a locked
+ * profile silently blocks WebView2 startup: the application process stays
+ * alive (exit code none, signal none — observed on the 2026-09-22 CI run)
+ * while no CDP endpoint ever appears. A fresh scratch directory removes that
+ * failure class; the path must stay free of spaces for Chromium argument
+ * parsing, which the OS temp dir guarantees on CI and typical dev hosts.
+ */
+export function webview2ProfileDir(
+  port: number,
+  base: string = join(tmpdir(), 'emberbird-e2e-webview2'),
+): string {
+  return join(base, `port-${port}`);
 }
 
 export function cdpEndpoint(port: number = DEFAULT_CDP_PORT): string {

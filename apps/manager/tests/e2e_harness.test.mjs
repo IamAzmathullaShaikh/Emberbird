@@ -59,8 +59,26 @@ test('each worker gets its own debugging port', () => {
 
 test('the debugging switch the application is launched with matches the endpoint', () => {
   const env = webview2DebugEnv(9333);
-  assert.equal(env.WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS, '--remote-debugging-port=9333');
+  assert.match(
+    env.WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS,
+    /--remote-debugging-port=9333/,
+  );
+  assert.match(
+    env.WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS,
+    /--user-data-dir=/,
+    'a fresh profile dir must be passed or a stale CI profile lock silently blocks WebView2 startup',
+  );
   assert.equal(cdpEndpoint(9333), 'http://127.0.0.1:9333');
+});
+
+test('distinct workers get distinct WebView2 profile directories', async () => {
+  const { webview2ProfileDir } = await import('../e2e/fixtures/attach.ts');
+  const base = '/scratch/profiles';
+  assert.notEqual(
+    webview2ProfileDir(9222, base),
+    webview2ProfileDir(9223, base),
+  );
+  assert.match(webview2ProfileDir(9222, base), /port-9222$/);
 });
 
 test('an empty page inventory is described honestly rather than hiding the fact', () => {
