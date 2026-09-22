@@ -763,7 +763,15 @@ pub fn candidate_urls(source_url: &str, mirrors: &[String]) -> Vec<String> {
 fn classify_failure(err: &str) -> MirrorOutcome {
     if err.contains("SHA-256 verification failed") {
         MirrorOutcome::HashMismatch
-    } else if err.contains("No 7z/7za") || err.contains("Extraction with") {
+    } else if err.contains("No 7z/7za")
+        || err.contains("Extraction with")
+        || err.contains("Refusing to extract")
+        || err.contains("staging dir")
+    {
+        // Every one of these fires *after* the bytes were hash-verified, and
+        // mirrors serve hash-identical content — failing over cannot change
+        // the outcome, so archive-content and staging-dir refusals are local
+        // stops exactly like a missing 7-Zip binary.
         MirrorOutcome::ExtractionFailed
     } else {
         MirrorOutcome::NetworkError
@@ -1166,6 +1174,34 @@ mod tests {
         assert_ne!(
             classify_failure("SHA-256 verification failed for x.7z"),
             MirrorOutcome::NetworkError
+        );
+    }
+
+    #[test]
+    fn archive_refusals_are_local_failures_that_stop_failover() {
+        // The exact messages extract_archive emits on a host where 7-Zip IS
+        // installed and the delivered bytes are not a readable archive.
+        assert_eq!(
+            classify_failure(
+                "Refusing to extract C:\\staged\\x.7z: its entries could not be listed with 7z (ERROR: ...)."
+            ),
+            MirrorOutcome::ExtractionFailed
+        );
+        assert_eq!(
+            classify_failure(
+                "Refusing to extract C:\\staged\\x.7z: the archive reported no entries."
+            ),
+            MirrorOutcome::ExtractionFailed
+        );
+        assert_eq!(
+            classify_failure(
+                "Refusing to extract C:\\staged\\x.7z: declares 999999999 bytes of extracted content, over the 8000000000 byte budget (decompression bomb guard)."
+            ),
+            MirrorOutcome::ExtractionFailed
+        );
+        assert_eq!(
+            classify_failure("Failed to create staging dir C:\\staged\\x: Access denied"),
+            MirrorOutcome::ExtractionFailed
         );
     }
 
