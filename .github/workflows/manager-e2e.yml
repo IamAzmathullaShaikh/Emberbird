@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   e2e-tests:
-    name: E2E Tests (Windows, Tauri WebDriver)
+    name: E2E Tests (Windows, Tauri WebView2 over CDP)
     runs-on: windows-latest
     timeout-minutes: 60
 
@@ -43,19 +43,46 @@ jobs:
 
       - name: Install Frontend Dependencies
         working-directory: apps/manager
-        run: npm install
+        run: npm ci
 
-      - name: Build Tauri App (release)
+      # WebView2 drives the window under test. windows-latest images usually
+      # ship the Evergreen Runtime, but its absence would surface as a dead
+      # attach far into the run — detect it up front and install it if missing.
+      - name: Ensure WebView2 Runtime
+        shell: pwsh
+        run: |
+          $keys = @(
+            'HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}',
+            'HKLM:\SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'
+          )
+          $present = $false
+          foreach ($k in $keys) {
+            if (Test-Path $k) {
+              $pv = (Get-ItemProperty -Path $k).pv
+              Write-Host "WebView2 Runtime present: $k (pv=$pv)"
+              $present = $true
+              break
+            }
+          }
+          if (-not $present) {
+            Write-Host 'WebView2 Runtime not found - installing the Evergreen Bootstrapper...'
+            Invoke-WebRequest -Uri 'https://go.microsoft.com/fwlink/?linkid=2124701' -OutFile MicrosoftEdgeWebview2Setup.exe
+            $p = Start-Process -FilePath './MicrosoftEdgeWebview2Setup.exe' -ArgumentList '/silent', '/install' -Wait -PassThru
+            if ($p.ExitCode -ne 0) { throw "WebView2 Runtime install failed with exit code $($p.ExitCode)" }
+            Write-Host 'WebView2 Runtime installed.'
+          }
+
+      # --no-bundle: the E2E gate tests the application, not the NSIS
+      # installer (manager-build.yml packages it). Skips minutes of bundling
+      # and removes an installer failure mode from this gate. The CLI enables
+      # the custom-protocol feature, so the binary embeds the frontend assets.
+      - name: Build Tauri App (release, no installer bundle)
         working-directory: apps/manager
-        run: npx tauri build
+        run: npx tauri build --no-bundle
 
-      - name: Install Tauri WebDriver
-        run: cargo install tauri-driver
-
-      - name: Install Playwright Chromium
-        working-directory: apps/manager
-        run: npx playwright install chromium
-
+      # The suite drives the compiled application's WebView2 window over CDP.
+      # It does not need tauri-driver (WebDriver, which Playwright cannot speak)
+      # nor a bundled Chromium, so neither is installed.
       - name: Run E2E Tests
         working-directory: apps/manager
         run: npm run test:e2e

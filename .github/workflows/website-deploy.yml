@@ -52,12 +52,15 @@ jobs:
         with:
           node-version: 24
           cache: 'npm'
-          cache-dependency-path: 'website/package.json'
+          cache-dependency-path: 'website/package-lock.json'
 
       - name: Install Dependencies
         working-directory: website
         run: |
-          npm install
+          # npm ci installs strictly from the committed lockfile, so the CI tree
+          # is reproducible. `npm install` silently reconciles the lockfile,
+          # which meant the deployed tree could differ from the committed one.
+          npm ci
 
       - name: Dependency Security Audit
         working-directory: website

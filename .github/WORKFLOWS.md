@@ -13,7 +13,7 @@ The `.github/` directory manages GitHub Actions workflows, community issue templ
 | **`docs-validation.yml`** | Markdown link integrity auditor. | Push / PR on `master`, `experimental`, `feature/*` | `ubuntu-22.04` |
 | **`compatibility-validation.yml`** | Automated JSON schema validator for app compatibility submissions. | PR on `compatibility/data/**` | `ubuntu-latest` |
 | **`manager-build.yml`** | Native desktop client typecheck, clippy, ESLint, Vitest, and Rust unit test suite. Includes `cargo fmt --check` and `tauri build` packaging gate. | Push / PR on `apps/manager/**` | `windows-latest` |
-| **`manager-e2e.yml`** | End-to-end Playwright + Tauri WebDriver test suite for critical user journeys (QG-4). Builds the release binary, installs `tauri-driver`, and runs E2E specs. | Push on `master`, `main`, `apps/manager/**` / workflow_dispatch | `windows-latest` |
+| **`manager-e2e.yml`** | End-to-end Playwright suite for critical user journeys (QG-4). Builds the release binary, then attaches to its WebView2 window over CDP — Playwright cannot speak WebDriver, so `tauri-driver` is not installed. | Push on `master`, `main`, `apps/manager/**` / workflow_dispatch | `windows-latest` |
 | **`website-deploy.yml`** | Static site generation, Pagefind search indexing, and Cloudflare Pages deployment. | Push on `master`, `website/**`, `docs/**`, `services/analytics/**` | `ubuntu-22.04` |
 | **`winget-release.yml`** | Desktop manager packaging, portable ZIP archive bundling, Winget manifest staging, and automated PR to `microsoft/winget-pkgs` (DX-2). | Push on `v*` tags | `windows-latest` |
 | **`release.yml`** | 3-stage WSA package compilation, validation, and release publishing. | Push on `Windows_*`, `wsa-v*` tags | `ubuntu-latest` |
