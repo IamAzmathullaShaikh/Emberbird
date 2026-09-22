@@ -224,7 +224,14 @@ def cmd_lifecycle(args: argparse.Namespace) -> int:
     try:
         report = lifecycle.describe(path)
     except lifecycle.LifecycleSnapshotError as exc:
-        payload = {"error": str(exc), "path": str(path or lifecycle.default_snapshot_path())}
+        # Resolve the default path defensively: on hosts without LOCALAPPDATA
+        # even *asking* for the default raises, and a crash inside an error
+        # handler would leave the user with a traceback and no explanation.
+        try:
+            shown_path = str(path or lifecycle.default_snapshot_path())
+        except lifecycle.LifecycleSnapshotError:
+            shown_path = "(platform default; LOCALAPPDATA is not set)"
+        payload = {"error": str(exc), "path": shown_path}
         _emit(payload, args.json, [f"lifecycle  unreadable: {exc}"])
         return 1
 
