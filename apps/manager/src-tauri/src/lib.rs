@@ -15,9 +15,9 @@ pub mod state;
 
 use commands::{
     check_for_updates, create_vhdx_backup, detect_wsa_status, download_and_stage_release,
-    execute_upgrade, get_host_arch, get_lifecycle_report, install_wsa_package, launch_wsa,
-    list_backup_candidates, preflight_upgrade, prune_backups, restore_vhdx_backup, run_doctor_scan,
-    shutdown_wsa, validate_manager_env,
+    execute_upgrade, get_host_arch, get_lifecycle_report, get_operation_history,
+    install_wsa_package, launch_wsa, list_backup_candidates, preflight_upgrade, prune_backups,
+    restore_vhdx_backup, run_doctor_scan, shutdown_wsa, validate_manager_env,
 };
 
 pub fn run() {
@@ -39,7 +39,8 @@ pub fn run() {
             shutdown_wsa,
             run_doctor_scan,
             get_host_arch,
-            get_lifecycle_report
+            get_lifecycle_report,
+            get_operation_history
         ])
         .run(tauri::generate_context!())
         .expect("error while running Emberbird Manager application");

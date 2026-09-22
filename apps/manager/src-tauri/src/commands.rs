@@ -5,7 +5,10 @@ use crate::coordinator::{
 };
 use crate::detector::{detect_subsystem, WsaStatus};
 use crate::doctor::DoctorProbe;
-use crate::downloader::{stage_asset_from_candidates, StagedAsset, STAGE_PROGRESS_EVENT};
+use crate::downloader::{
+    read_operation_history, stage_asset_from_candidates, OperationRecord, StagedAsset,
+    STAGE_PROGRESS_EVENT,
+};
 use crate::env::{resolve_environment, ManagerEnvConfig};
 use crate::registry::{list_backups, prune_backups as prune_backups_impl, RestoreCandidate};
 use crate::registry_truth::latest_published_wsa_release;
@@ -28,6 +31,15 @@ pub async fn get_lifecycle_report() -> Result<LifecycleReport, String> {
     tauri::async_runtime::spawn_blocking(crate::runtime_state::lifecycle_report)
         .await
         .map_err(|e| format!("Lifecycle report task failed: {}", e))
+}
+
+/// PH-45: the durable staging-operation history, newest last. The UI renders
+/// it in the Operations log so every download/verify/extract is auditable.
+#[tauri::command]
+pub async fn get_operation_history(limit: Option<usize>) -> Result<Vec<OperationRecord>, String> {
+    tauri::async_runtime::spawn_blocking(move || Ok(read_operation_history(limit.unwrap_or(100))))
+        .await
+        .map_err(|e| format!("Operation history task failed: {}", e))?
 }
 
 #[tauri::command]
