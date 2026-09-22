@@ -87,6 +87,16 @@ jobs:
         working-directory: apps/manager
         run: npm run test:e2e
 
+      # When the app stays alive but never serves CDP, these two facts — are
+      # the WebView2 child processes there, and does anyone hold the port —
+      # separate a profile/env failure from a browser-level one.
+      - name: Diagnose WebView2 state on failure
+        if: failure()
+        shell: pwsh
+        run: |
+          Get-Process msedgewebview2 -ErrorAction SilentlyContinue | Format-Table Id,ProcessName,StartTime -AutoSize
+          netstat -ano | Select-String 9222
+
       - name: Upload E2E Report
         uses: actions/upload-artifact@v4
         if: always()
