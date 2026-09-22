@@ -17,6 +17,8 @@ REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / "scripts"))
 
 from release_integrity import audit_artifacts, format_report, gate_report  # noqa: E402
+from generate_sbom import main as generate_sbom_main  # noqa: E402
+from generate_attestation import write_attestations  # noqa: E402
 
 WSA_VERSION = "2407.40000.4.0"
 MANAGER_VERSION = "0.2.2"
@@ -91,15 +93,28 @@ def main() -> int:
 
     now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-    # GNU-format checksum files.
-    lines = []
-    for src, name, _e, _f in ASSETS:
-        lines.append(f"{sha256_file(DIST / name)}  {name}")
-    (DIST / "checksums.sha256").write_bytes(("\n".join(lines) + "\n").encode("ascii"))
-    lines = []
-    for src, name, _e, _f in ASSETS:
-        lines.append(f"{sha512_file(DIST / name)}  {name}")
-    (DIST / "checksums.sha512").write_bytes(("\n".join(lines) + "\n").encode("ascii"))
+    # PH-24: SPDX 2.3 SBOM for the release, generated from the real
+    # dependency manifests and validated before it may ship. It is produced
+    # *before* the checksum files so the checksums cover it too.
+    sbom_rc = generate_sbom_main(["--tag", TAG, "--out", str(DIST / "sbom.spdx.json")])
+    if sbom_rc != 0:
+        print("FATAL: SBOM generation failed", file=sys.stderr)
+        return sbom_rc
+
+    # GNU-format checksum files over the distributable payloads (assets +
+    # SBOM), so consumers can verify the binaries and their bill of materials
+    # with one command. release-metadata.json and RELEASE_NOTES.md are written
+    # afterwards and describe, rather than contain, the payloads.
+    published = sorted(DIST.iterdir(), key=lambda p: p.name)
+    for digest_name, hasher in (("checksums.sha256", hashlib.sha256), ("checksums.sha512", hashlib.sha512)):
+        lines = []
+        for path in published:
+            h = hasher()
+            with open(path, "rb") as fh:
+                while chunk := fh.read(1 << 22):
+                    h.update(chunk)
+            lines.append(f"{h.hexdigest().lower()}  {path.name}")
+        (DIST / digest_name).write_bytes(("\n".join(lines) + "\n").encode("ascii"))
 
     # Metadata with the real audit verdicts inside.
     artifacts_meta = []
@@ -136,6 +151,13 @@ def main() -> int:
         "artifacts": artifacts_meta,
     }
     (DIST / "release-metadata.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
+
+    # PH-24: SLSA v0.2 provenance statement per distributable artifact. The
+    # attested set is the payloads + SBOM (not the notes/metadata that merely
+    # describe them), and every statement is digest-verified against the
+    # artifact on disk before it is written.
+    attested = [DIST / name for name in sorted(published)]
+    write_attestations(DIST, attested, TAG)
 
     # Release notes.
     notes = f"""# Emberbird {WSA_VERSION} — Production Release (Standard, Banking, ARM64, Manager)
