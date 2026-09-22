@@ -5,21 +5,21 @@
     "m4": "Release History Is Immutable",
     "s1": "Historical Identity Preservation — Emberbird may replace branding; it may not erase history"
   },
-  "generated_at": "2026-09-21T06:45:05Z",
+  "generated_at": "2026-09-22T08:41:36Z",
   "totals": {
-    "files": 145,
-    "occurrences": 829,
+    "files": 146,
+    "occurrences": 834,
     "by_token": {
-      "MagiskOnWSA": 51,
+      "MagiskOnWSA": 53,
       "MagiskOnWSALocal": 65,
-      "WSABuilds": 713
+      "WSABuilds": 716
     },
     "by_class": {
-      "doc-prose": 65,
+      "doc-prose": 67,
       "historical-doc": 345,
-      "identifier": 188,
+      "identifier": 190,
       "package-name": 51,
-      "path-reference": 62,
+      "path-reference": 63,
       "upstream-attribution": 44,
       "url": 60,
       "user-facing": 9,
@@ -288,7 +288,7 @@
     },
     {
       "path": "TODO.md",
-      "count": 4,
+      "count": 6,
       "occurrences": [
         {
           "token": "MagiskOnWSA",
@@ -304,6 +304,16 @@
           "token": "MagiskOnWSA",
           "class": "upstream-attribution",
           "context": "- [x] Document `MagiskOnWSA/` and `MagiskOnWSAOld/` as upstream tracking"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "`index.html` (`\"WSABuilds Manager\"` vs `\"Emberbird Manager\"`); the harness guard"
+        },
+        {
+          "token": "WSABuilds",
+          "class": "doc-prose",
+          "context": "declared the superseded product name \"WSABuilds Manager\" while"
         },
         {
           "token": "WSABuilds",
@@ -365,17 +375,6 @@
       ]
     },
     {
-      "path": "apps/manager/index.html",
-      "count": 1,
-      "occurrences": [
-        {
-          "token": "WSABuilds",
-          "class": "identifier",
-          "context": "<title>WSABuilds Manager</title>"
-        }
-      ]
-    },
-    {
       "path": "apps/manager/src/components/LicensesView.tsx",
       "count": 2,
       "occurrences": [
@@ -404,6 +403,22 @@
           "token": "WSABuilds",
           "class": "identifier",
           "context": "assert.match(content, /WSABuilds/, 'Preserves MustardChef / WSABuilds attribution');"
+        }
+      ]
+    },
+    {
+      "path": "apps/manager/tests/product_identity.test.mjs",
+      "count": 2,
+      "occurrences": [
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "// title — while index.html still shipped the superseded \"WSABuilds Manager\"."
+        },
+        {
+          "token": "WSABuilds",
+          "class": "identifier",
+          "context": "const SUPERSEDED_NAMES = ['WSABuilds Manager', 'WSA Manager'];"
         }
       ]
     },
@@ -4507,6 +4522,22 @@
           "token": "WSABuilds",
           "class": "path-reference",
           "context": "installer = version_dir / \"WSABuilds.WSABuildsManager.installer.yaml\""
+        }
+      ]
+    },
+    {
+      "path": "tests/test_todo_contract.py",
+      "count": 2,
+      "occurrences": [
+        {
+          "token": "MagiskOnWSA",
+          "class": "identifier",
+          "context": "\"MagiskOnWSA\", \"MagiskOnWSAOld\", \"WSA_2407.40000.4.0_x64_vanilla_2\","
+        },
+        {
+          "token": "MagiskOnWSA",
+          "class": "path-reference",
+          "context": "\"MagiskOnWSA\", \"MagiskOnWSAOld\", \"WSA_2407.40000.4.0_x64_vanilla_2\","
         }
       ]
     },
