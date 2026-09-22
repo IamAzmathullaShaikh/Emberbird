@@ -103,3 +103,49 @@ export function unattachedPageMessage(url: string | null | undefined, appPath: s
     'Build it with `npx tauri build`, or set EMBERBIRD_E2E_APP to the executable path.',
   ].join('\n');
 }
+
+/**
+ * How many trailing characters of the child's stdout/stderr the harness keeps
+ * for failure diagnostics. Launch failures (missing WebView2 DLL, blocked
+ * executable) print their cause in the first lines; the tail is enough.
+ */
+export const DIAGNOSTIC_TAIL_CHARS = 2_000;
+
+/** Last `maxChars` characters of a captured stream, for failure diagnostics. */
+export function tailOf(text: string | undefined, maxChars: number = DIAGNOSTIC_TAIL_CHARS): string {
+  if (!text) return '';
+  return text.length > maxChars ? text.slice(text.length - maxChars) : text;
+}
+
+/** What the harness observed about the spawned application process. */
+export interface ChildObservation {
+  exitCode: number | null;
+  signal: NodeJS.Signals | null;
+  stdoutTail?: string;
+  stderrTail?: string;
+}
+
+/**
+ * Explains why the application process ended before attaching. The 2026-09-22
+ * CI failure was undiagnosable because the harness reported only the CDP
+ * network error ("fetch failed") while the child's own words and exit code
+ * went unobserved — the run log showed the endpoint check failing for 45
+ * seconds with no hint whether the app was alive.
+ */
+export function describeChildExit(info: ChildObservation): string {
+  const cause =
+    info.exitCode !== null
+      ? `exited with code ${info.exitCode}`
+      : info.signal !== null
+        ? `was killed by signal ${info.signal}`
+        : 'ended';
+  const lines = [`The application process ${cause} before exposing a CDP endpoint.`];
+  for (const [name, tail] of [
+    ['stdout', info.stdoutTail],
+    ['stderr', info.stderrTail],
+  ] as const) {
+    const text = (tail ?? '').trim();
+    lines.push(`${name}: ${text ? text : '<empty>'}`);
+  }
+  return lines.join('\n');
+}
