@@ -21,6 +21,9 @@ interface RegistryAssetRow {
   filename: string;
   sha256: string;
   source_url: string;
+  /** PH-40: optional mirror URLs; the Manager backend failovers over them
+   * with the same SHA-256 gate (downloader::stage_asset_from_candidates). */
+  mirrors?: string[];
   size_bytes?: number;
   arch?: string;
   role?: string;
@@ -103,12 +106,14 @@ function architectureOf(
   row: RegistryReleaseRow,
   asset: RegistryAssetRow
 ): ReleaseAsset['architecture'] {
+  // Architecture truth is declared, never guessed: the registry schema makes
+  // `arch` REQUIRED on every asset (releases.schema.json), so a filename
+  // heuristic here could only ever paper over a schema violation. An asset
+  // without declared truth renders honestly as 'unknown' — and the Python
+  // consumer guard (test_registry_consumer.py) fails loudly if any real row
+  // ever ships without it.
   const declared = asset.arch ?? row.architectures?.[0];
   if (declared === 'x64' || declared === 'arm64') return declared;
-  // Filename fallback only when the registry carries no architecture truth.
-  const n = asset.filename.toLowerCase();
-  if (n.includes('arm64')) return 'arm64';
-  if (n.includes('x64')) return 'x64';
   return 'unknown';
 }
 
@@ -201,6 +206,8 @@ export interface EditionAsset {
   filename: string;
   size_bytes: number;
   source_url: string;
+  /** PH-40: mirror URLs in priority order (may be empty/undefined today). */
+  mirrors: string[];
   sha256: string;
   /** Registry root truth for the edition ('magisk' | 'none' | …). */
   root_solution?: string;
@@ -237,6 +244,7 @@ export function resolveEditionAsset(
     filename: asset.filename,
     size_bytes: asset.size_bytes ?? 0,
     source_url: asset.source_url,
+    mirrors: asset.mirrors ?? [],
     sha256: asset.sha256,
     root_solution: chosen.root_solution,
     gapps_variant: chosen.gapps_variant

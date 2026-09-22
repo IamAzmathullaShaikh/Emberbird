@@ -20,6 +20,11 @@ pub struct RegistryAsset {
     pub role: String,
     #[serde(default)]
     pub source_url: String,
+    /// PH-40: optional additional download locations, tried in order after
+    /// `source_url`. Availability only — every candidate passes the same
+    /// SHA-256 gate against `sha256` (see `downloader::stage_asset_from_candidates`).
+    #[serde(default)]
+    pub mirrors: Vec<String>,
     pub size_bytes: u64,
 }
 

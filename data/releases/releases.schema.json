@@ -300,6 +300,15 @@
           "type": "string",
           "format": "uri"
         },
+        "mirrors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "uniqueItems": true,
+          "description": "PH-40: additional download locations tried in order after source_url. Availability only - every candidate must pass the same SHA-256 gate against the asset sha256."
+        },
         "source_type": {
           "$ref": "#/definitions/source_type"
         },
