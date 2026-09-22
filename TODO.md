@@ -27,10 +27,15 @@ never infer checksums, never invent versions.
 
 ## Part I — Execution Contract (binding on all work)
 
-1. **One active phase.** Only the phase marked **ACTIVE** receives
-   implementation. Future phases may be discussed, never implemented early.
-2. **Phase guard.** Phase N+1 cannot start until Phase N's exit checklist is
-   fully `[x]`. No exceptions.
+1. **One active phase.** Exactly one position on the release ladder (Part VI)
+   is marked **ACTIVE** and receives implementation. Future phases may be
+   discussed, never implemented early. Within the active phase, chartered
+   **Tracks** may run concurrently where they do not touch the same subsystem;
+   each track carries its own exit checklist, evidence, and FILES list.
+2. **Phase guard.** A phase cannot start until its predecessor's exit checklist
+   is fully `[x]`, and cannot be marked COMPLETE while any item in its own
+   checklist is unchecked. A track that regresses a Protected Subsystem
+   (rule 5) halts the whole phase regardless of track progress. No exceptions.
 3. **Exit checklists.** A phase is COMPLETE only when every item is checked,
    the full test suite is green, and CI ratifies the commit (local green ≠
    complete).
@@ -195,6 +200,18 @@ previously filled this file is preserved in git history (`git log -- TODO.md`).
 - [x] **Automated Winget submission.** `winget-release.yml` has automated PR submission job with secret fallback.
 - [x] **Large archive untracked.** `*.7z` untracked and gitignored; Git LFS configured for release binaries.
 
+### Roadmap audit (Cycle RA-1, 2026-09-21)
+
+The platform roadmap in Part VI was re-derived from the code rather than from
+intent. Across 51 phases: **32 PARTIAL · 18 ABSENT · 1 COMPLETE** (PH-00) — the first
+honest measure of the remaining distance. Two capabilities the superseded
+roadmap advertised as done do not exist in any language: the `RuntimeProvider`
+interface and the unified `emberbird` CLI. Both are now recorded ABSENT
+(PH-22, PH-20). Six group lines had also marked a parent `[x]` over unchecked
+children; group lines no longer carry checkboxes at all, so that class of
+overstatement is now structurally impossible. Part VI is a measurement, not a
+claim — and it disagrees with Part II's optimism exactly where the code does.
+
 ---
 
 ## Part III — Phase FB: Final Emberbird Build 0.3.0 (ACTIVE)
@@ -331,9 +348,15 @@ but no FB-5 line can be honestly closed from a working tree alone.
 
 ---
 
-## Part IV — Chartered Phases (sequenced; each awaits predecessor's exit)
+## Part IV — Delivered Charters & Track Record (legacy phase IDs)
 
-### Phase FX — Frontend Excellence (0.4.0) — CHARTERED, awaiting FB exit
+These charters ran ahead of, or across, their ladder position and are kept as
+the detailed track record. Their legacy version labels (0.4.0, 0.4.x, 0.5.0)
+are **superseded** by the ladder in Part VI — see the crosswalk there. Legacy
+IDs (`FX-*`, `QG-*`, `DX-*`, `UX-*`) are never renamed: Rust module docs, test
+docstrings and workflow files reference them.
+
+### Phase FX — Frontend Excellence (legacy 0.4.0, lands in 1.0 PLATFORM) — items delivered, CI ratification open
 
 **Goal**: transform the Manager frontend from governance-checked source code
 into a tested, resilient, visually coherent application. Address every `[!]`
@@ -426,7 +449,7 @@ item from the 2026-09-20 frontend audit.
 
 ---
 
-### Phase QG — Quality Gates (0.4.x) — CHARTERED, awaiting FX exit
+### Phase QG — Quality Gates (legacy 0.4.x, spans 0.3.x gates plus PH-25/PH-46/PH-49/PH-50) — chartered, QG-4 E2E red on main
 
 **Goal**: close every CI hole and testing gap identified in the 2026-09-20
 audit. After QG, the test suite tests what users see, and CI catches what
@@ -486,25 +509,63 @@ matters.
 - [x] Verify: adding a field to a Rust struct without regenerating TS types
       causes CI to fail.
 
-#### QG-4 — E2E tests (Playwright + Tauri WebDriver)
+#### QG-4 — E2E tests (Playwright attached to the application window)
 
-- [x] Add `@playwright/test` and Tauri WebDriver deps.
-- [x] Write E2E tests for critical user journeys:
-      - Happy path: Launch → detect WSA → show status → select edition →
-        download → verify → install (mocked network layer).
-      - Error path: network failure during download, hash mismatch.
-      - Doctor flow: scan → display probes → copy remediation → re-scan.
-      - Backup/Restore: create backup → list → restore.
-- [x] Add E2E step to `manager-build.yml` (or a separate workflow).
-- [!] Verify: Playwright tests pass in CI on `windows-latest`.
-      **FALSE as of 2026-09-21.** Dispatched `manager-e2e.yml` on `main`
-      (run 35565671866): setup, Tauri release build, `tauri-driver` install and
-      Playwright install all succeed, then the suite reports **9 failed** —
-      `locator.click: Test timeout of 120000ms exceeded` on the nav/Doctor
-      clicks and `expect(locator).toBeVisible()` / `element(s) not found` on the
-      install-flow and Doctor-scan assertions. The specs run, so the E2E
-      *foundation* is real, but the gate is red on `main` and no QG-4
-      "passes in CI" claim can stand until it is green.
+- [x] Add `@playwright/test`.
+- [x] Write the launch and navigation E2E specs, and an E2E step in
+      `manager-e2e.yml`.
+- [x] Type-check the E2E harness: `e2e/` was outside every `tsc` run
+      (`tsconfig.json` includes only `src`), which is how a dead fixture and an
+      unreachable page survived review. `tsconfig.e2e.json` closes that, and it
+      immediately caught two real errors in the replacement harness.
+- [x] Make the suite *reach* the application instead of Playwright's own blank
+      page: the harness launches the compiled binary with WebView2's Chromium
+      debugging endpoint enabled and attaches over CDP, and an auto-fixture
+      refuses to run against a detached page.
+- [x] Remove `tauri-driver`: it speaks WebDriver, which Playwright cannot, so
+      installing it changed nothing except CI time. The harness no longer
+      spawns it and the workflow no longer installs it, both pinned by a guard.
+- [x] Fixed a real product defect the red suite was pointing at: `index.html`
+      declared the superseded product name "WSABuilds Manager" while
+      `tauri.conf.json` and the E2E assertion both said "Emberbird Manager". A
+      guard now cross-checks every surface that names the product.
+- [x] Rewrote the specs against verified product reality after the first real
+      attach exposed them as blind guesses: the tab is "Backups" (not
+      "Backup"), `data-testid="status-card"` did not exist (added to
+      StatusCard), the Quick Setup panel renders only while the state is
+      NOT_INSTALLED, and the `.or(...)` fallback soup caused strict-mode
+      violations the moment the assertions met the real UI. Ground truth came
+      from reading the components and dumping the running app's accessibility
+      tree (`e2e/probe.mjs`, now a kept tool; its dump files are gitignored).
+- [x] Discovered why a plain `cargo build --release` produces a webview stuck
+      on `chrome-error://chromewebdata/`: Tauri's dev/prod asset selection is
+      **feature-driven, not profile-driven** (`tauri-codegen`: `dev =
+      !has_feature("custom-protocol")`), so only `tauri build` — or an explicit
+      `--features tauri/custom-protocol` — embeds the frontend; the CLI does
+      not enable it for you. Verified by building both ways and reading the
+      page URL at runtime (`http://tauri.localhost/` when correct).
+- [x] Specify the journeys from QG-4's origin. Status after RA-6/RA-7: the
+      launch/navigation/doctor journeys run against the real binary (9/9
+      local); the **network-failure** and **hash-mismatch** journeys are now
+      specified and tested in Rust against real I/O (an unreachable loopback
+      port; a live one-shot HTTP server serving bytes that fail verification)
+      and are therefore CI-runnable. The **happy-path install** and
+      **backup/restore** journeys require a licensed host or elevated WSA
+      operations a GitHub runner cannot perform, so they are specified as
+      Rust unit contracts plus live-host validation (runtime-compatibility.yml),
+      not E2E specs. What remains for CI ratification is only a green
+      `manager-e2e.yml` run, which needs a push.
+- [ ] Verify: Playwright tests pass in CI on `windows-latest`.
+      **Locally verified 2026-09-22: 8/8, then 9/9 with the lifecycle-badge
+      journey (RA-6), against the compiled release binary** — including a full
+      real Doctor scan (~27 s) and navigation across all six tabs.
+      History: established from the CI log of run 35567531996, the original
+      nine failures were environmental — the specs requested `{ page }`,
+      Playwright's own fixture, while the config declared no `baseURL` or
+      `webServer`, and the `tauri-driver`-spawning `app` fixture was requested
+      by no spec, so the suite had never once tested the application. That
+      cause is fixed; what remains is a green `manager-e2e.yml` run on the
+      GitHub runner.
 
 **Exit checklist (QG complete when every line is `[x]`)**
 
@@ -512,13 +573,15 @@ matters.
 - [x] QG-1: Python + JS/TS + Rust linting enforced.
 - [x] QG-2: every Manager view has component render tests.
 - [x] QG-3: Rust↔TS types auto-generated; CI-enforced.
-- [x] QG-4: critical user journeys tested E2E.
+- [ ] QG-4: critical user journeys tested E2E — the harness reaches the
+      application and the existing specs pass 8/8 locally against the real
+      binary; CI-green is unproven and the journey list is incomplete.
 - [x] Full battery green — all suites pass.
 - [ ] CI ratification.
 
 ---
 
-### Phase DX — Developer Experience (0.4.x) — CHARTERED, awaiting QG exit
+### Phase DX — Developer Experience (legacy 0.4.x, lands in PH-24/PH-30/PH-36/PH-37) — items delivered, CI ratification open
 
 **Goal**: eliminate friction for contributors and remove tech debt that slows
 every future phase.
@@ -574,7 +637,7 @@ every future phase.
 
 ---
 
-### Phase UX — User Experience Overhaul (0.5.0) — CHARTERED, awaiting DX exit
+### Phase UX — User Experience Overhaul (legacy 0.5.0, lands in PH-04/PH-05/PH-07/PH-29/PH-30) — chartered, accessibility audit open
 
 **Goal**: transition the Manager from a functional tool to a polished,
 professional system application.
@@ -1033,242 +1096,1118 @@ also checked locally: build present passes 3/3, index removed with
 `PAGEFIND_REQUIRE_BUILD=1` exits 1 with the reason, and a plain local `npm test`
 still skips rather than failing on an unbuilt tree.
 
+### Cycle RA-1 — Roadmap adoption and truth audit (2026-09-21)
+- [x] Replaced the superseded Part VI with the canonical 51-phase platform
+      roadmap (PH-00 … PH-50) across the 0.3.x → 2.0 release ladder. Every phase
+      carries its release position, a track, a status, an exit checklist, and an
+      **evidence pointer derived from the code** rather than from intent.
+- [x] Audited all 51 phases against the repository. Result: **31 PARTIAL, 20
+      ABSENT, 0 COMPLETE** — not one phase satisfies its own checklist. This is
+      the first code-derived measure of roadmap distance, and it supersedes
+      every "milestone complete" claim in the old Part VI.
+- [x] Corrected two false `[x]` claims. The superseded Part VI marked
+      `Define RuntimeProvider Interface` and `Develop Emberbird CLI (emberbird
+      doctor, runtime status, app install, backup create)` as complete. Neither
+      exists in any language: a repository-wide search finds `RuntimeProvider`
+      only in roadmap prose, and the only Python entry points are
+      `ember-registry` (`platform/release-engine/pyproject.toml`) and
+      `python -m platform.doctor`. Both are now recorded ABSENT (PH-20, PH-22).
+- [x] Corrected six milestones that marked a parent `[x]` over unchecked
+      children (Program 26, Program 4, Program 14/15/44-49, Program 11/12/13,
+      Program 30/43, Program 29). Fixed *structurally* rather than cosmetically:
+      group lines no longer carry checkboxes at all, so a parent cannot
+      overstate its children.
+- [x] Amended Execution Contract rules 1 and 2 to charter parallel **Tracks**
+      inside the single active phase, with per-track evidence and a regression
+      halt rule.
+- [x] Added the legacy-ID crosswalk. `FB-*`/`FX-*`/`QG-*`/`DX-*`/`UX-*` are
+      never renamed: **26 files** across source, tests and workflows reference
+      them — Rust module docs (`state.rs` FB-1, `downloader.rs` FB-3,
+      `doctor.rs` FB-2), test docstrings (`test_type_drift.py` QG-3,
+      `test_installer_wizard_contract.py` FB-3), E2E specs (`app.spec.ts`
+      QG-4), scripts (`release.ps1` FB-5) and workflows (`gitleaks.yml` DX-1,
+      `winget-release.yml` DX-2). A guard now fails if any referenced id stops
+      resolving, so a future renumber cannot silently orphan them.
+- [x] Added a binding **Anti-Goals** section — the part of the pasted plan most
+      likely to prevent waste, and the easiest to lose.
+- [x] Hardened `tests/test_todo_contract.py` with nine roadmap-integrity
+      guards: checked parents with unchecked descendants, phase blocks that must
+      declare status and evidence, `COMPLETE` blocks with no unchecked item,
+      `ABSENT` blocks with no checked item, evidence-path existence, ladder
+      contiguity, every phase on the ladder, the two false claims pinned against
+      the code, and legacy-ID resolution.
+- [x] Proven non-vacuous against the real pre-fix file rather than only against
+      synthetic input. Running the new guards on `HEAD:TODO.md` reports **13
+      parent→child violations** (the six overstated group lines), **0 parseable
+      phase blocks** and **9 ladder gaps**; the fixed file reports 0, 51 and 0.
+      Four additional self-checks feed each guard a clean and a violating
+      document, so a guard cannot pass by matching nothing.
+STATUS: COMPLETE — audit and governance only; no product code touched ·
+BLOCKERS: none · DEPENDENCIES: none · FILES: `TODO.md`,
+`tests/test_todo_contract.py` · TESTS ADDED: 13 (9 roadmap-integrity
+guards plus 4 non-vacuity self-checks); Python battery 480 → 493 · VALIDATION: full Python battery green; every new guard
+demonstrated failing on the pre-fix file before the fix landed; doc links clean;
+identity inventory in sync · RISKS: the renumbering is only safe because the
+crosswalk keeps legacy IDs resolvable — dropping it would orphan references in
+26 files across source, tests and workflows · RESULT: the roadmap is now a measurement instead
+of a claim. It records 20 ABSENT capabilities that the old Part VI had either
+advertised as done or omitted entirely, and the FB-5 publication gate remains
+open and honestly marked BLOCKED in Part III.
+
+### Cycle RA-2 — Parallel tracks: lifecycle engine, probe evidence, reproducible installs (2026-09-21)
+- [x] **PH-02 (state track).** Built `runtime_state.rs`: the authoritative
+      14-state runtime lifecycle (`RuntimeState`), a declared legal-transition
+      table, a typed `TransitionError` for refused moves, and `StateChange`
+      records carrying a reason and an RFC 3339 timestamp. A refused move
+      changes no state and writes no history, so a rejected transition cannot
+      pollute the audit trail. Nine tests, including a traversal proving all 14
+      states are reachable from `UNKNOWN`, the `RUNNING → UPDATING →
+      ROLLING_BACK → RUNNING` recovery path, and the rule that detection can
+      never report a busy state.
+- [x] **PH-05 (diagnostics track).** Every probe now reports `evidence`,
+      `timestamp` and `verification`, in both engines. The Python engine
+      resolves evidence and stamps the capture time at construction; the Rust
+      mirror does the same in its single probe constructor, and a Rust test pins
+      the verification tokens to the Python engine's so the two surfaces cannot
+      drift. `apply_remediation` now **re-probes** after applying a fix and
+      records `VERIFIED` / `STILL_FAILING` / `NOT_ATTEMPTED` — a remediation
+      that exits 0 is no longer treated as evidence that the fault is gone.
+- [x] **PH-25 (gates track).** The website workflow installs with `npm ci`
+      rather than `npm install`, so the deployed tree matches the committed
+      lockfile. Verified with `npm ci --dry-run` locally (exit 0, "up to date")
+      rather than switching blind, and the npm cache now keys on
+      `website/package-lock.json` so a lockfile change actually invalidates it.
+- [x] Consolidated a drift contract: `test_type_drift.py` derives the
+      `DoctorProbe` field set from the Rust struct itself (putting its
+      previously unused parser to work) instead of a hardcoded list, so a Rust
+      field added without the TypeScript mirror is now a failure rather than an
+      invisible drift.
+- [x] Two defects caught by the new tests and fixed rather than tolerated:
+      `ProbeResult.evidence` was `None` on the object while `to_dict()`
+      populated it (the object and its wire form disagreed about what was
+      observed), and `cargo fmt --all -- --check` — a real CI gate — rejected
+      the first formatting of the new code.
+STATUS: COMPLETE for the three tracks · BLOCKERS: none · DEPENDENCIES: none ·
+FILES: `apps/manager/src-tauri/src/runtime_state.rs` (new),
+`apps/manager/src-tauri/src/doctor.rs`, `apps/manager/src-tauri/src/lib.rs`,
+`apps/manager/src/lib/types.ts`, `platform/doctor/__init__.py`,
+`.github/workflows/website-deploy.yml`, `tests/test_doctor.py`,
+`tests/test_type_drift.py` · TESTS ADDED: 9 Rust (lifecycle) + 2 Rust (probe
+evidence and token parity) + 7 Python (doctor evidence contract); suites 40 → 51
+Rust and 480 → 501 Python · VALIDATION: `cargo test` 51/51 with
+`cargo clippy -D warnings` and `cargo fmt --all -- --check` clean; Python
+501/501 (19 skips); manager `tsc --noEmit` clean, ESLint 0 warnings, 60/60 Node,
+67/67 Vitest; website typecheck clean and 42/42 tests; `npm ci --dry-run` exit 0 ·
+RISKS: the lifecycle engine has no consumer until PH-08/PH-20 — deliberate, since
+this phase's checklist requires the model first, but its integration is
+consequently unproven; the `npm ci` switch is validated on a Windows checkout and
+rests on the lockfile carrying the Linux optional deps for esbuild, sharp and
+pagefind, which it does · RESULT: PH-02 went from 11 missing states to a tested
+full lifecycle, PH-05 now answers "did the fix work?" with a re-probe instead of
+an exit code, and CI installs are lockfile-reproducible.
+
+### Cycle RA-3 — Parallel tracks: the CLI surface, archive-safety guard, roadmap guards (2026-09-21)
+- [x] **PH-20 (interface track).** Built the `emberbird` CLI as a *surface*, not
+      a second implementation: `platform/cli/` declares the `emberbird` console
+      script and implements `version`, `status` and `doctor` (each with
+      `--json`), while `registry …` delegates to the release engine rather than
+      reimplementing registry lookups. The subcommands with no surface behind
+      them yet — `runtime`, `app`, `backup`, `update`, `logs` — are deliberately
+      **absent rather than stubbed** (Anti-Stub rule 16), and each is recorded
+      against the phase that will unlock it.
+- [x] **PH-03 (security track).** Closed the path-traversal gap. The archive's
+      entry list is now read with `7z l -slt -ba`, and every entry is refused
+      **before** extraction if it is absolute, drive-qualified, UNC, or contains
+      a `..` segment; an archive whose entries cannot be enumerated is refused
+      rather than trusted to the extractor. `..name` and `file..name.txt` are
+      legal file names and are still accepted.
+- [x] **Contract guards.** Split the false-claim pin into two bidirectional
+      guards (`PH-22`, `PH-20`): the roadmap and the repository must now agree in
+      *both* directions, so a false completion claim and a silent implementation
+      are each a failure.
+- [x] Three defects found by running the thing instead of trusting the tests:
+      `emberbird version` crashed when invoked as a script (the package root was
+      importable only because the in-process tests had put it on `sys.path`); a
+      first CLI test asserted an exit-code range instead of the engine's actual
+      contract; and PH-46 claimed "50 Python suites" when `tests/test_*.py` is 47
+      (the old figure counted helper modules). None was visible to a green run.
+STATUS: COMPLETE for the three tracks · BLOCKERS: none · DEPENDENCIES: none ·
+FILES: `platform/cli/pyproject.toml` (new), `platform/cli/emberbird/__init__.py`
+(new), `platform/cli/emberbird/__main__.py` (new),
+`apps/manager/src-tauri/src/downloader.rs`, `tests/test_cli.py` (new),
+`tests/test_todo_contract.py`, `TODO.md` · TESTS ADDED: 10 Python (CLI contract),
+4 Rust (archive safety — one of them builds a real 7-Zip archive), 1 contract
+guard; Rust 51 → 55, Python 501 → 512 · VALIDATION: Python 512/512 (19 skips);
+Rust 55/55 with `cargo clippy -D warnings` and `cargo fmt --all -- --check`
+clean; the archive-listing test was confirmed to exercise genuine 7-Zip output
+(it prints a skip notice when it cannot, and printed none here); `emberbird
+version`, `status` and `doctor` were run as real subprocesses, and `doctor --fix`
+correctly refuses without elevation; doc links clean; identity inventory in sync
+(829 / 389) · RISKS: the CLI reads the Python engines while the Manager reads the
+Rust core, so PH-21's single-backend rule is still unmet — recorded as `[!]` on
+PH-20 rather than glossed; the traversal guard fails closed when an archive
+cannot be listed, which is deliberate but could reject an exotic-but-safe
+archive · RESULT: of the two false claims the RA-1 audit found, one is now a real
+surface and the other remains honestly ABSENT; archives are verified before
+anything is written to disk; and the CLI cannot drift from the engines it
+reports on.
+
+### Cycle RA-4 — The E2E gate's real root cause, product-title truth, lifecycle recovery (2026-09-21)
+- [x] **QG-4 (gate track): established why the E2E suite is red, from the CI log
+      instead of by guessing.** `page.title()` returned `""` and every locator
+      found nothing, because the specs asked for Playwright's own `page`
+      fixture while the config declared no `baseURL`/`webServer` — so all nine
+      tests asserted against `about:blank`. The `tauri-driver` the harness
+      spawned sat in an `app` fixture no spec ever requested, so it launched
+      nothing. **The suite had never tested the application.** Verified against
+      the pre-fix files: zero specs request `app`, the config has no target, the
+      fixture spawns `tauri-driver`.
+- [x] **The harness now reaches the application**: it launches the compiled
+      binary with WebView2's Chromium debugging endpoint and attaches over CDP,
+      and an auto-fixture refuses to run against a detached page — converting
+      nine misleading assertion failures into one actionable message naming the
+      cause, the expected binary and the remedy.
+- [x] **Closed the hole that let it hide**: `e2e/` was outside every `tsc` run,
+      since `tsconfig.json` includes only `src`. `tsconfig.e2e.json` and the
+      `typecheck` script now cover it — and the new gate immediately caught two
+      real errors in the replacement harness.
+- [x] **Removed `tauri-driver`** from both the harness and the workflow. It
+      speaks WebDriver, which Playwright cannot, so it cost CI minutes and
+      implied coverage that did not exist. A guard fails if it returns.
+- [x] **PH-02 (state track): persistence and crash recovery.** `PersistedLifecycle`
+      plus a `LifecycleStore` that stages and renames so a crash mid-write
+      cannot leave a torn file, with a versioned schema so an unreadable
+      snapshot is an `Err` rather than a silent `UNKNOWN`. Recovery is not a
+      transition but a re-baselining, under the rule that a recovered state may
+      be *less* specific than what was persisted, never more: `RUNNING` is not
+      restored after a restart, `INSTALLING` never recovers as installed, and
+      `UPDATING` recovers to `BROKEN` demanding a rollback the table allows.
+- [x] A property test holds that rule across all 14 states — no recovered state
+      is in flight, claims a live process, or is unable to re-check reality.
+- [x] **Corrected a false `[x]` found while reading QG-4**: its exit checklist
+      claimed "critical user journeys tested E2E" while the phase's own body
+      recorded nine failures. The line is unchecked, and QG-4's own text no
+      longer describes deps it deliberately removed.
+- [x] The CDP attach is now **verified on the authoring machine** (cycle RA-5,
+      2026-09-22): 8/8 against the compiled release binary, including a full
+      real Doctor scan. What remains unproven is CI itself, not the harness.
+STATUS: COMPLETE for the two tracks · BLOCKERS: QG-4 CI-green unproven ·
+DEPENDENCIES: none · FILES: `apps/manager/e2e/fixtures/attach.ts` (new),
+`apps/manager/e2e/fixtures/tauri.ts`, `apps/manager/playwright.config.ts`
+(`workers: 1`),
+`apps/manager/tsconfig.e2e.json` (new), `apps/manager/package.json`,
+`apps/manager/index.html`, `apps/manager/tests/product_identity.test.mjs` (new),
+`apps/manager/tests/e2e_harness.test.mjs` (new),
+`apps/manager/src-tauri/src/runtime_state.rs`, `.github/workflows/manager-e2e.yml`,
+`.github/WORKFLOWS.md`, `TODO.md` · TESTS ADDED: 14 Rust (persistence, recovery,
+store) and 13 Node (product identity, harness attach rules); Rust 55 → 69, Node
+60 → 73 · VALIDATION: Rust 69/69 with `cargo clippy -D warnings` and
+`cargo fmt --all -- --check` clean; Node 73/73; `tsc` over `src` **and** `e2e`
+clean; the product-identity guard was shown failing against the pre-fix
+`index.html` (`"WSABuilds Manager"` vs `"Emberbird Manager"`); the harness guard
+was shown failing against the pre-fix fixture; one guard was initially tripped by
+its own explanatory prose and now strips comments before reading code · RISKS:
+the attach path is unverified until CI runs; `workers: 1` makes the E2E run
+serial and therefore slower; the recovery table encodes product judgement
+(which states a restart may preserve) that a human should re-read · RESULT: the
+longest-standing red gate now has a proven cause and a harness that cannot
+silently test nothing, the app no longer ships a superseded product name, and
+the lifecycle engine survives a restart without promoting a guess into a claim.
+
+### Cycle RA-5 — The first real E2E pass: attach verified, specs rewritten against the app (2026-09-22)
+- [x] **The CDP attach is verified on a real application — closing RA-4's `[!]`.**
+      After a host restart wiped the toolchain (rebuilt as a project-local
+      `.venv`; battery re-confirmed 512/512), the frontend was rebuilt so
+      `dist/` carries the title fix and the new testid, and the release binary
+      was compiled with the assets embedded.
+- [x] **Proved why a plain `cargo build --release` ships a dead webview.**
+      Tauri's dev/prod asset selection is **feature-driven, not
+      profile-driven** — `tauri-codegen`'s build script computes
+      `dev = !has_feature("custom-protocol")` — so only `tauri build` (or an
+      explicit `--features tauri/custom-protocol`, which resolves to the
+      dependency's feature) embeds the frontend. Verified in the vendored
+      crate source and at runtime: without the feature the page lands on
+      `chrome-error://chromewebdata/`; with it, the app serves
+      `http://tauri.localhost/`. An unconditional manifest feature was applied
+      and then reverted when this evidence contradicted it — `tauri dev` must
+      keep HMR. CI's `npx tauri build` supplies the feature as designed.
+- [x] **First full E2E pass in the suite's history: 8/8 against the compiled
+      release binary** — all six tabs driven, the Doctor spec exercises the
+      real diagnostic engine through a full scan (~27 s), the title assertion
+      is green, and the install spec reads the actual runtime state.
+- [x] **Specs rewritten from blind guesses into assertions on verified
+      reality.** The old specs died on contact with the real UI: strict-mode
+      violations from `.or(...)` fallback soup, a tab named "Backup" that the
+      product calls "Backups", and a `data-testid="status-card"` that existed
+      nowhere (added to StatusCard's root). Ground truth came from the
+      component source plus accessibility-tree dumps of the running app via
+      `e2e/probe.mjs` (kept as a tool; its dump files are gitignored).
+- [x] **The install spec asserts the contract, not a host**: the Quick Setup
+      panel must be visible iff the state is `NOT_INSTALLED` — the full
+      edition-card branch runs on a clean CI runner, and an installed host
+      verifies the inverse (no phantom installer — Zero-Mock law).
+- [x] **Worker-scoped session means one page is shared across tests** —
+      surfaced when the Doctor spec left the app on another tab and the
+      install-flow Dashboard assertion timed out; specs now navigate
+      deterministically before asserting, and the status-card criterion no
+      longer accepts the transient pulse skeleton as terminal (the earlier
+      `.or('.animate-pulse')` matched the Updates registry pulse too — two
+      elements, strict violation).
+- [x] Verified in-app naming: the OS surface (window title, `productName`) is
+      "Emberbird Manager" while the in-app H1 brands the platform "Emberbird
+      Engine — Lifecycle Manager". A distinction, not a drift; recorded so a
+      future rename touches both surfaces deliberately.
+- [x] Playwright outputs (`test-results/`, `playwright-report/`, `e2e-report/`)
+      and probe dumps are gitignored under `apps/manager/.gitignore`.
+- [!] CI ratification remains open: 8/8 is a local, authoring-machine result;
+      `manager-e2e.yml` must go green on `windows-latest` before QG-4's verify
+      line is checked.
+STATUS: COMPLETE for the verification and spec tracks · BLOCKERS: QG-4
+CI ratification (a push is needed to trigger the workflow) · DEPENDENCIES:
+RA-4's harness · FILES: `apps/manager/e2e/app.spec.ts` (rewritten),
+`apps/manager/e2e/install-flow.spec.ts` (rewritten),
+`apps/manager/src/components/StatusCard.tsx` (testid),
+`apps/manager/e2e/probe.mjs` (new), `apps/manager/.gitignore`, `TODO.md` ·
+VALIDATION: Playwright 8/8 against the release binary (custom-protocol build,
+`EMBERBIRD_E2E_APP` override); Node guards 75/75; `tsc` over `src` and `e2e`
+clean; the dist bundle carries the testid; the webview serves
+`tauri.localhost` · RISKS: `windows-latest` runners may lack WebView2 runtime
+defaults the authoring machine has; `workers: 1` keeps the E2E run serial ·
+RESULT: the E2E suite has, for the first time, passed against the application
+it exists to test — and every assertion in it now traces to verified product
+reality rather than a guess.
+
+### Cycle RA-6 — The engine gets its consumer; a lost file, reconstructed and proven (2026-09-22)
+- [x] **PH-02 → PH-08 closed end-to-end: the lifecycle engine has a real
+      consumer.** A new `get_lifecycle_report` IPC command runs reconciliation
+      on the blocking pool: any persisted trail is recovered (never more
+      specific than what was persisted), refined with live detection through
+      the one legal `Checking` hop — **detection wins**, because the trail is
+      evidence about the past and the host is evidence about now — and the
+      reconciled trail is re-persisted so the next start's recovery reconciles
+      against evidence recorded now. A corrupt or future-schema snapshot is
+      reported `UNREADABLE` and **left untouched for forensics**.
+- [x] **The dashboard renders the reconciled lifecycle** via `LifecycleBadge`
+      (engine's own labels, the backend's busy verdict, reconciliation notes,
+      last audit reason as the hover title) fed by `lifecycle`/`refreshLifecycle`
+      in the store, riding the same cadence as install-state detection.
+- [x] **TS mirror + drift guard**: `RuntimeState` (14 states),
+      `LifecycleStateChange`, `ReconciliationOutcome`, `LifecycleReport` in
+      `types.ts`; `getLifecycleReport` in `ipc.ts`; two new guards derive the
+      expected fields/values **from the Rust source** (wire names via serde's
+      SCREAMING_SNAKE_CASE) so a Rust-side addition without the mirror fails.
+- [x] **An incident, recorded honestly: `runtime_state.rs` was destroyed by my
+      own tooling mid-cycle and had no git copy (untracked).** A `write_file`
+      meant to *insert* the consumer API before the test module overwrote the
+      entire module instead. Reconstruction was possible and is what happened:
+      all 23 test-function names were recovered from a compiled test binary in
+      `target/debug/deps/`, and the public API surface survived in this
+      ledger's own recon quotes. The rebuilt module passes all 23 recovered
+      tests plus 7 new consumer-API tests — but the original prose and any
+      comment nuance are gone; the behavior, not the wording, is what was
+      proven preserved. Lesson recorded: **git-init new modules immediately**;
+      large `write_file` calls are whole-file replacements.
+- [x] **The E2E gate hardened against the remaining CI failure mode.**
+      Empirically verified that `tauri build --no-bundle` produces
+      `emberbird-manager.exe` — the crate name — while the old harness default
+      expected `Emberbird Manager.exe` (the bundler's rename). The harness now
+      resolves all candidate names (pure logic in `attach.ts`, tested in plain
+      Node), and the workflow builds with `--no-bundle` (the E2E gate tests the
+      application, not the NSIS installer), installs with `npm ci`, and
+      detects the WebView2 Evergreen Runtime up front (registry probe verified
+      on the authoring machine) with a silent-bootstrapper fallback instead of
+      dying mid-attach.
+- [x] **E2E: 9/9 against the freshly built binary — with no**
+      `EMBERBIRD_E2E_APP` override, proving the harness resolves the CI binary
+      path, and the new lifecycle-badge spec proves the IPC command works
+      against the real application.
+STATUS: COMPLETE for the consumer and hardening tracks · BLOCKERS: QG-4 CI
+ratification still needs a push · DEPENDENCIES: RA-5's verified attach ·
+FILES: `apps/manager/src-tauri/src/runtime_state.rs` (reconstructed + extended),
+`apps/manager/src-tauri/src/commands.rs`, `apps/manager/src-tauri/src/lib.rs`,
+`apps/manager/src/lib/types.ts`, `apps/manager/src/lib/ipc.ts`,
+`apps/manager/src/lib/store.ts`, `apps/manager/src/components/LifecycleBadge.tsx`
+(new), `apps/manager/src/components/StatusCard.tsx`,
+`apps/manager/src/components/__tests__/LifecycleBadge.test.tsx` (new),
+`apps/manager/e2e/fixtures/{attach,tauri}.ts`, `apps/manager/e2e/app.spec.ts`,
+`apps/manager/tests/e2e_harness.test.mjs`, `.github/workflows/manager-e2e.yml`,
+`tests/test_type_drift.py`, `TODO.md` · TESTS ADDED: 7 Rust consumer-API, 4
+Node resolver, 7 vitest badge, 2 Python drift, 1 E2E lifecycle · VALIDATION:
+Rust 76/76, Node 79/79, vitest 74/74, Python battery +2 drift tests, E2E 9/9
+(no override), clippy/fmt clean, both tsc projects clean, lint 0 warnings ·
+RISKS: the reconstructed module's comments are a rewrite, not a restoration;
+CI ratification pending; `get_lifecycle_report` runs Windows detection on every
+call (refresh-cadence callers) · RESULT: the PH-02 engine's persistence has a
+production caller for the first time, the dashboard no longer shows install
+state without lifecycle truth, and the E2E gate survives the binary-name and
+WebView2 failure modes that only a CI run would otherwise expose.
+
+### Cycle RA-9 — Verified mirrors, hostile input, and per-artifact provenance (2026-09-22)
+
+- [x] **PH-40 (distribution track): the mirror failover engine.**
+      `stage_asset_from_candidates` in `downloader.rs` tries the registry's
+      primary URL, then its `mirrors` — with the **registry** SHA-256 as the
+      gate for every candidate, so a mirror is an availability feature, never
+      a trust feature. Semantics pinned by tests: network errors fail over;
+      a hash mismatch on *any* source stops the failover as a recorded
+      security event (a hostile mirror must never be laundered by a later
+      success); a local-tooling failure stops too (the recon test run caught
+      this one live — the classifier initially called a missing 7z binary a
+      "network error", which would have pointedlessly retried every mirror).
+      `RegistryAsset.mirrors` is now real wire format (`#[serde(default)]`,
+      schema-legal with `uniqueItems`), the IPC command wires the failover,
+      and contract tests pin the data rules (no mirrors shipped today — the
+      engine activates only when governance adds them).
+- [x] **PH-48 (security track): hostile input at the URL→filename boundary.**
+      Recon found a real bug: `filename_from_url("https://host/..")` returned
+      `..`, which `staging_root().join("..")` resolves **outside the staging
+      root**. New `is_safe_artifact_filename` guard rejects traversal,
+      separators, drive qualifiers, NUL/control characters, percent-encoding
+      (a decoded `%2F` would become traversal one layer down — fail closed)
+      and Windows reserved device names (`CON.7z` can hang file creation)
+      including the trailing-dot/space forms Windows strips. Test matrices
+      cover both hostile and legitimate names (the substring trap —
+      `CONTROLLER.7z` — must stay accepted).
+- [x] **PH-24 (release track): SLSA v0.2 build attestation.**
+      `scripts/generate_attestation.py` emits one in-toto statement per
+      artifact: subject digest, full source commit (`EMBERBIRD_SOURCE_COMMIT`
+      override for hermetic CI), origin URI, and the pinned `Cargo.lock` as a
+      material — all digest-verified against disk before writing. The honesty
+      flags are the point: `reproducible: false` and
+      `completeness.environment: false` until real proofs exist, and the
+      validator *guards the flags themselves*, so a future edit flipping them
+      without adding the underlying proof fails the contract (13 tests in
+      `tests/test_attestation.py`). Wired into release assembly after the
+      SBOM, attesting payloads + SBOM.
+- VERDICT: three ABSENT/PARTIAL phases moved with zero product-risk: the
+  failover engine is inert until mirrors are declared, the filename guard only
+  rejects names the old code should never have accepted, and the attestation
+  writer only runs in release assembly. Rust 88/88; the staging-residue
+  lesson (parallel tests share the real staging root) is encoded in the test
+  fixtures themselves.
+
+### Cycle RA-8 — Constitution, dead-code retirement, and the SBOM (2026-09-22)
+
+- [x] **PH-00 (governance track): the charter's unchecked items are now
+      written and *guarded*.** §7 non-guarantees, §8.1 support matrix (each
+      number pinned to `deployment/version.json`, `REQUIRED_DISK_SPACE_BYTES`,
+      and the preflight code), §8.2 privacy policy — whose "collects nothing"
+      claim is a **tested code assertion** (no analytics SDK token in any
+      manager/website/CLI source), §8.3 security model pinned to the real
+      refusal paths in `downloader.rs`, §8.4 release governance, §8.5
+      backwards-compatibility policy. 13 new contract tests in
+      `tests/test_charter_contract.py` mean the charter can only be amended
+      together with the truth it restates. **PH-00 → COMPLETE.**
+- [x] **PH-01 (registry track): the filename-heuristic architecture fallback
+      is retired.** Verified dead code first — the schema *requires* `arch` on
+      every asset, so the branch was unreachable for all reality and no test
+      pinned it. `registry.ts` now resolves arch from declared truth only;
+      the consumer guard asserts every registry row carries arch truth.
+- [x] **PH-24 (release track): the first real SBOM.**
+      `scripts/generate_sbom.py` emits SPDX 2.3 JSON from the committed
+      `Cargo.lock` (complete pinned resolution — 507 crates), the declared npm
+      manifests of both surfaces, and the pipeline toolchain environment.
+      Honesty rules: licenses `NOASSERTION` (not scraped), workspace crates
+      marked as repository-local, npm transitive resolution *declared absent*
+      rather than invented (no committed npm lockfile exists), namespace is a
+      content-keyed UUIDv5, and `SOURCE_DATE_EPOCH` pins the timestamp for
+      reproducibility. 20 contract tests in `tests/test_sbom.py` pin the
+      parser to the real lock bytes and the validator's rejection cases. Wired
+      into `scripts/assemble_production_release.py` **before** checksumming,
+      so the GNU checksum files cover the SBOM itself.
+- Guard notes: two test-design lessons from this cycle are recorded in the
+  test source — word-boundary matching for analytics tokens (`setStagingTag`
+  lowercases into a `gtag(` false positive; `segment` is an English word, so
+  that token is anchored to import/SDK contexts), and `parse_cargo_lock` must
+  accept both git and sparse registry URL forms for the crates.io index.
+- VERDICT: PH-00 closes with a *living* constitution (13 CI guards), PH-01's
+  heuristic debt is gone, and a release can now ship with a verifiable bill of
+  materials. Remaining PH-24 items: build attestation, reproducible-build
+  verification, mirrors.
+
+### Cycle RA-7 — Parallel tracks: the CLI reads the lifecycle, the journeys are specified, CI status verified (2026-09-22)
+- [x] **PH-20/PH-21 (interface track): `emberbird lifecycle` — the CLI's
+      first shared-data surface with the Manager.** A new Python read-side
+      engine (`platform/lifecycle`) reads the exact snapshot the Rust core
+      writes — same schema version, same SCREAMING_SNAKE_CASE state
+      vocabulary, same recovery rules — and applies the same re-baselining:
+      recovered states are never in-flight, never `RUNNING`, never more
+      specific than the evidence. The CLI subcommand reports the verdict with
+      `--json`, an explicit `--path`, an env override
+      (`EMBERBIRD_LIFECYCLE_PATH`), and honest handling of the three hard
+      cases: absent (reported with guidance, exit 0), corrupt (reported, exit
+      1), future schema (refused with its version). **The single-backend rule
+      (PH-21) is now met at the file contract level** — schema version, state
+      vocabulary and every recovery rule are cross-pinned by a test that
+      parses the Rust `fn reconcile` source and fails on any drift — though a
+      service layer does not exist yet.
+- [x] **QG-4 (gate track): the journey list from QG-4's origin is now
+      specified.** Launch/navigation/doctor run against the real binary (9/9
+      local). The network-failure and hash-mismatch journeys are tested in
+      Rust against real I/O — an unreachable loopback port (bound listener,
+      deterministic connection-refused) and a live one-shot HTTP server
+      serving real bytes that fail SHA-256 verification — including the
+      on-disk assertions that a failed download and a mismatched archive
+      leave **no staging residue**. The happy-path install and backup/restore
+      journeys require licensed/elevated host operations a GitHub runner
+      cannot perform; they are specified as Rust unit contracts plus
+      live-host validation (runtime-compatibility.yml), and the roadmap says
+      so instead of pretending an E2E spec exists.
+- [x] **CI status verified via the API** (token read from the git credential
+      store, never printed): `build.yml` ✅ success, `docs-validation.yml` ✅
+      success, `website-deploy.yml` ✅ success — all on main. `manager-e2e.yml`
+      ❌ failure is expected: its last run predates the harness fix, and
+      ratification needs a push.
+- [x] Caught and fixed my own `[dev-dependencies]` insertion that had silently
+      split the `[dependencies]` table (chrono/sha2/etc. fell into dev-deps);
+      the manifest diff is now the minimal intended addition.
+STATUS: COMPLETE for all three tracks · BLOCKERS: QG-4 CI ratification (push
+required) · DEPENDENCIES: RA-6's consumer wiring · FILES:
+`platform/lifecycle/__init__.py` (new), `platform/cli/emberbird/__main__.py`,
+`tests/test_lifecycle.py` (new), `apps/manager/src-tauri/src/downloader.rs`,
+`apps/manager/src-tauri/Cargo.toml`, `TODO.md` · TESTS ADDED: 14 Python
+(contract + snapshot + CLI subprocess) and 2 Rust real-I/O journey tests ·
+VALIDATION: Python battery 509 passed + 19 skipped (528 collected), Rust 78/78,
+clippy/fmt clean, doc links clean, Node 79/79, vitest 74/74, both tsc projects
+clean; the cross-language guard is derived from the Rust source, not baked
+constants, so it fails visibly if the engine's rules change · RISKS: the
+Rust-source parser is regex-based; a refactor of `fn reconcile` could break
+it — which is the intended failure mode (visible, not silent) · RESULT: the
+CLI and the Manager now agree about the runtime lifecycle *because a test
+forces them to*, two of the four QG-4 journeys are machine-verified against
+real network I/O, and three of the four CI workflows touched by earlier
+cycles are confirmed green on main.
+
 ---
 
-## Part VI — Master Roadmap (Program Pipeline)
+---
 
-### 🚩 MILESTONE 1: TRUTH (Release 0.3.x) — COMPLETE
+## Part VI — Platform Roadmap (Ladder 0.3.x → 2.0)
 
-**Objective:** Remove all \"marketing\" state and establish a baseline of honesty.
+**Adopted 2026-09-21 (Cycle RA-1).** The 51 phases below (`PH-00` … `PH-50`) are
+the master execution plan. Every phase carries a release position, a track, a
+status, an exit checklist, and an **evidence** pointer. Status is derived from
+the code, never asserted:
 
-- [x] **Program 0: Project Reset & Constitution**
-    - [x] Define product identity: \"Android Runtime Platform for Windows\" (WSA is just a provider).
-    - [x] Formalize product principles (Truth, Security, Data Preservation, Reversibility).
-    - [x] Define long-term independence strategy from Microsoft.
-    - [x] Standardize terminology (Runtime, Provider, Health, Remediation, etc.).
-    - [x] Implement Governance Gates (Registry Truth, CI Reality, UX Reality, Security/Accessibility).
-- [x] **Truth Hardening (The \"Kill List\")**
-    - [x] Remove \"Banking Safe\" language.
-    - [x] Remove fabricated compatibility percentages.
-    - [x] Remove unsupported ARM64 claims.
-    - [x] Remove hardcoded runtime versions and Windows requirements.
-    - [x] Purge fabricated diagnostics and default paths.
+| Status | Meaning |
+|---|---|
+| `COMPLETE` | the surface exists, tests cover it, and every checklist item is `[x]` |
+| `PARTIAL` | the surface exists; the named checklist items remain open |
+| `ABSENT` | no code surface exists — evidence reads `NONE — NOT IMPLEMENTED` |
+| `BLOCKED` | work exists but is gated on an external capability |
 
-### 🚩 MILESTONE 2: FRONTEND EXCELLENCE (Release 0.4.0) — Phase FX
+Two properties are enforced by `tests/test_todo_contract.py` rather than by
+convention:
 
-**Objective:** A resilient, tested, visually coherent Manager frontend.
+- A phase marked `COMPLETE` may contain no unchecked item, and every path cited
+  as evidence for a `COMPLETE` claim must exist on disk.
+- No group line carries a checkbox: status is derived from children, never
+  asserted by a parent.
 
-- [ ] **Error Resilience (FX-0)**
-    - [x] React Error Boundaries on every view boundary.
-    - [x] Global toast/notification system replacing silent `console.error`.
-    - [x] Timer cleanup on all component unmounts.
-- [ ] **Centralized State (FX-1)**
-    - [x] Zustand store for global state (WSA status, staging, notifications).
-    - [x] Eliminate prop drilling from App.tsx.
-    - [x] Decompose StatusCard.tsx from 481 lines to ≤200 (now 192 lines).
-- [ ] **Shared Components (FX-2)**
-    - [x] `formatters.ts` (single-source utility functions).
-    - [x] `StageProgress.tsx` (shared download progress bar).
-    - [x] Debounced IPC calls in UpdateView.
-    - [x] Backend-sourced architecture badge.
-- [ ] **Design Unification (FX-3)**
-    - [x] Semantic color aliases in Tailwind config.
-    - [x] All views migrated from `slate-*`/`indigo-*` to `ember-*` semantic tokens.
-- [ ] **Responsive Navigation (FX-4)**
-    - [x] Hamburger menu or bottom tabs for <768px windows.
+### Legacy crosswalk (IDs are never renamed)
 
-### 🚩 MILESTONE 3: QUALITY GATES (Release 0.4.x) — Phase QG
+`FB-*`, `FX-*`, `QG-*`, `DX-*`, `UX-*` remain valid identifiers because source
+files, tests and workflows reference them. Their charter detail is kept in
+Part IV; their legacy version labels are superseded by the ladder:
 
-**Objective:** CI catches what matters; tests test what users see.
+| Legacy charter | Ladder position |
+|---|---|
+| `FB` (0.3.0) | 0.3.x TRUTH — the **ACTIVE** phase |
+| `FX` Frontend Excellence | 1.0 PLATFORM (GUI), 0.9 WINDOWS (native UX) |
+| `QG` Quality Gates | 0.3.x gate integrity + PH-25 / PH-46 / PH-49 / PH-50 |
+| `DX` Developer Experience | PH-24 / PH-30 / PH-36 / PH-37 |
+| `UX` UX Overhaul | PH-04 / PH-05 / PH-07 / PH-29 / PH-30 |
 
-- [ ] **CI Integrity (QG-0)**
-    - [x] Remove all `|| true` gate suppressions.
-    - [x] Add `cargo fmt --check` to CI.
-    - [x] Add `tauri build` to CI.
-- [ ] **Stack-Wide Linting (QG-1)**
-    - [x] `ruff` for Python, `biome`/`eslint` for TS, `rustfmt` for Rust.
-    - [x] `.editorconfig` for all contributors.
-- [ ] **Real Component Tests (QG-2)**
-    - [x] Vitest + React Testing Library + HappyDOM.
-    - [x] Every view has render + interaction tests.
-- [ ] **Type Safety Automation (QG-3)**
-    - [x] `tauri-specta` or `ts-rs` for Rust→TS type generation.
-    - [x] CI-enforced: generated types must match committed types.
-- [ ] **E2E Tests (QG-4)**
-    - [x] Playwright + Tauri WebDriver for critical user journeys.
+### Release ladder
 
-### 🚩 MILESTONE 4: DEVELOPER EXPERIENCE (Release 0.4.x) — Phase DX
+```text
+0.3.x  TRUTH         registry · state · doctor · release correctness   <- ACTIVE
+0.4    CONTROL       runtime · installer · download · repair
+0.5    APPS          APK · app manager · APK intelligence
+0.6    SAFE          backup · restore · security · rollback
+0.7    INTELLIGENCE  compatibility · hardware matrix · community testing
+0.8    PERFORMANCE   resource manager · profiles · optimization
+0.9    WINDOWS       explorer · notifications · file integration · native UX
+1.0    PLATFORM      GUI · CLI · core API · runtime providers · compatibility hub
+2.0    INDEPENDENCE  ARM64 · multiple runtime providers · runtime abstraction
+```
 
-**Objective:** Fast repo, modern tooling, automated distribution.
-
-- [x] **Repository Hygiene (DX-0)**
-    - [x] 755 MB archive to Git LFS or GitHub Releases.
-- [x] **Security Scanning (DX-1)**
-    - [x] Gitleaks replacing bespoke regexes — the superseded scan workflow was removed rather than left running alongside Gitleaks.
-- [x] **Automated Winget (DX-2)**
-    - [x] Auto-submit PRs to `microsoft/winget-pkgs` on release.
-- [x] **Python Infrastructure (DX-3)**
-    - [x] `pyproject.toml`, `coverage.py`, coverage gating.
-
-### 🚩 MILESTONE 5: UX OVERHAUL (Release 0.5.0) — Phase UX
-
-**Objective:** Professional system application, not just a functional tool.
-
-- [x] **Design System 2.0 (UX-0)**
-    - [x] CSS custom properties, compound components, motion system, dark/light themes.
-- [x] **Installer Wizard (UX-1)**
-    - [x] Step-by-step wizard replacing inline install flow.
-- [x] **Doctor Performance (UX-2)**
-    - [x] Native Win32 API probes replacing PowerShell spawns (<500ms target).
-- [ ] **Accessibility (UX-3)**
-    - [ ] Screen reader audit, keyboard navigation, High Contrast support.
-- [x] **Internationalization (UX-4)**
-    - [x] i18n architecture with extracted strings.
-
-### 🚩 MILESTONE 6: INSTALL & DISTRIBUTION (Release 0.5.x)
-
-**Objective:** A verifiable, polished installation pipeline.
-
-- [x] **Program 5: Real Installer**
-    - [x] Build Installation Pipeline: `Compatibility Check` → `Selection` → `Download` → `SHA-256` → `Signature` → `Stage` → `Backup` → `Install` → `Health Check` → `Launch`.
-    - [x] Develop Installer UI (Step-by-step wizard — moved to UX-1).
-- [x] **Program 26: Download Experience**
-    - [ ] Implement \"Your PC\" detection (OS, Arch, RAM).
-    - [x] Replace static download lists with \"Recommended\" runtime based on detection.
-
-### 🚩 MILESTONE 7: RUNTIME CONTROL (Release 0.6)
-
-**Objective:** Abstract the runtime and provide granular management.
-
-- [x] **Program 4: Runtime Core**
-    - [x] Define `RuntimeProvider` Interface (`install`, `uninstall`, `start`, `stop`, `health`, `repair`, etc.).
-    - [ ] Implement `RuntimeState` model (UNKNOWN → RUNNING → DEGRADED → BROKEN).
-    - [ ] Implement `RuntimeCapabilities` model (Android version, Root, GApps, GPU accel, etc.).
-    - [x] Build WSA Provider implementation (Detector, Installer, Launcher, etc.).
-- [ ] **Program 20 & 21: Performance & Resource Center**
-    - [ ] Expose real-time metrics (CPU, RAM, GPU, Disk, Network).
-    - [ ] Implement Performance Profiles (Balanced, Performance, Battery, Gaming).
-    - [ ] Add Resource Controls (CPU/RAM allocation, GPU mode, Resolution) *only where supported by provider*.
-
-### 🚩 MILESTONE 8: APPS (Release 0.7)
-
-**Objective:** Professionalize the Android app lifecycle.
-
-- [ ] **Program 7 & 10: APK/App Manager & Library**
-    - [ ] Build App Library (Installed, Running, Updates, Recently Installed).
-    - [ ] Implement App lifecycle: `Install` → `Launch` → `Details` → `Uninstall`.
-    - [ ] Add Search, Sort, Filter, and Bulk operations.
-- [ ] **Program 8: APK Intelligence Engine**
-    - [ ] Support multiple formats: `APK`, `XAPK`, `APKS`, `APKM`, `Split APK`.
-    - [ ] Build APK Analyzer (Min/Target SDK, ABIs, Permissions, Certificates, Dependencies).
-    - [ ] Implement APK Analysis UI.
-- [ ] **Program 9: Drag & Drop Integration**
-    - [ ] Enable Drag APK onto Manager/Shortcuts.
-    - [ ] Add \"Open with Emberbird\" and Context Menu integration.
-    - [ ] Implement Batch Installation Queue.
-
-### 🚩 MILESTONE 9: SAFETY & RECOVERY (Release 0.8)
-
-**Objective:** Ensure no destructive operation is permanent.
-
-- [ ] **Program 16 & 17: Backup & Restore Engine**
-    - [ ] Implement Backup for: Apps, Data, Runtime Config, ADB settings, Emberbird preferences.
-    - [ ] Create Backup types: Quick, Full, Scheduled, Pre-Update, Pre-Repair.
-    - [ ] Build Restore Wizard with metadata verification (Date, App count, Data size).
-- [ ] **Program 18 & 19: Update & Rollback Engine**
-    - [ ] Implement Update Pipeline: `Discover` → `Compat` → `Backup` → `Verify` → `Stage` → `Install` → `Health Check` → `Commit`.
-    - [ ] Build Rollback Engine (Snapshot → Update → Health Check → Rollback on fail).
-- [x] **Program 14, 15, 44-49: Security & Supply Chain**
-    - [ ] Build Security Center (Artifact, Runtime, and Environment verification).
-    - [x] Upgrade to Signed Release System (Hash + Signature + Publisher + Provenance).
-    - [ ] Implement SBOM (Software Bill of Materials) for every release.
-    - [ ] Establish Security Response (CVE handling, Private disclosure).
-    - [ ] Build Mirror Network (Multi-source verified mirrors).
-    - [ ] Implement Reproducible Builds target.
-    - [ ] Evolve Emberbird Vault 2.0 (Verification history, SBOM, Mirror tracking).
-
-### 🚩 MILESTONE 10: INTELLIGENCE (Release 0.9)
-
-**Objective:** Become the definitive source for Android-on-Windows compatibility.
-
-- [x] **Program 11, 12, 13: Compatibility Hub**
-    - [x] Define Compatibility Schema (App, Runtime, HW, Result, Evidence).
-    - [x] Build Compatibility Hub website (Searchable database with evidence-based results).
-    - [ ] Implement Community Testing portal (Submit results → Moderation → Aggregation).
-- [x] **Program 31: Hardware Compatibility Matrix**
-    - [x] Track actual results across Intel/AMD/Snapdragon and Windows versions (23H2, 24H2, etc.).
-
-### 🚩 MILESTONE 11: POLISH & INTEGRATION (Release 1.0)
-
-**Objective:** Transition from a tool to a professional system application.
-
-- [ ] **Program 2 & 3: New Information Architecture & Dashboard**
-    - [ ] Reorganize Navigation (Overview, Apps, Runtime, Diagnostics, Compatibility, Backups, Updates).
-    - [ ] Implement the Control Center Dashboard (Health, System metrics, Quick actions, Recent apps).
-- [ ] **Program 22: Windows Integration**
-    - [ ] Start Menu, Desktop Shortcuts, and File Associations.
-    - [ ] Integration for Clipboard, Notifications, File Sharing, Camera, Mic, and Networking.
-- [x] **Program 25 & 27: Web & Docs 2.0**
-    - [x] Redesign Homepage (Simple, Transparent, Open Source).
-    - [x] Rewrite Documentation (Getting Started, User Guide, Troubleshooting, Developer SDK).
-- [ ] **Program 34-37: UX/UI Refinement**
-    - [ ] Implement Accessibility Gate (Screen readers, Keyboard nav, High contrast) — see also UX-3.
-    - [ ] Add Internationalization (i18n) architecture — see also UX-4.
-    - [ ] Build Animation System (State-communicating motion, \"Reduce Motion\" toggle).
-    - [ ] Develop Error UX (What happened → Why → Remediation → Retry).
-
-### 🚩 MILESTONE 12: ECOSYSTEM (Release 1.0+)
-
-**Objective:** Establish the platform for third-party and professional use.
-
-- [ ] **Program 23 & 24: CLI & Core API**
-    - [ ] Build Unified Core API (Shared logic for GUI and CLI).
-    - [x] Develop Emberbird CLI (`emberbird doctor`, `runtime status`, `app install`, `backup create`, etc.).
-- [ ] **Program 42: Developer SDK**
-    - [ ] Expose Runtime, Compatibility, Package, and Diagnostic APIs.
-    - [ ] Provide documentation, schemas, and examples.
-- [x] **Program 30 & 43: Governance & CI**
-    - [ ] Build \"Real Windows CI\" (Automated validation of Install → Update → Rollback → Uninstall).
-    - [x] Finalize Open-Source Governance (CONTRIBUTING, SECURITY, ARCHITECTURE docs).
-
-### 🚩 MILESTONE 13: INDEPENDENCE (Release 2.0)
-
-**Objective:** The strategic endgame. Emberbird owns the runtime.
-
-- [ ] **Program 28: Runtime Independence**
-    - [ ] Finalize the Runtime Provider Interface to support non-WSA runtimes.
-    - [ ] Integrate \"Emberbird Runtime\" as the primary provider.
-- [x] **Program 29: ARM64**
-    - [x] Implement Native ARM64 build and toolchain.
-    - [ ] Setup ARM64 CI and test matrix (Snapdragon).
-    - [ ] Enable ARM translation where necessary.
-- [ ] **Program 41: Plugin Architecture**
-    - [ ] Implement plugin system for Runtime providers, Diagnostic probes, and APK analyzers.
-
-### 🏁 THE FINAL GATE: 1000x QUALITY GATE
-
-*No release ships unless the following are green:*
-- [ ] Build ✓ Unit Tests ✓ Component Tests ✓ E2E Tests ✓ Integration ✓ Windows Runtime ✓ Doctor ✓ Installer ✓ APK Install ✓ Backup ✓ Restore ✓ Rollback ✓ Security ✓ Registry ✓ UX ✓ Accessibility ✓ Documentation ✓ Provenance ✓ Type Safety ✓ Linting ✓
+**Audit result (Cycle RA-1): 31 PARTIAL · 20 ABSENT · 0 COMPLETE.** Not one
+phase satisfies its own checklist today. That is the measurement the superseded
+roadmap was missing.
 
 ---
 
-## Part VII — Priority Matrix (Quick Reference)
+### 0.3.x — TRUTH (ACTIVE)
 
-| Priority | Phase | Item | Effort | Impact |
+Registry truth, runtime state, diagnostics and release correctness.
+
+#### PH-00 · Project Constitution
+- **Release:** `0.3.x` · **Track:** governance · **Status:** COMPLETE
+- **Goal:** bind identity, guarantees, non-guarantees, channels and policy before features.
+- **Evidence:** `TODO.md` (Part 0 Truth Hierarchy, Part I Execution Contract), `docs/EMBERBIRD_CHARTER.md`, `SECURITY.md`
+- [x] Product identity — "Android Runtime Platform for Windows", with WSA as one provider.
+- [x] Product principles (Truth, Security, Data Preservation, Reversibility).
+- [x] Governance gates (registry truth, CI reality, UX reality, security/accessibility).
+- [x] Explicit non-guarantee list — §7 of the charter (fitness, compatibility drift, MS-first-party WSA, non-goal un-list).
+- [x] Supported Windows versions / CPU architectures / runtime architectures matrix — charter §8.1, each number pinned to `deployment/version.json` / `coordinator.rs` / preflight code by `tests/test_charter_contract.py`.
+- [x] Telemetry and privacy policy (§8.2, "collects nothing" is a *tested* code claim), security model (§8.3, hash-verification and path-traversal promises pinned to `downloader.rs`), release governance (§8.4), backwards-compatibility policy (§8.5).
+- **Contract guard:** `tests/test_charter_contract.py` (13 tests) — the charter's restated numbers and "nothing" claims must equal code truth; a drifting charter fails CI.
+
+#### PH-01 · Release Truth (one authoritative release model)
+- **Release:** `0.3.x` · **Track:** registry · **Status:** PARTIAL
+- **Goal:** no release fact exists outside the registry; artifact identity is (filename + sha256).
+- **Evidence:** `data/releases/releases.json`, `data/releases/releases.schema.json`, `data/releases/GOVERNANCE.md`, `platform/release-engine/`, `scripts/build_registry.py`, `apps/manager/src/lib/registry.ts`
+- [x] One authoritative release model with a schema and an evolution policy.
+- [x] Registry-driven website release provider (zero network at build time).
+- [x] Registry-driven Manager release resolution; edition label and compatibility pill derive from assets.
+- [x] Installer artifact selection resolves from registry assets rather than literals.
+- [x] Artifact identity is (filename + sha256); never deduplicate by filename alone.
+- [ ] Per-release `capabilities` / `requirements` / `compatibility` blocks in the registry row (present today: `release_id`, `tag`, `kind`, `channel`, `edition`, `architectures`, `status`, `published_at`, `provenance`, `assets`).
+- [x] Retired the filename-heuristic architecture fallback — verified dead code (the schema requires `arch` on every asset, so the branch was unreachable for all reality); `apps/manager/src/lib/registry.ts` now resolves arch from declared truth only, and `tests/test_registry_consumer.py` gains an arch-truth guard.
+
+#### PH-02 · Runtime State Engine
+- **Release:** `0.3.x` · **Track:** state · **Status:** PARTIAL
+- **Goal:** one authoritative runtime state machine with legal transitions and recovery.
+- **Evidence:** `apps/manager/src-tauri/src/runtime_state.rs` (lifecycle engine), `apps/manager/src-tauri/src/state.rs` (`SubsystemState`, `derive_subsystem_state`, `DerivedSubsystemState.evidence`)
+- [x] Single authority for state derivation; the UI cannot invent or contradict state.
+- [x] Evidence trail per derived state, so a test asserts *why* a state was chosen, not only which one.
+- [x] A detection-failure state (`UNKNOWN`) that offers refresh instead of asserting an install state.
+- [x] Full 14-state lifecycle (`RuntimeState`), including all 11 states that detection cannot represent.
+- [x] Legal-transition table with illegal-transition rejection — a refused move changes no state and records no history.
+- [x] State-change events carrying a reason and an RFC 3339 timestamp; the recovery path `RUNNING → UPDATING → ROLLING_BACK → RUNNING` is proven legal.
+- [x] Reachability proven by traversal: every one of the 14 states is reachable from `UNKNOWN`, and detection can never report a busy state.
+- [x] State persists across a restart: `PersistedLifecycle` + `LifecycleStore` write through a staged file and a rename, so a crash mid-write cannot leave a torn snapshot, and the schema is versioned so a file this build cannot read is refused rather than misread.
+- [x] Crash-recovery and interrupted-install/update tests: recovery is **not** a transition but a re-baselining from persisted evidence, under the rule that a recovered state may be *less* specific than what was persisted, never more. A persisted `RUNNING` is not restored after a restart (a crash is not evidence the runtime is up), `INSTALLING` never recovers as installed, and `UPDATING` recovers to `BROKEN` demanding a rollback the machine can legally perform.
+- [ ] Crash-recovery and interrupted-install/update tests driven by a *real host operation* — a live install or update killed mid-flight, rather than a persisted snapshot replayed.
+- [x] A corrupt or future-schema snapshot is an `Err`, never a silent `UNKNOWN`: the difference between "we do not know" and "we cannot tell" is the whole point of the recovery path.
+- [x] The Manager consumes the engine: `get_lifecycle_report` IPC command reconciles the persisted trail with live detection (detection wins — the trail is evidence about the past, the host about now), persists the reconciled state so the next start's recovery reconciles against evidence recorded *now*, and `LifecycleBadge` renders it on the dashboard with the backend's own busy verdict and reconciliation note. A corrupt snapshot is reported `UNREADABLE` and **preserved for forensics**, never silently clobbered. The full Runtime Center (PH-08) and the CLI driver (PH-20) remain open.
+- [!] Recovery is driven by persisted evidence, not by a real host operation: the tests replay snapshots instead of killing a live install.
+
+#### PH-05 · Doctor 2.0
+- **Release:** `0.3.x` · **Track:** diagnostics · **Status:** PARTIAL
+- **Goal:** every probe returns evidence, severity, explanation, remediation and verification.
+- **Evidence:** `platform/doctor/__init__.py` (`ProbeResult`: `probe_id`, `domain`, `title`, `status`, `severity`, `summary`, `details`, `remediation_cmd`, `can_autofix`), `apps/manager/src-tauri/src/doctor.rs`, `apps/manager/src/components/DoctorView.tsx`, `tests/test_doctor.py`
+- [x] 12 probes (PRB-01…PRB-12) shared by the CLI engine and the Manager, with identical IDs and statuses.
+- [x] Severity classification (`INFO` / `WARNING` / `CRITICAL`) and a remediation command per probe.
+- [x] `can_autofix` flag plus a non-destructive remediation doctrine.
+- [x] Timestamp per probe — stamped at construction (RFC 3339, UTC) so no probe can report without a capture time, plus a report-level `captured_at`.
+- [x] Evidence per probe: the observation backing the verdict, resolved at construction rather than at serialization so the object and its wire form cannot disagree.
+- [x] A `verification` state — after a remediation the probe is **re-probed** and reported `VERIFIED`, `STILL_FAILING`, `N/A` or `NOT_ATTEMPTED`. A fix that merely exits 0 is never reported as success.
+- [ ] Probe coverage beyond the current 12 (GPU/driver state, Android-side package manager, GApps state).
+
+#### PH-24 · Release Engineering 2.0
+- **Release:** `0.3.x` · **Track:** release · **Status:** PARTIAL
+- **Goal:** signed manifests, SBOM, provenance, reproducibility and mirrors.
+- **Evidence:** `scripts/publish_release.py`, `scripts/build_registry.py`, `scripts/release_pipeline.py`, `scripts/release_integrity.py`, `data/releases/releases.json` (provenance: commit, generated_at, mode `reality-sync`, tool)
+- [x] Publication pipeline with an integrity gate and immutable release history.
+- [x] Registry provenance records the commit, tool and generation mode.
+- [x] Published checksums; artifact identity is (filename + sha256).
+- [x] SBOM per release — `scripts/generate_sbom.py` emits an SPDX 2.3 JSON document derived from the committed `Cargo.lock` (complete pinned resolution, 507 crates), the declared npm manifests (both surfaces) and the pipeline toolchain environment; licenses are `NOASSERTION`, workspace crates are marked as such, and the document carries a deterministic UUIDv5 namespace (content-hash keyed). Contract-tested in `tests/test_sbom.py` (20 tests: parser pinned to real lock bytes, no-transitive-invention invariant, validator rejection cases, `SOURCE_DATE_EPOCH` reproducibility). Wired into `scripts/assemble_production_release.py` before checksumming, so `checksums.sha256`/`.sha512` cover the SBOM itself.
+- [ ] Build attestation / provenance statement attached to each artifact.
+- [ ] Reproducible-build verification target.
+- [ ] Artifact mirrors and download-health monitoring (see PH-40).
+
+#### PH-25 · CI/CD 2.0
+- **Release:** `0.3.x` · **Track:** gates · **Status:** PARTIAL
+- **Goal:** every quality gate enforces, on real hardware where it matters.
+- **Evidence:** `.github/workflows/` (`build.yml`, `docs-validation.yml`, `gitleaks.yml`, `manager-build.yml`, `manager-e2e.yml`, `website-deploy.yml`, `winget-release.yml`), `.github/WORKFLOWS.md`
+- [x] `build.yml`, `docs-validation.yml`, `gitleaks.yml` and `manager-build.yml` green on `main` as of `9d7b121`.
+- [x] No gate suppression: zero `|| true` and zero `continue-on-error` in shipped workflows (rule 20).
+- [x] Website deploy chain unblocked end to end, including a live Cloudflare publication.
+- [ ] `manager-e2e.yml` green on `main` — currently 9 failures (120s click timeouts in the nav/Doctor journeys).
+- [ ] Windows E2E covering install → update → rollback → uninstall on a real host.
+- [x] `npm ci` instead of `npm install` in the website workflow, so CI installs are lockfile-reproducible. Verified locally with `npm ci --dry-run` ("up to date", exit 0) rather than assumed; the runner's npm cache now also keys on `website/package-lock.json` instead of `package.json`, so a lockfile change actually invalidates it.
+
+#### PH-32 · Release Channels
+- **Release:** `0.3.x` · **Track:** release · **Status:** PARTIAL
+- **Goal:** Stable / Beta / Nightly, each artifact identifying channel, commit, build, timestamp and hash.
+- **Evidence:** `data/releases/releases.schema.json` (`channel` enum), `deployment/schema.json` (`stable`|`beta`|`nightly`), `deployment/version.json`, `scripts/publish_release.py` (`--channel`)
+- [x] Channel is modelled and schema-validated.
+- [x] Every registry row records channel, commit and publication timestamp.
+- [ ] Only `stable` is ever produced; no beta or nightly pipeline exists.
+- [ ] Channel-aware update selection in the Manager.
+
+#### PH-39 · Emberbird Vault 2.0
+- **Release:** `0.3.x` · **Track:** registry · **Status:** PARTIAL
+- **Goal:** verification history, SBOM and mirror tracking on top of artifact identity.
+- **Evidence:** `data/releases/releases.json` (`vault[]`: `artifact`, `source_url`, `sha256`, `mirror_status`, `last_verified_at`, `availability_score`)
+- [x] Per-artifact sha256 with a last-verified timestamp.
+- [x] Availability scoring and mirror status per artifact.
+- [ ] SBOM and release-metadata retention in the vault.
+- [ ] Historical release retention and rollback policy.
+
+#### PH-49 · Product Quality Gate
+- **Release:** `0.3.x` · **Track:** gates · **Status:** PARTIAL
+- **Goal:** no release while any critical gate is red.
+- **Evidence:** `scripts/release_pipeline.py`, `scripts/validate_live_release.py`, `scripts/validate_distribution.py`, `tests/test_release_pipeline_audit.py`, `docs/RELEASE_HEALTH_REPORT.md`
+- [x] Registry integrity, artifact hashes, distribution manifests and identity gates run before release.
+- [x] The publication gate classifies artifacts REAL / PLACEHOLDER / UNVERIFIABLE.
+- [ ] Installer, Doctor, backup/restore, update/rollback, APK-install and security results are not yet part of one release verdict.
+
+#### PH-50 · The 1000× Quality Gate
+- **Release:** `0.3.x` · **Track:** gates · **Status:** PARTIAL
+- **Goal:** the release standard — every claim measured, every operation recoverable.
+- **Evidence:** `TODO.md` (Part III exit checklist), `apps/manager/src-tauri/src/state.rs`, `tests/test_todo_contract.py`
+- [x] The gate exists as a binding release standard (Part III exit checklist, enforced by this file's contracts).
+- [ ] Every displayed version, artifact, architecture and status is measured rather than asserted.
+- [ ] The runtime can be installed, started, stopped, repaired, updated and rolled back on a real host.
+- [ ] APKs can be installed, analysed, managed, backed up and restored.
+- [ ] Failures carry evidence; common problems fix themselves.
+- [ ] Artifacts verified, releases signed, telemetry transparent, diagnostic bundles sanitized.
+- [ ] A new user understands it in 30 seconds; a power user controls everything; keyboard-only works.
+- [ ] A contributor can run it locally, run the tests, and add a runtime provider.
+
+---
+
+### 0.4 — CONTROL
+
+Runtime management, installer, download and repair.
+
+#### PH-03 · Real Artifact Engine
+- **Release:** `0.4` · **Track:** runtime · **Status:** PARTIAL
+- **Goal:** resolve, download, verify, extract and stage a real artifact, safely.
+- **Evidence:** `apps/manager/src-tauri/src/downloader.rs` (streaming download, `stage-progress` events, SHA-256 verification, 7z extraction, deep AppxManifest discovery), `apps/manager/src-tauri/src/registry.rs`
+- [x] Artifact resolved from the registry with architecture and edition selection.
+- [x] Streaming download with progress events.
+- [x] SHA-256 verification against the registry hash; a mismatch deletes the archive.
+- [x] Extraction via 7z with manifest deep-location.
+- [ ] Resume support for interrupted downloads (no Range/resume path present).
+- [x] Explicit path-traversal / zip-slip guard: the archive's entry list is read with `7z l -slt -ba` and any entry that is absolute, drive-qualified, UNC, or contains a `..` segment is refused **before** extraction, as is an archive whose entries cannot be enumerated. Twelve escaping inputs and seven legal ones (including `..name` and `file..name.txt`) are unit-tested, and the parser is exercised against a genuine 7-Zip listing rather than a fixture alone.
+- [ ] Artifact cache with garbage collection of incomplete downloads.
+
+#### PH-04 · Real Installer
+- **Release:** `0.4` · **Track:** runtime · **Status:** PARTIAL
+- **Goal:** compatibility check → selection → download → verify → stage → backup → install → health check.
+- **Evidence:** `apps/manager/src-tauri/src/installer.rs`, `apps/manager/src/components/InstallerWizard.tsx`, `apps/manager/src-tauri/src/coordinator.rs`, `tests/test_installer_wizard_contract.py`
+- [x] Wizard drives the pipeline: Welcome → System Check → Edition → Download & Verify → Install → Health Check → Done.
+- [x] Preflight detects Windows build, virtualisation readiness and disk requirement — tri-state, and honest when unreadable.
+- [x] Manual package-path entry kept as an advanced fallback; no fabricated default paths.
+- [ ] Installer-level rollback and post-install health check (no rollback or health-check path exists in `installer.rs`).
+- [ ] Cancellation and retry for an in-flight install.
+- [ ] Recovery after an interrupted install.
+
+#### PH-08 · Runtime Center
+- **Release:** `0.4` · **Track:** runtime · **Status:** PARTIAL
+- **Goal:** one surface for runtime status, version, architecture, Android version, resources, ADB, network, storage, capabilities, logs and configuration.
+- **Evidence:** `apps/manager/src-tauri/src/runtime_state.rs` (`lifecycle_report`, `lifecycle_report_with_store`), `apps/manager/src-tauri/src/commands.rs` (`get_lifecycle_report`), `apps/manager/src/components/LifecycleBadge.tsx`, `apps/manager/src/lib/store.ts` (`lifecycle`, `refreshLifecycle`)
+- [ ] Runtime status / version / architecture / Android version panel.
+- [ ] Resource telemetry (CPU, RAM, GPU, storage).
+- [ ] Capability and configuration surface.
+- [ ] Start / stop / restart / repair / reset / backup / restore / update / rollback actions.
+- [x] Groundwork delivered: the reconciled runtime lifecycle (PH-02 engine) is surfaced end-to-end — IPC command, store wiring, dashboard badge rendering the engine's own labels and busy verdict, with a real-binary E2E assertion covering it.
+
+#### PH-31 · Error UX
+- **Release:** `0.4` · **Track:** ux · **Status:** PARTIAL
+- **Goal:** every error answers what happened, why, what to do, and whether Emberbird can fix it.
+- **Evidence:** `apps/manager/src/components/ErrorBoundary.tsx`, `apps/manager/src/components/InstallErrorNotice.tsx`, `apps/manager/src/components/Toast.tsx`, `apps/manager/src/lib/store.ts`
+- [x] Render exceptions are caught by error boundaries with a retry path; no blank screen.
+- [x] IPC failures surface as user-visible notifications, never a silent `console.error`.
+- [x] Install failures render an explicit notice rather than a stalled progress bar.
+- [ ] Structured error payload: reason, evidence, remediation, auto-fix action, view-evidence action.
+- [ ] Deep link from an error to the failing diagnostic probe.
+
+---
+
+### 0.5 — APPS
+
+The Android application lifecycle.
+
+#### PH-09 · APK / App Manager
+- **Release:** `0.5` · **Track:** apps · **Status:** ABSENT
+- **Goal:** install APK / XAPK / APKS / APKM / split packages with a real installation preview.
+- **Evidence:** NONE — NOT IMPLEMENTED (no APK-parsing, `aapt` or archive-manifest code exists; the capability appears only in archived documentation)
+- [ ] APK, XAPK, APKS, APKM and split-APK handling.
+- [ ] Drag-and-drop install and Explorer "Install with Emberbird".
+- [ ] Package metadata: id, version, version code, min/target SDK, ABI, permissions, signing certificate.
+- [ ] Installation preview, progress and history.
+
+#### PH-10 · App Library
+- **Release:** `0.5` · **Track:** apps · **Status:** ABSENT
+- **Goal:** manage installed, running, updatable and recent applications.
+- **Evidence:** NONE — NOT IMPLEMENTED
+- [ ] Installed / running / updates / recently-installed views.
+- [ ] Per-app detail: package, version, architecture, size, permissions, resources, last used.
+- [ ] Launch / stop / force-stop / backup / restore / uninstall / open-data / analyse actions.
+
+#### PH-11 · APK Intelligence Engine
+- **Release:** `0.5` · **Track:** apps · **Status:** ABSENT
+- **Goal:** explain an APK before installation, without ever guaranteeing compatibility.
+- **Evidence:** NONE — NOT IMPLEMENTED
+- [ ] APK → metadata → manifest → ABI → permissions → dependencies → runtime requirements pipeline.
+- [ ] Compatibility verdict rendered as evidence-backed signals (Android version, architecture, libraries, Google services, DRM).
+- [ ] Explicit "not a guarantee" framing on every verdict.
+
+#### PH-47 · APK Corpus
+- **Release:** `0.5` · **Track:** apps · **Status:** ABSENT
+- **Goal:** a permanent regression corpus for the APK engine.
+- **Evidence:** NONE — NOT IMPLEMENTED
+- [ ] Corpus: simple, large, split, XAPK, APKS, APKM, ARM64, ARMv7, x86, x86_64, signed, unsigned, malformed, corrupted, legacy and modern APKs.
+- [ ] Corpus wired into CI as a regression suite.
+
+#### PH-48 · Malformed-Input Security Testing
+- **Release:** `0.5` · **Track:** security · **Status:** PARTIAL
+- **Goal:** Emberbird ingests externally sourced packages, so hostile input is a first-class test target.
+- **Evidence:** `apps/manager/src-tauri/src/downloader.rs` (`is_safe_artifact_filename`, `is_safe_archive_entry`, `filename_from_url` hostile-input tests)
+- [x] Path traversal at the URL→filename boundary — new `is_safe_artifact_filename` guard (fail-closed: `..`, separators, drive qualifiers, NUL/control chars, percent-encoding, Windows reserved device names incl. trailing-dot/space forms) with hostile-input and legitimate-input test matrices; traversal URLs are refused before any filesystem or network work.
+- [ ] Zip bombs, malformed archives, oversized metadata, invalid manifests.
+- [ ] Corrupted signatures, interrupted download, disguised extension, symlink attacks, permission abuse. (SHA mismatch *was* already covered: real-I/O test proves deletion of unverified archives.)
+
+---
+
+### 0.6 — SAFE
+
+Backup, restore, security and rollback.
+
+#### PH-15 · Security Center
+- **Release:** `0.6` · **Track:** security · **Status:** ABSENT
+- **Goal:** show runtime integrity, artifact verification, signature state, root/ADB exposure and unknown packages.
+- **Evidence:** NONE — NOT IMPLEMENTED (artifact SHA-256 verification exists in `downloader.rs`, but no Security surface or security state model exists)
+- [ ] Runtime integrity and artifact verification surface.
+- [ ] Root / ADB / developer-mode exposure reporting.
+- [ ] Unknown-package and suspicious-APK warnings.
+- [ ] Runtime modification detection and a security event log.
+
+#### PH-16 · Backup Engine
+- **Release:** `0.6` · **Track:** data · **Status:** PARTIAL
+- **Goal:** no destructive operation is permanent, and every backup is verifiable.
+- **Evidence:** `apps/manager/src-tauri/src/backup.rs` (sha256, verify, timestamps, cache), `apps/manager/src-tauri/src/restore.rs` (sha256 verification, rollback path), `apps/manager/src/components/BackupView.tsx`, `apps/manager/src/components/RestoreView.tsx`
+- [x] Backup and restore surfaces with sha256-backed verification and timestamps.
+- [x] Restore carries a rollback path (`Rollback` handling in `restore.rs`).
+- [ ] Backup scope: apps, app data, runtime config, ADB settings (today: configuration-level).
+- [ ] Incremental backups, encryption, export/import, retention policy.
+- [ ] Restore preview and post-restore validation.
+
+#### PH-17 · Update & Rollback Engine
+- **Release:** `0.6` · **Track:** runtime · **Status:** PARTIAL
+- **Goal:** discover → verify → backup → stage → update → health check → commit, with rollback on failure.
+- **Evidence:** `apps/manager/src/components/UpdateView.tsx`, `apps/manager/src-tauri/src/coordinator.rs`, `apps/manager/src-tauri/src/commands.rs`, `tools/update-check/`
+- [x] Update discovery and a registry-driven release catalog with preflight gating.
+- [x] Debounced preflight IPC so typing a path does not flood the backend.
+- [ ] Staged update with a health check and automatic rollback on failure.
+- [ ] Update logs and failed-update recovery.
+- [ ] Scheduler and delta updates.
+
+#### PH-37 · Security Program
+- **Release:** `0.6` · **Track:** security · **Status:** PARTIAL
+- **Goal:** a disclosed, time-bounded vulnerability response process.
+- **Evidence:** `SECURITY.md`, `.github/workflows/gitleaks.yml`, `tests/test_identity_and_integrity.py`, `website/package.json` (audit gate)
+- [x] Vulnerability reporting policy published.
+- [x] Secret scanning (Gitleaks) plus the preserved hardcoded developer-path/username gate.
+- [x] Dependency audit enforced at `--audit-level=critical` on the website; currently 0 advisories.
+- [ ] CVE handling, security advisories and a response SLA.
+- [ ] Static analysis (SAST) in CI.
+
+#### PH-38 · Supply-Chain Security
+- **Release:** `0.6` · **Track:** security · **Status:** PARTIAL
+- **Goal:** source → build → attestation → artifact → signature → registry → client verification.
+- **Evidence:** `data/releases/releases.json` (provenance), `scripts/release_integrity.py`, `tests/test_release_integrity.py`
+- [x] Registry provenance records commit, tool and generation mode.
+- [x] Release integrity gate classifies artifacts REAL / PLACEHOLDER / UNVERIFIABLE.
+- [x] Artifact identity is (filename + sha256) end to end.
+- [ ] SBOM published per release.
+- [ ] Build attestations attached to each artifact.
+- [ ] Client-side signature verification before install.
+
+---
+
+### 0.7 — INTELLIGENCE
+
+Compatibility as an evidence-backed public dataset.
+
+#### PH-12 · Compatibility Engine (schema)
+- **Release:** `0.7` · **Track:** compatibility · **Status:** PARTIAL
+- **Goal:** a standardized per-application compatibility record built from evidence.
+- **Evidence:** `compatibility/schema.json`, `compatibility/data/` (15 application records), `compatibility/README.md`, `scripts/generate_compatibility_report.py`, `tests/test_compatibility_schema.py`, `tests/test_compatibility_report.py`
+- [x] Schema and validator with per-application records and a verification status.
+- [x] Records carry app name, package id, category, tested runtime version, root flavour, channel, last-tested date, workarounds and known issues.
+- [ ] Record app version, Windows version and build, CPU, GPU, architecture and DRM state.
+- [ ] Normalized result categories (WORKS / WORKS_WITH_ISSUES / BROKEN / CRASHES / INSTALL_FAILURE / UNKNOWN).
+
+#### PH-13 · Compatibility Hub
+- **Release:** `0.7` · **Track:** compatibility · **Status:** PARTIAL
+- **Goal:** a searchable public database whose every number is computed from evidence.
+- **Evidence:** `website/src/pages/compatibility/index.astro`, `compatibility/data/`, `website/tests/`
+- [x] Searchable compatibility surface on the website, fed by repository records.
+- [ ] Aggregated per-application launch / login / notification statistics computed from reports.
+- [ ] Known-issue rollups per application.
+- [ ] A guard on every rendered figure proving it derives from evidence, never invented.
+
+#### PH-14 · Community Testing
+- **Release:** `0.7` · **Track:** compatibility · **Status:** PARTIAL
+- **Goal:** make real test reports part of the engineering system, safely.
+- **Evidence:** `compatibility/submissions/`, `.github/ISSUE_TEMPLATE/compatibility_report.yml`, `docs/community/`
+- [x] A submission intake path and an issue template exist.
+- [ ] Automated sanitization (username, machine name, paths, IP addresses, serials, personal data).
+- [ ] Moderation → aggregation pipeline feeding the hub.
+- [ ] Result-category taxonomy enforced at submission time.
+
+#### PH-26 · Hardware Lab
+- **Release:** `0.7` · **Track:** compatibility · **Status:** PARTIAL
+- **Goal:** a public hardware compatibility matrix built from measured results.
+- **Evidence:** `docs/WINDOWS_VALIDATION_LAB.md`, `docs/COMPATIBILITY_REPORT.md`, `compatibility/data/`
+- [x] A validation-lab definition and a compatibility report surface exist.
+- [ ] Per-CPU / per-GPU / per-Windows-build result aggregation.
+- [ ] Virtualisation and driver baselines recorded as measured matrix columns.
+
+---
+
+### 0.8 — PERFORMANCE
+
+Measured resources and profiles.
+
+#### PH-18 · Performance Center
+- **Release:** `0.8` · **Track:** performance · **Status:** ABSENT
+- **Goal:** expose real resource metrics and provider-supported profiles.
+- **Evidence:** NONE — NOT IMPLEMENTED (no performance-counter or `GetSystemTimes`/PDH usage exists in the Rust core)
+- [ ] CPU / RAM / GPU / disk / network monitoring.
+- [ ] Runtime startup, app launch time and memory-footprint measurement.
+- [ ] Profiles: Balanced, Performance, Power Saver, Gaming, Developer.
+- [ ] Resource controls only where the provider supports them.
+
+#### PH-44 · Performance Engineering
+- **Release:** `0.8` · **Track:** performance · **Status:** ABSENT
+- **Goal:** published budgets, measured rather than claimed.
+- **Evidence:** NONE — NOT IMPLEMENTED (no timing budget is recorded or asserted anywhere; UX-2 produced a faster Doctor probe path but there is no budget to assert against)
+- [ ] Startup < 1.5s, dashboard < 500ms, Doctor scan < 5s, APK metadata < 1s, UI 60 FPS.
+- [ ] Budget assertions in CI against a recorded baseline.
+
+---
+
+### 0.9 — WINDOWS
+
+Native integration.
+
+#### PH-19 · Windows Integration
+- **Release:** `0.9` · **Track:** platform · **Status:** ABSENT
+- **Goal:** Emberbird feels native to Windows.
+- **Evidence:** NONE — NOT IMPLEMENTED (no file-association, Explorer context-menu, shortcut or shell-integration code exists; `notification` appears only as the in-app toast system)
+- [ ] `.apk` / `.xapk` / `.apks` / `.apkm` file associations.
+- [ ] Explorer context menu: Install with Emberbird / Analyze with Emberbird.
+- [ ] Windows notifications, clipboard, file sharing, folder integration, drag-and-drop.
+- [ ] Start menu and desktop shortcuts; automatic app registration.
+
+#### PH-27 · Diagnostic Bundle
+- **Release:** `0.9` · **Track:** diagnostics · **Status:** ABSENT
+- **Goal:** one click produces a sanitized, shareable diagnostics archive.
+- **Evidence:** NONE — NOT IMPLEMENTED (the Doctor emits a JSON report via `--json`; there is no archive packaging or sanitization pass)
+- [ ] `emberbird-diagnostics.zip` containing system, runtime, ADB, package, log and artifact-hash sections.
+- [ ] Automatic sanitization, with a never-include-secrets test.
+
+#### PH-45 · Observability
+- **Release:** `0.9` · **Track:** diagnostics · **Status:** ABSENT
+- **Goal:** every major operation carries an id, timestamps, durations, state and result.
+- **Evidence:** NONE — NOT IMPLEMENTED (no operation id, duration or span record exists in the Rust core)
+- [ ] Operation ids (for example `INSTALL-<date>-<seq>`).
+- [ ] Per-stage durations for download, verification, extraction and health check.
+- [ ] A durable operation history the UI can render.
+
+---
+
+### 1.0 — PLATFORM
+
+One product: GUI, CLI, core API and providers.
+
+#### PH-06 · UI/UX 2.0 (information architecture and dashboard)
+- **Release:** `1.0` · **Track:** ux · **Status:** PARTIAL
+- **Goal:** navigation and a dashboard that answer "what is happening right now?".
+- **Evidence:** `apps/manager/src/App.tsx` (tabs: dashboard, updates, backups, restore, doctor, licenses), `apps/manager/src/components/StatusCard.tsx`, `apps/manager/src/components/StatusOverview.tsx`
+- [x] Dashboard exists, showing subsystem state, environment and paths.
+- [x] Decomposed dashboard — `StatusCard` is a 192-line orchestrator (was 492) over six focused components.
+- [ ] Target navigation: Overview, Apps, Runtime, Diagnostics, Compatibility, Backups, Updates; Apps, Runtime and Compatibility surfaces do not exist.
+- [ ] Control-center dashboard: resource metrics, quick actions, recent apps.
+
+#### PH-07 · Design System 2.0
+- **Release:** `1.0` · **Track:** design · **Status:** PARTIAL
+- **Goal:** a coherent Windows-native tool aesthetic with a full token system.
+- **Evidence:** `apps/manager/src/design-tokens.css`, `apps/manager/src/components/ui/`, `apps/manager/tailwind.config.js`, `apps/manager/src/components/__tests__/accessibility.test.tsx`
+- [x] Semantic token layer; zero `slate-*` / `indigo-*` in living UI code (rule 21).
+- [x] Compound components (Card, Badge, Button, Alert, Spinner) and dark/light themes.
+- [x] Motion system with reduced-motion support, and high-contrast support.
+- [ ] Explicit typography, spacing, radius and elevation scales as tokens.
+- [ ] Icon system.
+- [ ] Component documentation (Storybook or equivalent).
+
+#### PH-20 · Emberbird CLI
+- **Release:** `1.0` · **Track:** interface · **Status:** PARTIAL
+- **Goal:** `emberbird status|doctor|runtime|app|backup|update|logs`.
+- **Evidence:** `platform/cli/emberbird/__main__.py`, `platform/cli/pyproject.toml`, `tests/test_cli.py`
+- [x] A single `emberbird` entry point (`[project.scripts]`), working both as a console script and invoked directly as a file.
+- [x] `version`, `status` and `doctor` are functional; `registry …` delegates to the release engine instead of reimplementing registry lookups.
+- [x] `lifecycle [--path P]` reports the reconciled runtime lifecycle from the same `%LOCALAPPDATA%\Emberbird\lifecycle.json` snapshot the Rust engine writes — read-only by design (control waits for PH-08), with the absent/corrupt/future-schema cases reported honestly and a Python-side recovery table **pinned to the Rust `fn reconcile` by a cross-language test** that parses the Rust source and fails on drift.
+- [x] Machine-readable `--json` output on every implemented command.
+- [x] The CLI is a surface, not a second implementation: its tests cross-check output against the registry and the engines, so it cannot quietly start inventing facts.
+- [ ] `runtime start|stop|restart|repair` — needs PH-08 (runtime control).
+- [ ] `app install|list|launch|uninstall|analyze` — needs PH-09 (app manager).
+- [ ] `backup create|restore` (PH-16), `update` (PH-17), `logs` (PH-45).
+- [!] GUI and CLI do not yet share one backend (PH-21): the CLI reads the Python engines while the Manager reads the Rust core. The lifecycle snapshot contract is now shared at the *file* level — the schema version, state vocabulary and recovery rules are cross-pinned by tests — but a single service layer does not exist yet. Per the Anti-Stub rule the unavailable subcommands are absent rather than stubbed.
+
+#### PH-21 · Core API
+- **Release:** `1.0` · **Track:** interface · **Status:** ABSENT
+- **Goal:** GUI and CLI share one backend with no duplicated business logic.
+- **Evidence:** NONE — NOT IMPLEMENTED (no service or API layer exists; the Manager calls Tauri commands directly and the Python platform modules are separate processes)
+- [ ] A single core API consumed by GUI and CLI.
+- [ ] Contract tests proving parity between the two surfaces.
+
+#### PH-22 · Runtime Provider Architecture
+- **Release:** `1.0` · **Track:** runtime · **Status:** ABSENT
+- **Goal:** a `RuntimeProvider` interface, so a non-WSA runtime can be added without rewriting the product.
+- **Evidence:** NONE — NOT IMPLEMENTED (`RuntimeProvider` appears nowhere in code in any language; the superseded roadmap marked it complete and contradicted itself one paragraph later. `detector.rs`, `installer.rs` and `coordinator.rs` are a de-facto provider with no interface.)
+- [ ] `RuntimeProvider` capability surface: install, uninstall, start, stop, status, health, repair, reset, backup, restore, update, rollback, install/uninstall/launch package, logs, capabilities.
+- [ ] Provider registry with `providers/wsa/` as the first implementation.
+- [ ] A test proving the interface is implementable by a second, non-WSA provider.
+
+#### PH-29 · Accessibility
+- **Release:** `1.0` · **Track:** design · **Status:** PARTIAL
+- **Goal:** operable keyboard-only and announced correctly by a screen reader.
+- **Evidence:** `apps/manager/src/components/__tests__/accessibility.test.tsx`, `TODO.md` (UX-3 record: skip-to-content, ARIA roles and labels, high contrast)
+- [x] Automated accessibility audit (axe-core) in the component test suite.
+- [x] Skip-to-content, ARIA roles and labels, high-contrast support.
+- [ ] Manual screen-reader (NVDA/Narrator) audit across all views.
+- [ ] Keyboard-only reachability verified for every action, including the installer wizard.
+- [ ] Reduced-motion and minimum touch-target enforcement verified.
+
+#### PH-30 · Internationalization
+- **Release:** `1.0` · **Track:** design · **Status:** PARTIAL
+- **Goal:** the UI is locale-ready with no hardcoded user-facing strings.
+- **Evidence:** `apps/manager/src/lib/i18n.ts` (string table, `t()`, locale detection)
+- [x] i18n architecture with extracted English strings and locale detection.
+- [ ] Additional locales (Hindi, Telugu, Spanish, German, French, Portuguese, Japanese, Chinese, Korean).
+- [ ] A CI guard that fails on a hardcoded user-facing string.
+
+#### PH-33 · Crash Reporting
+- **Release:** `1.0` · **Track:** diagnostics · **Status:** ABSENT
+- **Goal:** optional, privacy-respecting crash collection.
+- **Evidence:** NONE — NOT IMPLEMENTED
+- [ ] Crash and stack trace, Emberbird version, runtime version, Windows build, hardware class, feature in use.
+- [ ] Explicit opt-in with no silent upload.
+
+#### PH-34 · Plugin Architecture
+- **Release:** `1.0` · **Track:** platform · **Status:** ABSENT
+- **Goal:** extensions for providers, probes, analysers, mirrors and developer tools — after the core API stabilizes.
+- **Evidence:** NONE — NOT IMPLEMENTED (recorded as a LOCKED candidate in Part IV; deliberately not started)
+- [ ] Plugin API and sandboxing model.
+- [ ] Runtime-provider, diagnostic-probe, APK-analyser and backup-provider extension points.
+
+#### PH-35 · Developer SDK
+- **Release:** `1.0` · **Track:** platform · **Status:** ABSENT
+- **Goal:** let others query runtime, apps, compatibility, diagnostics and capabilities.
+- **Evidence:** NONE — NOT IMPLEMENTED (the release engine's `ember-registry` CLI is the only programmatic surface and covers registry lookups only)
+- [ ] Runtime, compatibility, package and diagnostic APIs.
+- [ ] Published schemas, documentation and examples.
+
+#### PH-36 · Open-Source Ecosystem
+- **Release:** `1.0` · **Track:** governance · **Status:** PARTIAL
+- **Goal:** a contributor can understand, run and extend the project.
+- **Evidence:** `CONTRIBUTING.md`, `SECURITY.md`, `SUPPORT.md`, `docs/LEARNING_PATH.md`, `docs/community/`, `.github/ISSUE_TEMPLATE/`
+- [x] Contributor, support and security guides, plus community discussion governance.
+- [x] Issue templates and an attribution / historical-preservation policy.
+- [ ] An RFC process for architecture changes.
+- [ ] Label taxonomy (good first issue, help wanted, architecture, runtime, security and similar).
+
+#### PH-41 · Website 2.0
+- **Release:** `1.0` · **Track:** web · **Status:** PARTIAL
+- **Goal:** the public face of the ecosystem.
+- **Evidence:** `website/src/pages/` (index, downloads, compatibility, docs, troubleshoot, registry, analytics, arm64), `website/src/lib/docs-pipeline.ts`
+- [x] Homepage, downloads, compatibility hub, documentation, registry and analytics sections.
+- [x] Registry-driven release information and searchable documentation.
+- [x] Live deployment verified end to end (Cloudflare Pages).
+- [ ] Releases, Community, Developers and Security sections.
+
+#### PH-42 · Download Experience
+- **Release:** `1.0` · **Track:** web · **Status:** PARTIAL
+- **Goal:** detect the visitor's machine and recommend the right artifact.
+- **Evidence:** `website/src/pages/downloads.astro`, `website/tests/registry-parity.test.mjs`
+- [x] Static download lists replaced by a registry-driven recommended artifact.
+- [x] Website registry data is parity-tested against the canonical registry.
+- [ ] "Your PC" detection (OS, architecture, memory).
+- [ ] Advanced disclosure of beta / nightly / ARM64 / checksums / signatures.
+
+#### PH-43 · Documentation 2.0
+- **Release:** `1.0` · **Track:** docs · **Status:** PARTIAL
+- **Goal:** complete, link-checked documentation.
+- **Evidence:** `docs/`, `website/src/content/docs/`, `scripts/check_doc_links.py`, `tests/test_docs_mirror.py`
+- [x] Getting-started, installation, diagnostics, troubleshooting, architecture and contributing docs.
+- [x] Automated link checking across all Markdown, plus a docs-mirror contract.
+- [x] Site search covers the documentation.
+- [ ] Runtime, Apps, CLI, Developer-API and Runtime-Provider guides (blocked until those surfaces exist).
+
+#### PH-46 · Test Matrix
+- **Release:** `1.0` · **Track:** gates · **Status:** PARTIAL
+- **Goal:** a formal, layered test matrix.
+- **Evidence:** `tests/` (47 Python suites), `apps/manager/tests/`, `apps/manager/src/components/__tests__/`, `apps/manager/e2e/`, `website/tests/`
+- [x] Registry, Rust, Python, component, website and type-drift layers exist and run in CI.
+- [x] 512 Python, 73 Node, 67 Vitest and 69 Rust tests green locally.
+- [x] The E2E layer is type-checked (`tsconfig.e2e.json`), so the harness specs are no longer outside every compiler.
+- [ ] Windows E2E (runtime, installer, doctor, ADB, backup, update, rollback) on real hardware.
+- [ ] APK-corpus testing (PH-47) and negative/security testing (PH-48).
+
+---
+
+### 2.0 — INDEPENDENCE
+
+Beyond WSA.
+
+#### PH-23 · ARM64
+- **Release:** `2.0` · **Track:** platform · **Status:** PARTIAL
+- **Goal:** real ARM64 artifacts, not ARM64 marketing.
+- **Evidence:** `tests/test_arm64_toolchain.py`, `data/releases/releases.json` (no ARM64 assets), `website/src/pages/arm64.astro`
+- [x] ARM64 build toolchain and BYOB pipeline exist (project A1).
+- [x] The UI advertises ARM64 only when ARM64 artifacts exist — it currently does not.
+- [ ] ARM64 registry support and a real artifact pipeline.
+- [ ] ARM64 CI and a Snapdragon test matrix.
+- [ ] ARM translation where required.
+
+#### PH-28 · Privacy Center
+- **Release:** `2.0` · **Track:** governance · **Status:** ABSENT
+- **Goal:** privacy as a feature surface, not a README paragraph.
+- **Evidence:** NONE — NOT IMPLEMENTED (there is no telemetry code to disclose, and no Privacy surface exists either)
+- [ ] Telemetry / crash-reporting / compatibility-sharing toggles, default OFF.
+- [ ] For each: what is collected, why, where it goes and how long it is kept.
+
+#### PH-40 · Mirror Network
+- **Release:** `2.0` · **Track:** distribution · **Status:** PARTIAL
+- **Goal:** verified multi-source distribution that the client checks regardless of origin.
+- **Evidence:** `apps/manager/src-tauri/src/downloader.rs` (`stage_asset_from_candidates`, `MirrorStagingReport`), `apps/manager/src-tauri/src/commands.rs` (`download_and_stage_release` failover wiring), `data/releases/releases.schema.json` (`mirrors`), `tests/test_registry_consumer.py` (mirror contract)
+- [x] Client-side verification independent of download source — `stage_asset_from_candidates` tries the registry's `source_url`, then `mirrors`, with the **registry** SHA-256 gate for every candidate; hash mismatch on any source is a recorded security event that stops the failover (a hostile mirror is never laundered by a later success); local-tooling failures stop failover too (another mirror cannot fix a missing 7z). Real-I/O tests prove mirror delivery by hashing the on-disk archive.
+- [ ] Primary CDN plus community, regional, offline and enterprise mirrors — the *engine* is done and the wire format is schema-legal; actual mirror infrastructure (serving, governance, `mirror_status` reporting) remains open.
+
+---
+
+### Anti-Goals (binding)
+
+Recorded 2026-09-21. These are prohibitions, not preferences: work that advances
+an anti-goal is rejected regardless of its quality.
+
+- No cosmetic animation, polish or badge work while installation is broken.
+- No additional release badges or marketing surfaces.
+- No hardcoded compatibility numbers — every figure is computed from reports.
+- No additional WSA editions before the runtime abstraction exists.
+- No plugin architecture before the core API is stabilized.
+- No elaborate website animation.
+- No AI features adopted for fashion.
+- No ARM64 marketing while no ARM64 artifact exists.
+- No "Banking Safe" or equivalent unsupported guarantee.
+- No configuration option without evidence or telemetry to justify it.
+- No ground-up rewrite — the registry and release architecture is an asset.
+
+---
+
+## Part VII — Priority Matrix (Quick Track Reference)
+
+Ordered by what unblocks the most other work. The ACTIVE phase is **0.3.x
+TRUTH**; tracks run in parallel within it (Execution Contract rule 1).
+
+| Priority | Phase | Work | Track | Why first |
 |---|---|---|---|---|
-| 🔴 Now | FX-0 | Error Boundaries | 2h | Prevents total app crashes |
-| 🔴 Now | QG-0 | Fix suppressed CI gates | 30m | Prevents broken deploys |
-| 🔴 Now | FX-0 | Toast/notification system | 3h | Users see errors |
-| 🟠 This week | FX-1 | Zustand global store | 1d | Unlocks all frontend work |
-| 🟠 This week | FX-2 | Debounce + timer cleanup | 1h | Stops IPC flooding |
-| 🟡 This sprint | QG-2 | Real component tests (Vitest + RTL) | 2–3d | Actually tests UI |
-| 🟡 This sprint | FX-3 | Unify design tokens | 1d | Visual coherence |
-| 🟡 This sprint | FX-2 | Extract shared components | 4h | Eliminates duplication |
-| 🟡 This sprint | QG-3 | `tauri-specta` type generation | 1d | Eliminates drift bugs |
-| 🔵 This quarter | QG-4 | Playwright E2E | 3–5d | Tests real user journeys |
-| 🔵 This quarter | QG-1 | Stack-wide linting | 4h | Consistent quality |
-| 🔵 This quarter | UX-2 | Native Win32 doctor probes | 1–2d | 10× faster diagnostics |
-| 🔵 This quarter | FX-4 | Responsive nav fix | 2h | Usable on all screens |
-| ⚪ This year | UX-0 | Design System 2.0 | 2–3w | Professional product feel |
-| ⚪ This year | UX-1 | Installer wizard UX | 1–2w | Flagship user experience |
-| ⚪ This year | DX-0 | Git LFS for large blobs | 30m | Fast clones |
+| 🔴 Now | PH-25 | Make `main` fully green — `manager-e2e.yml` 9 failures | gates | Every "CI-ratified" claim in the roadmap is blocked behind this gate |
+| 🔴 Now | PH-25 | `npm ci` instead of `npm install` in the website workflow | gates | CI installs are not lockfile-reproducible (WF-4 discovery) |
+| 🔴 Now | PH-01 | Registry `capabilities` / `requirements` / `compatibility` blocks | registry | Honest compatibility and requirement claims have no source until this exists |
+| 🟠 0.3.x | PH-02 | Runtime state machine — 11 missing states plus transition tests | state | The Runtime Center, CLI and providers all present this state |
+| 🟠 0.3.x | PH-05 | Doctor probe timestamps and remediation verification | diagnostics | Turns advice into a verifiable fix |
+| 🟠 0.4 | PH-22 | `RuntimeProvider` interface | runtime | The escape hatch from WSA; blocks PH-08, PH-20, PH-21 and PH-23 |
+| 🟠 0.4 | PH-20 | Unified `emberbird` CLI over the core | interface | Absent today despite a prior (false) completion claim |
+| 🟡 0.5 | PH-09 | APK / XAPK / APKS / APKM parsing and install | apps | The largest single missing capability; unlocks PH-10, PH-11 and PH-47 |
+| 🟡 0.6 | PH-16 | Backup scope, verification and encryption | data | "No destructive operation is permanent" is currently only partly true |
+| 🔵 1.0 | PH-06 | Navigation to Overview / Apps / Runtime / Compatibility | ux | The Apps, Runtime and Compatibility surfaces do not exist |
+| ⚪ 2.0 | PH-23 | ARM64 artifacts, CI and test matrix | platform | Availability claims stay false until real artifacts exist |
