@@ -198,7 +198,7 @@ export interface DoctorReportData {
   probes: DoctorProbe[];
 }
 
-export type NavigationTab = 'dashboard' | 'updates' | 'backups' | 'restore' | 'doctor' | 'licenses';
+export type NavigationTab = 'dashboard' | 'updates' | 'backups' | 'restore' | 'doctor' | 'licenses' | 'operations';
 
 // ---------------------------------------------------------------------------
 // Runtime lifecycle (PH-02 engine, PH-08 surface). Mirrors runtime_state.rs.
@@ -237,6 +237,27 @@ export type ReconciliationOutcome =
   | { kind: 'UNREADABLE'; reason: string };
 
 /** The reconciled lifecycle plus its audit tail — mirrors `LifecycleReport`. */
+/** One timed stage inside an OperationRecord (PH-45). */
+export interface StageTiming {
+  stage: string;
+  started_at: string;
+  duration_ms: number;
+}
+
+/** A completed download/verify/extract staging operation (PH-45). */
+export interface OperationRecord {
+  operation_id: string;
+  asset: string;
+  result: 'success' | 'failed' | string;
+  error: string | null;
+  started_at: string;
+  finished_at: string;
+  duration_ms: number;
+  stages: StageTiming[];
+  sha256: string | null;
+  size_bytes: number | null;
+}
+
 export interface LifecycleReport {
   state: RuntimeState;
   /** Whether an operation is in flight; conflicting actions must be withheld. */

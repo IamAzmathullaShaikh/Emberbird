@@ -1,7 +1,19 @@
 import { create } from 'zustand';
-import { detectWsaStatus, checkForUpdates as fetchUpdates, getLifecycleReport } from './ipc';
+import {
+  detectWsaStatus,
+  checkForUpdates as fetchUpdates,
+  getLifecycleReport,
+  getOperationHistory,
+} from './ipc';
 import { normalizeStatusPayload } from './state';
-import type { WsaStatus, UpdateStatus, StageProgress, NavigationTab, LifecycleReport } from './types';
+import type {
+  WsaStatus,
+  UpdateStatus,
+  StageProgress,
+  NavigationTab,
+  LifecycleReport,
+  OperationRecord,
+} from './types';
 
 export type NotificationType = 'success' | 'warning' | 'error' | 'info';
 
@@ -25,12 +37,17 @@ export interface EmberStore {
   notifications: Notification[];
   /** The reconciled runtime lifecycle (PH-02 engine), or null while loading. */
   lifecycle: LifecycleReport | null;
+  /** Durable staging-operation history (PH-45), or null until first load. */
+  operations: OperationRecord[] | null;
+  loadingOperations: boolean;
 
   // ── Actions ───────────────────────────────────────────────────────────────
   /** Probe the host WSA state. Surfaces errors as notifications — never swallows them. */
   refreshStatus: () => Promise<void>;
   /** Pull the reconciled runtime lifecycle report. */
   refreshLifecycle: () => Promise<void>;
+  /** Pull the durable staging-operation history (PH-45). */
+  refreshOperations: () => Promise<void>;
   /** Check for WSA updates from the registry. */
   checkForUpdates: () => Promise<void>;
   /** Navigate to a tab. */
@@ -55,6 +72,8 @@ export const useEmberStore = create<EmberStore>((set, get) => ({
   checkingUpdates: false,
   notifications: [],
   lifecycle: null,
+  operations: null,
+  loadingOperations: false,
 
   // ── Actions ───────────────────────────────────────────────────────────────
   refreshStatus: async () => {
@@ -90,6 +109,23 @@ export const useEmberStore = create<EmberStore>((set, get) => ({
       get().addNotification({
         type: 'error',
         title: 'Lifecycle reconciliation failed',
+        message,
+        durationMs: 7000,
+      });
+    }
+  },
+
+  refreshOperations: async () => {
+    set({ loadingOperations: true });
+    try {
+      const res = await getOperationHistory(100);
+      set({ operations: res, loadingOperations: false });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      set({ loadingOperations: false });
+      get().addNotification({
+        type: 'error',
+        title: 'Operation history unavailable',
         message,
         durationMs: 7000,
       });

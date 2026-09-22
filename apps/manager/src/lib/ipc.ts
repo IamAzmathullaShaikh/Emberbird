@@ -13,6 +13,7 @@ import type {
   StageProgress,
   DoctorProbe,
   LifecycleReport,
+  OperationRecord,
 } from './types';
 
 declare global {
@@ -51,6 +52,11 @@ export async function runDoctorScan(): Promise<DoctorProbe[]> {
 /** The reconciled runtime lifecycle (PH-02 engine surfaced for PH-08). */
 export async function getLifecycleReport(): Promise<LifecycleReport> {
   return invokeTauri<LifecycleReport>('get_lifecycle_report');
+}
+
+/** The durable staging-operation history (PH-45 surfaced for the UI). */
+export async function getOperationHistory(limit?: number): Promise<OperationRecord[]> {
+  return invokeTauri<OperationRecord[]>('get_operation_history', { limit });
 }
 
 // E3C.4: the legacy latest-releases IPC wrapper was removed — release truth
