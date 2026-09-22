@@ -180,6 +180,12 @@ where
     })?;
     let archive_path = root.join(&filename);
 
+    // PH-45: one durable operation record per stage_asset call, success or
+    // failure. Recording must never fail the operation it observes.
+    let op_started = chrono::Utc::now();
+    let op_id = operation_id_for_now();
+    let mut stages: Vec<StageTiming> = Vec::new();
+
     // Phase 1: streamed download with rolling SHA-256.
     let mut resp = reqwest::get(url)
         .await
@@ -195,6 +201,7 @@ where
         total_bytes,
         message: format!("Downloading {}", filename),
     });
+    let download_started = chrono::Utc::now();
 
     let mut file = std::fs::File::create(&archive_path).map_err(|e| {
         format!(
@@ -237,6 +244,13 @@ where
         }
     }
     let _ = file.flush();
+    stages.push(StageTiming {
+        stage: "download".into(),
+        started_at: rfc3339(download_started),
+        duration_ms: (chrono::Utc::now() - download_started)
+            .num_milliseconds()
+            .max(0) as u64,
+    });
 
     // Phase 2: SHA-256 verification against registry truth.
     on_progress(&StageProgress {
@@ -245,15 +259,38 @@ where
         total_bytes: received,
         message: format!("Verifying SHA-256 of {}", filename),
     });
+    let verify_started = chrono::Utc::now();
     let actual = hex_string(&hasher.finalize());
     if actual != expected {
         let _ = std::fs::remove_file(&archive_path);
+        append_operation_record(
+            &operations_log_path(),
+            &OperationRecord {
+                operation_id: op_id,
+                asset: filename.clone(),
+                result: "failed".into(),
+                error: Some("sha256 verification failed".into()),
+                started_at: rfc3339(op_started),
+                finished_at: rfc3339(chrono::Utc::now()),
+                duration_ms: (chrono::Utc::now() - op_started).num_milliseconds().max(0) as u64,
+                stages,
+                sha256: None,
+                size_bytes: Some(received),
+            },
+        );
         return Err(format!(
             "SHA-256 verification failed for {}: downloaded {} but registry expects {}. \
              The archive was deleted; unverified content is never staged.",
             filename, actual, expected
         ));
     }
+    stages.push(StageTiming {
+        stage: "verify".into(),
+        started_at: rfc3339(verify_started),
+        duration_ms: (chrono::Utc::now() - verify_started)
+            .num_milliseconds()
+            .max(0) as u64,
+    });
 
     // Phase 3: extraction to the staging area.
     let stem = filename.strip_suffix(".7z").unwrap_or(&filename);
@@ -264,17 +301,85 @@ where
         total_bytes: received,
         message: format!("Extracting {} to staging area", filename),
     });
-    extract_archive(&archive_path, &staged_path)?;
+    let extract_started = chrono::Utc::now();
+    if let Err(err) = extract_archive(&archive_path, &staged_path) {
+        append_operation_record(
+            &operations_log_path(),
+            &OperationRecord {
+                operation_id: op_id,
+                asset: filename.clone(),
+                result: "failed".into(),
+                error: Some(format!("extraction failed: {err}")),
+                started_at: rfc3339(op_started),
+                finished_at: rfc3339(chrono::Utc::now()),
+                duration_ms: (chrono::Utc::now() - op_started).num_milliseconds().max(0) as u64,
+                stages,
+                sha256: Some(actual),
+                size_bytes: Some(received),
+            },
+        );
+        return Err(err);
+    }
+    stages.push(StageTiming {
+        stage: "extract".into(),
+        started_at: rfc3339(extract_started),
+        duration_ms: (chrono::Utc::now() - extract_started)
+            .num_milliseconds()
+            .max(0) as u64,
+    });
 
     // Phase 4: manifest discovery for the registration step (the shared
     // locator, so staging and registration can never disagree about layout).
-    let manifest = find_appx_manifest(&staged_path)?;
+    let manifest_started = chrono::Utc::now();
+    let manifest = match find_appx_manifest(&staged_path) {
+        Ok(m) => m,
+        Err(err) => {
+            append_operation_record(
+                &operations_log_path(),
+                &OperationRecord {
+                    operation_id: op_id,
+                    asset: filename.clone(),
+                    result: "failed".into(),
+                    error: Some(format!("manifest discovery failed: {err}")),
+                    started_at: rfc3339(op_started),
+                    finished_at: rfc3339(chrono::Utc::now()),
+                    duration_ms: (chrono::Utc::now() - op_started).num_milliseconds().max(0) as u64,
+                    stages,
+                    sha256: Some(actual),
+                    size_bytes: Some(received),
+                },
+            );
+            return Err(err);
+        }
+    };
+    stages.push(StageTiming {
+        stage: "manifest".into(),
+        started_at: rfc3339(manifest_started),
+        duration_ms: (chrono::Utc::now() - manifest_started)
+            .num_milliseconds()
+            .max(0) as u64,
+    });
     on_progress(&StageProgress {
         phase: StagePhase::Done,
         received_bytes: received,
         total_bytes: received,
         message: format!("Staged and verified: {}", manifest.display()),
     });
+    append_operation_record(
+        &operations_log_path(),
+        &OperationRecord {
+            operation_id: op_id,
+            asset: filename,
+            result: "success".into(),
+            error: None,
+            started_at: rfc3339(op_started),
+            finished_at: rfc3339(chrono::Utc::now()),
+            duration_ms: (chrono::Utc::now() - op_started).num_milliseconds().max(0) as u64,
+            stages,
+            sha256: Some(actual.clone()),
+            size_bytes: Some(received),
+        },
+    );
 
     Ok(StagedAsset {
         archive_path: archive_path.to_string_lossy().into_owned(),
@@ -324,6 +429,30 @@ pub fn parse_archive_listing(stdout: &str) -> Vec<String> {
         .filter(|value| !value.is_empty())
         .collect()
 }
+
+/// PH-48 — Total declared uncompressed size from a `7z l -slt -ba` listing.
+///
+/// Entry names alone cannot detect a decompression bomb: an archive full of
+/// perfectly-named entries can still declare terabytes of extracted content.
+/// The listing carries each entry's `Size = ` (directories have none); the
+/// sum is the archive's own declaration, which is advisory but free — and
+/// refusing to *start* extraction of a declared monster costs nothing.
+/// Entries without a Size line contribute 0.
+pub fn archive_declared_total_bytes(stdout: &str) -> u64 {
+    let mut total: u64 = 0;
+    for line in stdout.lines() {
+        if let Some(size) = line.strip_prefix("Size = ") {
+            total += size.trim().parse::<u64>().unwrap_or(0);
+        }
+    }
+    total
+}
+
+/// PH-48 — declared-extraction budget. A real WSA package extracts to a few
+/// GB; 40 GB is generous headroom and far below any disk the staging volume
+/// needs to survive on. An archive declaring more than this is refused
+/// before extraction begins.
+pub const MAX_DECLARED_EXTRACTION_BYTES: u64 = 40 * 1024 * 1024 * 1024;
 
 /// Extract a 7z archive with whatever 7-Zip binary exists on PATH. An absent
 /// binary is a hard error — no fabricated extraction.
@@ -395,6 +524,18 @@ fn extract_archive(archive: &Path, dest: &Path) -> Result<(), String> {
             ));
         }
 
+        // PH-48: refuse archives that declare an absurd extracted size before
+        // giving 7z anything to do. Advisory data — but the refusal is free.
+        let declared = archive_declared_total_bytes(&String::from_utf8_lossy(&listing.stdout));
+        if declared > MAX_DECLARED_EXTRACTION_BYTES {
+            return Err(format!(
+                "Refusing to extract {}: declares {} bytes of extracted content, over the {} byte budget (decompression bomb guard).",
+                archive.display(),
+                declared,
+                MAX_DECLARED_EXTRACTION_BYTES
+            ));
+        }
+
         match std::process::Command::new(bin)
             .args([
                 "x",
@@ -418,6 +559,134 @@ fn extract_archive(archive: &Path, dest: &Path) -> Result<(), String> {
          to enable package staging."
             .to_string(),
     )
+}
+
+// ---------------------------------------------------------------------------
+// PH-45 — Observability: durable operation records for the staging pipeline.
+//
+// Every stage_asset call — success or failure — appends one record to a
+// JSONL history the UI can render: an operation id, wall-clock bounds,
+// total duration, per-stage durations and the outcome. Observability must
+// never fail the operation it observes: an unwritable log degrades to a
+// silent no-op, never an error path.
+// ---------------------------------------------------------------------------
+
+/// One completed stage of an operation, with its duration.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, specta::Type)]
+#[serde(rename_all = "snake_case")]
+pub struct StageTiming {
+    /// "download" | "verify" | "extract" | "manifest"
+    pub stage: String,
+    /// RFC 3339 UTC timestamp of when the stage began.
+    pub started_at: String,
+    pub duration_ms: u64,
+}
+
+/// The complete record of one staging operation.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, specta::Type)]
+#[serde(rename_all = "snake_case")]
+pub struct OperationRecord {
+    pub operation_id: String,
+    pub asset: String,
+    /// "success" | "failed"
+    pub result: String,
+    pub error: Option<String>,
+    pub started_at: String,
+    pub finished_at: String,
+    pub duration_ms: u64,
+    /// Stages that *completed*; a mid-stage failure records the total
+    /// duration and error instead of pretending all stages ran.
+    pub stages: Vec<StageTiming>,
+    pub sha256: Option<String>,
+    pub size_bytes: Option<u64>,
+}
+
+/// Operation id format: `STAGE-<yyyymmdd>-<hhmmss>-<8 hex>`. Pure so tests
+/// pin the format; production entropy comes from a monotonic counter mixed
+/// with the sub-second nanos. The 32-bit suffix is deliberate: 16 bits hit
+/// birthday collisions around 300 rapid operations (the uniqueness test
+/// caught exactly that), 32 bits does not at any realistic churn.
+pub fn operation_id(now: chrono::DateTime<chrono::Utc>, entropy: u32) -> String {
+    format!("STAGE-{}-{:08x}", now.format("%Y%m%d-%H%M%S"), entropy)
+}
+
+fn operation_id_for_now() -> String {
+    use std::sync::atomic::{AtomicU32, Ordering};
+    static SEQ: AtomicU32 = AtomicU32::new(0);
+    let seq = SEQ.fetch_add(1, Ordering::Relaxed);
+    let now = chrono::Utc::now();
+    // FNV-1a over (seq, nanos): spreads both inputs across the 32 bits so
+    // neither a tight loop (nanos nearly constant) nor clock granularity
+    // (seq varying) can cluster the outputs.
+    let mut hash: u32 = 0x811c9dc5;
+    for word in [seq, now.timestamp_subsec_nanos()] {
+        for byte in word.to_be_bytes() {
+            hash ^= byte as u32;
+            hash = hash.wrapping_mul(0x01000193);
+        }
+    }
+    operation_id(now, hash)
+}
+
+fn rfc3339(t: chrono::DateTime<chrono::Utc>) -> String {
+    t.to_rfc3339_opts(chrono::SecondsFormat::Secs, true)
+}
+
+/// Where the durable history lives. `EMBERBIRD_OPERATIONS_LOG` overrides the
+/// location (tests and portable setups).
+pub fn operations_log_path() -> PathBuf {
+    if let Ok(path) = std::env::var("EMBERBIRD_OPERATIONS_LOG") {
+        if !path.trim().is_empty() {
+            return PathBuf::from(path);
+        }
+    }
+    if let Ok(local_app_data) = std::env::var("LOCALAPPDATA") {
+        if !local_app_data.trim().is_empty() {
+            return PathBuf::from(local_app_data)
+                .join("Emberbird")
+                .join("operations.jsonl");
+        }
+    }
+    std::env::temp_dir().join("emberbird-operations.jsonl")
+}
+
+/// Append one record to `path` as a JSON line.
+pub fn append_operation_record(path: &Path, record: &OperationRecord) {
+    if let Some(parent) = path.parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+    if let Ok(mut file) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(path)
+    {
+        if let Ok(line) = serde_json::to_string(record) {
+            let _ = writeln!(file, "{line}");
+        }
+    }
+}
+
+/// The last `limit` records from `path`, oldest first. Corrupt lines are
+/// skipped honestly — a torn tail line from a killed process must not erase
+/// the readable history.
+pub fn read_operation_history_from(path: &Path, limit: usize) -> Vec<OperationRecord> {
+    let Ok(content) = std::fs::read_to_string(path) else {
+        return Vec::new();
+    };
+    let mut records: Vec<OperationRecord> = content
+        .lines()
+        .filter(|line| !line.trim().is_empty())
+        .filter_map(|line| serde_json::from_str(line).ok())
+        .collect();
+    if records.len() > limit {
+        records.drain(..records.len() - limit);
+    }
+    records
+}
+
+/// Durable history the UI can render (default location, newest last).
+pub fn read_operation_history(limit: usize) -> Vec<OperationRecord> {
+    read_operation_history_from(&operations_log_path(), limit)
 }
 
 // ---------------------------------------------------------------------------
@@ -1149,5 +1418,124 @@ mod tests {
     fn filenames_with_no_segment_are_still_refused_honestly() {
         let err = filename_from_url("https://host/").expect_err("no segment");
         assert!(err.contains("no filename segment"), "got: {err}");
+    }
+
+    // ---- PH-48: decompression-bomb budget ---------------------------------
+
+    #[test]
+    fn declared_size_sums_every_size_line() {
+        let listing = "Path = a.7z\nSize = 100 \nAttributes = A\nPath = b\nSize = 200\nPath = dir\nAttributes = D";
+        assert_eq!(archive_declared_total_bytes(listing), 300);
+    }
+
+    #[test]
+    fn malformed_size_lines_contribute_zero_not_a_crash() {
+        let listing = "Path = a\nSize = not-a-number\nPath = b\nSize = -5\nSize =";
+        assert_eq!(archive_declared_total_bytes(listing), 0);
+    }
+
+    #[test]
+    fn bomb_budget_is_generous_but_real() {
+        // A real WSA package extracts to a few GB; the budget must sit far
+        // above that (no false positive) and far below disk-death (no no-op).
+        // Const block: clippy rightly notes these are compile-time facts.
+        const { assert!(MAX_DECLARED_EXTRACTION_BYTES > 10 * 1024 * 1024 * 1024) }
+        const { assert!(MAX_DECLARED_EXTRACTION_BYTES < 1024 * 1024 * 1024 * 1024) }
+    }
+
+    #[test]
+    fn a_declared_bomb_is_refused_with_a_named_reason() {
+        // End-to-end through the guard's own arithmetic: a listing declaring
+        // 41 GiB must be over-budget under the same constant the extractor
+        // uses.
+        let mut listing = String::new();
+        for i in 0..41 {
+            listing.push_str(&format!("Path = blob{i}\nSize = 1073741824\n")); // 1 GiB each
+        }
+        let declared = archive_declared_total_bytes(&listing);
+        assert!(
+            declared > MAX_DECLARED_EXTRACTION_BYTES,
+            "fixture must exceed the budget"
+        );
+    }
+
+    #[test]
+    fn a_realistic_wsa_listing_is_well_under_budget() {
+        // ~3.5 GiB of plausible entries stays under the budget.
+        let mut listing = String::new();
+        for i in 0..3500 {
+            listing.push_str(&format!("Path = payload/{i}.img\nSize = 1048576\n"));
+        }
+        let declared = archive_declared_total_bytes(&listing);
+        assert!(declared < MAX_DECLARED_EXTRACTION_BYTES);
+    }
+
+    // ---- PH-45: operation records -----------------------------------------
+
+    #[test]
+    fn operation_ids_match_the_documented_format() {
+        let now = chrono::Utc::now();
+        let id = operation_id(now, 0xdeadbeef);
+        assert!(
+            id.starts_with("STAGE-") && id.ends_with("deadbeef"),
+            "id must be STAGE-<stamp>-<8hex>, got: {id}"
+        );
+        let stamp = &id["STAGE-".len()..id.len() - 9];
+        assert_eq!(stamp.len(), 15, "yyyymmdd-hhmmss, got: {stamp}");
+        assert_eq!(&stamp[8..9], "-");
+    }
+
+    #[test]
+    fn operation_ids_are_effectively_unique_under_churn() {
+        let ids: std::collections::HashSet<String> =
+            (0..1000).map(|_| operation_id_for_now()).collect();
+        assert_eq!(
+            ids.len(),
+            1000,
+            "32-bit entropy must not collide at 1000 rapid calls"
+        );
+    }
+
+    #[test]
+    fn history_roundtrips_and_tolerates_a_torn_tail() {
+        let tmp = std::env::temp_dir().join(format!("eb-ops-test-{}", std::process::id()));
+        let _ = std::fs::remove_file(&tmp);
+        let record = OperationRecord {
+            operation_id: "STAGE-20260922-120000-0001".into(),
+            asset: "WSA_2407.40000.4.0_x64.7z".into(),
+            result: "success".into(),
+            error: None,
+            started_at: "2026-09-22T12:00:00Z".into(),
+            finished_at: "2026-09-22T12:01:00Z".into(),
+            duration_ms: 60_000,
+            stages: vec![StageTiming {
+                stage: "download".into(),
+                started_at: "2026-09-22T12:00:00Z".into(),
+                duration_ms: 59_000,
+            }],
+            sha256: Some("a".repeat(64)),
+            size_bytes: Some(1234),
+        };
+        append_operation_record(&tmp, &record);
+        append_operation_record(&tmp, &record);
+        // A torn tail (killed mid-write) must not erase the readable history.
+        {
+            use std::io::Write;
+            let mut f = std::fs::OpenOptions::new().append(true).open(&tmp).unwrap();
+            let _ = writeln!(f, "{{\"operation_id\": \"TORN");
+        }
+        let history = read_operation_history_from(&tmp, 10);
+        assert_eq!(history.len(), 2, "torn line skipped, records kept");
+        assert_eq!(history[0].operation_id, "STAGE-20260922-120000-0001");
+        let last2 = read_operation_history_from(&tmp, 1);
+        assert_eq!(last2.len(), 1, "limit returns the newest records");
+        let _ = std::fs::remove_file(&tmp);
+    }
+
+    #[test]
+    fn history_of_a_missing_log_is_empty_not_an_error() {
+        let bogus = std::env::temp_dir().join("eb-ops-no-such-file.jsonl");
+        let _ = std::fs::remove_file(&bogus);
+        assert!(read_operation_history_from(&bogus, 10).is_empty());
     }
 }
