@@ -109,7 +109,130 @@ wiki pages, and issue threads. Emberbird's founding premise:
   provenance in `docs/ATTRIBUTION.md` and version-pinned in registry
   provenance records.
 
-## 7. How success is measured
+## 7. What Emberbird does not guarantee (non-guarantees)
+
+These are deliberate, permanent boundaries — not pending features. A claim
+inside them is a bug in the claim, not a gap in the product.
+
+1. **No "it will work on your PC" guarantee.** WSA depends on Windows
+   builds, virtualization stacks and OEM drivers Microsoft controls. The
+   Manager reports what it can *measure* (virtualization state, Windows
+   build, disk space, developer mode) and never promises an outcome.
+2. **No guarantee of running apps' correctness.** Emberbird ships the
+   Android runtime, not app compatibility; Play Integrity and app-level
+   attestations are outside any edition's promise (see the honest-editions
+   pillar, §3).
+3. **No uninterrupted-update guarantee.** Updates are verified against
+   registry hashes before anything is touched, and a failure is loud — but
+   Microsoft endpoints, GitHub availability and upstream WSA deprecation
+   are not ours to promise.
+4. **No silent self-modification.** Emberbird never changes system
+   settings (developer mode, virtualization, Defender exclusions) without
+   an explicit, explained user action. Remediations always name the change
+   before asking.
+5. **No data retention promise beyond the machine.** Backups, snapshots
+   and lifecycle records live on the user's disk; there is no cloud copy,
+   and none is promised (see the privacy policy, §8).
+6. **No support surface for modified upstream binaries.** A WSA package
+   whose hash does not match registry truth is refused, not "supported
+   with caveats".
+7. **No availability guarantee for Microsoft's endpoints.** If Microsoft
+   withdraws WSA distribution (as the March 2025 WSA/Amazon Appstore store
+   withdrawal showed), published artifacts remain queryable and verifiable
+   from the registry, but future upstream fixes are outside our control.
+
+## 8. Policies
+
+### 8.1 Supported configurations (declared truth)
+
+The authoritative numbers are the ones the code enforces; this table restates
+them and a test keeps the restatement honest.
+
+| Dimension | Declared value | Enforced by |
+|---|---|---|
+| Windows build | ≥ 10.0.**19045** (22H2); preflight refuses older builds | `deployment/version.json` (`min_windows_build`), `coordinator.rs` preflight |
+| Host CPU architecture | **x64** (ARM64 is a research pillar — `target_architectures` in `deployment/version.json`) | preflight + registry `architectures` |
+| Virtualization | Virtual Machine Platform / Hyper-V **enabled** | `coordinator.rs` preflight, `detector.rs` |
+| Windows Developer Mode | **Required** for subsystem registration | `detector.rs` (`developer_mode_enabled`) |
+| Free disk space | **≥ 25 GB** on the system drive (`REQUIRED_DISK_SPACE_BYTES`) | `coordinator.rs` preflight |
+| Subsystem baseline | WSA **2407.40000.4.0** (Android 13) | `deployment/version.json` (`subsystem_baseline`) |
+| Manager architecture | x64 only (ARM64 builds do not exist — no false ARM64 promise) | `winget-release.yml`, registry |
+
+Anything outside this table may work; it is simply not promised, not tested,
+and not claimed.
+
+### 8.2 Telemetry and privacy policy
+
+- **Emberbird collects nothing.** There is no telemetry pipeline in the
+  Manager, the CLI, or the website: no analytics SDK, no crash uploader, no
+  usage ping, no unique identifier. This is verifiable in the code and is a
+  promise, not an oversight — any future telemetry requires amending this
+  section first (PH-28/PH-33 gate it) and shipping an opt-in switch.
+- **What leaves the machine:** only what a documented feature must fetch —
+  registry files and release artifacts from published endpoints (GitHub),
+  and diagnostic *commands the user explicitly runs* (emberbird doctor)
+  whose output stays on stdout/the local report. Nothing else is sent,
+  anywhere, by anything.
+- **What stays on the machine:** backups, lifecycle snapshots
+  (`%LOCALAPPDATA%\Emberbird\lifecycle.json`), staged archives, and doctor
+  reports. Users can delete all of it; Emberbird re-derives what it needs.
+- **Crash reporting:** none today. When PH-33 lands it will be opt-in,
+  documented here, and disabled by default.
+
+### 8.3 Security model
+
+1. **Artifact integrity is the root of trust.** Artifact identity is
+   `(filename, sha256)`; a hash mismatch deletes the content and refuses to
+   stage — there is no override flag. The registry schema *requires* the
+   hash and the architecture on every asset, so an unverified row cannot
+   even be expressed.
+2. **Archive extraction is guarded.** Entries that are absolute, UNC,
+   drive-qualified or contain a `..` segment are refused *before* anything
+   is written; an archive whose entries cannot be enumerated is refused
+   rather than trusted to the extractor.
+3. **The user mediates every privileged action.** Elevation is requested
+   per action with an explanation; the CLI refuses remediations without an
+   elevated shell rather than self-elevating.
+4. **Secrets stay out.** CI tokens are stored as GitHub secrets; the code
+   base is scanned by Gitleaks on every push; no secret is read from the
+   registry or the deployment manifest.
+5. **Failure is the safe direction.** When evidence is missing — detection
+   cannot read a version, a snapshot is corrupt, a schema is from the
+   future — every surface reports failure or `UNKNOWN`, never a guess.
+
+### 8.4 Release governance
+
+- **The registry is the only release fact.** Release identity, artifact
+  hashes, editions, channels and provenance live in
+  `data/releases/releases.json` under the frozen schema; consumers are
+  registry-only by contract (enforced by `tests/test_registry_consumer.py`).
+- **Publication is gated.** A release enters the registry only through
+  `scripts/publish_release.py`, which validates against the schema, records
+  provenance (commit, tool, generation mode) and appends to an immutable
+  history; removal is a governance action with a recorded reason.
+- **CI ratifies.** A claim of "shipped" requires a green run of the
+  corresponding workflow on the release ref; local green is necessary but
+  never sufficient.
+- **Deprecate loudly, delete never.** Superseded releases stay queryable
+  with explicit supersession chains.
+
+### 8.5 Backwards-compatibility policy
+
+- **Data contracts:** `releases.schema.json` and the lifecycle snapshot
+  schema are versioned. Readers refuse *future* versions loudly (the
+  lifecycle reader and the Rust engine both do) and read past versions
+  honestly; schema evolution is additive until a recorded breaking change.
+- **Registry rows:** published release rows are immutable; supersession,
+  not rewrite. A renumber or rename is legitimate only when a crosswalk
+  keeps old identifiers resolvable (the `FB-*`/`FX-*`/`QG-*`/`DX-*`/`UX-*`
+  crosswalk in `TODO.md` is the precedent, enforced by a test).
+- **Machine-readable output:** the CLI's `--json` payloads are additive —
+  existing keys keep their names and meaning; new facts get new keys.
+- **File locations:** `%LOCALAPPDATA%\Emberbird\` is the application's
+  data home; moving a file there is a breaking change requiring a
+  migration note in this charter.
+
+## 9. How success is measured
 
 Phase 0 succeeds when the P0 exit checklist in `TODO.md` is fully checked:
 registry schema frozen and tested, registry generated from real published
