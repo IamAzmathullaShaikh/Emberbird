@@ -154,3 +154,54 @@ test('the E2E binary override always wins over candidates', () => {
     'C:/custom/app.exe',
   );
 });
+
+test('stream tails keep only the last DIAGNOSTIC_TAIL_CHARS characters', async () => {
+  const { tailOf, DIAGNOSTIC_TAIL_CHARS: limit } = await import('../e2e/fixtures/attach.ts');
+  assert.equal(tailOf(undefined), '');
+  assert.equal(tailOf(''), '');
+  assert.equal(tailOf('short'), 'short');
+  const long = 'x'.repeat(limit + 10);
+  assert.equal(tailOf(long).length, limit);
+});
+
+test('a child exit code is reported with its own output, not just the CDP error', async () => {
+  const { describeChildExit } = await import('../e2e/fixtures/attach.ts');
+  const text = describeChildExit({
+    exitCode: 0xc0000135,
+    signal: null,
+    stdoutTail: '',
+    stderrTail: 'Failed to load WebView2Loader.dll',
+  });
+  assert.match(text, /exited with code/);
+  assert.match(text, /Failed to load WebView2Loader\.dll/);
+});
+
+test('a signal kill and a silent death are both explained', async () => {
+  const { describeChildExit } = await import('../e2e/fixtures/attach.ts');
+  assert.match(
+    describeChildExit({ exitCode: null, signal: 'SIGTERM', stdoutTail: 'boot ok', stderrTail: '' }),
+    /killed by signal SIGTERM/,
+  );
+  const silent = describeChildExit({ exitCode: null, signal: null, stdoutTail: '', stderrTail: '' });
+  assert.match(silent, /ended before exposing a CDP endpoint/);
+  assert.match(silent, /stdout: <empty>/);
+});
+
+test('the harness drains child stdio and fails fast on child exit', () => {
+  const source = read('e2e/fixtures/tauri.ts');
+  assert.match(
+    source,
+    /captureChildStreams/,
+    'waitForCdp must drain stdout/stderr or a chatty app blocks on a full pipe and never serves CDP',
+  );
+  assert.match(
+    source,
+    /child\.exitCode !== null \|\| child\.signalCode !== null/,
+    'the CDP poll must notice a dead child instead of spinning out its full timeout',
+  );
+  assert.match(
+    source,
+    /catch \(error\) \{[\s\S]*?child\.kill\(\);[\s\S]*?throw error;/,
+    'a failed launch must not leak the spawned application process',
+  );
+});
