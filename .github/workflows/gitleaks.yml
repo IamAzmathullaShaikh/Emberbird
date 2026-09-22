@@ -37,8 +37,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          # Full history scan for scheduled runs; shallow for PRs/pushes
-          fetch-depth: ${{ github.event_name == 'schedule' && 0 || 1 }}
+          # Push events scan the commit range `<prev-head>..<head>` (the action
+          # passes --log-opts itself), which needs the base commit to exist.
+          # A shallow checkout cannot resolve it, so gitleaks scans 0 bytes and
+          # fails — full history is required for push scans too. Scheduled runs
+          # already request it explicitly.
+          fetch-depth: 0
 
       # --- Repository hygiene gate (preserved from the removed security.yml) ---
       # Gitleaks detects secrets; it cannot detect a hardcoded developer machine
