@@ -6,6 +6,7 @@ import { BackupView } from './components/BackupView';
 import { RestoreView } from './components/RestoreView';
 import { UpdateView } from './components/UpdateView';
 import { LicensesView } from './components/LicensesView';
+import { OperationsView } from './components/OperationsView';
 import { DoctorView } from './components/DoctorView';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Toast } from './components/Toast';
@@ -78,6 +79,14 @@ export const App: React.FC = () => {
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
             <ErrorBoundary label="Doctor">
               <DoctorView />
+            </ErrorBoundary>
+          </div>
+        )}
+
+        {activeTab === 'operations' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <ErrorBoundary label="Operations">
+              <OperationsView />
             </ErrorBoundary>
           </div>
         )}

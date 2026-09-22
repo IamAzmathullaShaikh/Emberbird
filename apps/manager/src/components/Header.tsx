@@ -11,6 +11,7 @@ const TABS: { id: NavigationTab; label: string }[] = [
   { id: 'backups',   label: 'Backups' },
   { id: 'restore',   label: 'Restore' },
   { id: 'doctor',    label: 'Doctor' },
+  { id: 'operations', label: 'Operations' },
   { id: 'licenses',  label: 'Licenses' },
 ];
 
