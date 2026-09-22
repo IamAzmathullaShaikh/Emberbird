@@ -12,6 +12,14 @@ src-tauri/dist/
 src-tauri/icons/
 src-tauri/app-icon.ico
 
+# Playwright / E2E artifacts (never committed)
+test-results/
+playwright-report/
+e2e-report/
+
+# Local UI probe dumps (e2e/probe.mjs ground-truth captures)
+probe-*.txt
+
 # OS
 .DS_Store
 Thumbs.db
