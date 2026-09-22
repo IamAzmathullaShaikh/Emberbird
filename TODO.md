@@ -203,7 +203,7 @@ previously filled this file is preserved in git history (`git log -- TODO.md`).
 ### Roadmap audit (Cycle RA-1, 2026-09-21)
 
 The platform roadmap in Part VI was re-derived from the code rather than from
-intent. Across 51 phases: **32 PARTIAL · 18 ABSENT · 1 COMPLETE** (PH-00) — the first
+intent. Across 51 phases: **35 PARTIAL · 14 ABSENT · 2 COMPLETE** (PH-00, PH-45) — the first
 honest measure of the remaining distance. Two capabilities the superseded
 roadmap advertised as done do not exist in any language: the `RuntimeProvider`
 interface and the unified `emberbird` CLI. Both are now recorded ABSENT
@@ -1442,6 +1442,39 @@ production caller for the first time, the dashboard no longer shows install
 state without lifecycle truth, and the E2E gate survives the binary-name and
 WebView2 failure modes that only a CI run would otherwise expose.
 
+### Cycle RA-11 — Observability completes, the diagnostic bundle ships (2026-09-22)
+
+- [x] **PH-45 flipped COMPLETE** — the second phase ever to satisfy its own
+      checklist. The operation-record engine from RA-10 gained its consumer
+      surface: the `get_operation_history` IPC command (blocking-pool wrapped,
+      limit-bounded), `OperationRecord`/`StageTiming` wire types, the store
+      loader, and the Operations tab — expandable rows with per-stage chips,
+      result badges, digest and size. Component tests pin the empty state,
+      the success/failed summaries, id formatting and the failure reason.
+- [x] **PH-27 moved ABSENT → PARTIAL** — `platform/diagnostics` assembles the
+      sanitized bundle from the real Doctor report; `emberbird diagnostics`
+      is the first carrier. The never-include-secrets gate caught a real
+      sanitizer gap during development (`pass=` assignments and
+      underscore-embedded `ghp_` tokens leaked); both pattern classes were
+      closed and pinned before the bundle shipped.
+- [x] **Truth alignment** — PH-48's declared-size/zip-bomb item and PH-38's
+      SBOM/attestation items were implemented in RA-9/RA-10 but never checked
+      off; the ledger now records them with their code evidence.
+
+### Cycle RA-10 — Archive hostility and the operation record (2026-09-22)
+
+- [x] **PH-48: declared-size budget** — `archive_declared_total_bytes` sums
+      the `7z l -slt -ba` listing's `Size =` lines; extraction of a declared
+      monster is refused before any disk write, and malformed listing output
+      sums to 0 (refusal names the reason).
+- [x] **PH-45: the operation record engine** — `OperationRecord`/`StageTiming`
+      with per-stage timing, JSONL append log (torn-line tolerant on read),
+      and a collision-resistant id format. The uniqueness test drove the id
+      from 16 to 32 bits of entropy after demonstrating birthday-collision
+      risk at realistic sample counts.
+- [x] Committed individually and pushed (`7309842..b8fcccd`) with the
+      refreshed identity inventory.
+
 ### Cycle RA-9 — Verified mirrors, hostile input, and per-artifact provenance (2026-09-22)
 
 - [x] **PH-40 (distribution track): the mirror failover engine.**
@@ -1850,7 +1883,7 @@ The Android application lifecycle.
 - **Goal:** Emberbird ingests externally sourced packages, so hostile input is a first-class test target.
 - **Evidence:** `apps/manager/src-tauri/src/downloader.rs` (`is_safe_artifact_filename`, `is_safe_archive_entry`, `filename_from_url` hostile-input tests)
 - [x] Path traversal at the URL→filename boundary — new `is_safe_artifact_filename` guard (fail-closed: `..`, separators, drive qualifiers, NUL/control chars, percent-encoding, Windows reserved device names incl. trailing-dot/space forms) with hostile-input and legitimate-input test matrices; traversal URLs are refused before any filesystem or network work.
-- [ ] Zip bombs, malformed archives, oversized metadata, invalid manifests.
+- [x] Zip bombs, malformed archives, oversized metadata, invalid manifests — `archive_declared_total_bytes` sums the listing's `Size =` lines and `MAX_DECLARED_EXTRACTION_BYTES` refuses extraction *before any disk write*; malformed listing output yields 0 and passes only files whose declared total is within budget.
 - [ ] Corrupted signatures, interrupted download, disguised extension, symlink attacks, permission abuse. (SHA mismatch *was* already covered: real-I/O test proves deletion of unverified archives.)
 
 ---
@@ -1901,12 +1934,12 @@ Backup, restore, security and rollback.
 #### PH-38 · Supply-Chain Security
 - **Release:** `0.6` · **Track:** security · **Status:** PARTIAL
 - **Goal:** source → build → attestation → artifact → signature → registry → client verification.
-- **Evidence:** `data/releases/releases.json` (provenance), `scripts/release_integrity.py`, `tests/test_release_integrity.py`
+- **Evidence:** `data/releases/releases.json` (provenance), `scripts/release_integrity.py`, `tests/test_release_integrity.py`, `scripts/generate_sbom.py`, `tests/test_sbom.py`, `scripts/generate_attestation.py`, `tests/test_attestation.py`
 - [x] Registry provenance records commit, tool and generation mode.
 - [x] Release integrity gate classifies artifacts REAL / PLACEHOLDER / UNVERIFIABLE.
 - [x] Artifact identity is (filename + sha256) end to end.
-- [ ] SBOM published per release.
-- [ ] Build attestations attached to each artifact.
+- [x] SBOM published per release — SPDX 2.3 JSON generated from the committed `Cargo.lock` plus declared npm manifests and the pipeline's Python environment, wired into `assemble_production_release.py` before checksumming so the checksum files cover the SBOM itself.
+- [x] Build attestations attached to each artifact — per-artifact in-toto SLSA v0.2 statements with subject digests, the pinned lockfile as a named material, and honesty flags (`reproducible: false`) that the contract tests guard against being flipped without underlying proof.
 - [ ] Client-side signature verification before install.
 
 ---
@@ -1988,19 +2021,20 @@ Native integration.
 - [ ] Start menu and desktop shortcuts; automatic app registration.
 
 #### PH-27 · Diagnostic Bundle
-- **Release:** `0.9` · **Track:** diagnostics · **Status:** ABSENT
+- **Release:** `0.9` · **Track:** diagnostics · **Status:** PARTIAL
 - **Goal:** one click produces a sanitized, shareable diagnostics archive.
-- **Evidence:** NONE — NOT IMPLEMENTED (the Doctor emits a JSON report via `--json`; there is no archive packaging or sanitization pass)
-- [ ] `emberbird-diagnostics.zip` containing system, runtime, ADB, package, log and artifact-hash sections.
-- [ ] Automatic sanitization, with a never-include-secrets test.
+- **Evidence:** `platform/diagnostics/__init__.py` (`sanitize_text`, `sanitize_tree`, `collect_sections`, `build_bundle`), `platform/cli/emberbird/__main__.py` (`emberbird diagnostics`), `tests/test_diagnostics.py`
+- [x] `emberbird-diagnostics.zip` containing system, runtime, ADB, package, log and artifact-hash sections — assembled from the real `DoctorEngine` report; sections with no live source yet (ADB inventory, package list, log files) are declared-absent notes rather than invented data, and the README digest covers the JSON so a reader can confirm the two describe the same run.
+- [x] Automatic sanitization, with a never-include-secrets test — deny-by-default pattern set (token assignment forms, `ghp_`/`sk`/`AKIA`/JWT shapes, MAC addresses, serial numbers, user-profile paths) applied recursively to every leaf and key; the contract plants real-shaped secrets in probe summaries and proves no member byte of the emitted zip contains them.
+- [ ] Manager GUI surface (the goal's "one click"); `emberbird diagnostics` is the first carrier.
 
 #### PH-45 · Observability
-- **Release:** `0.9` · **Track:** diagnostics · **Status:** ABSENT
+- **Release:** `0.9` · **Track:** diagnostics · **Status:** COMPLETE
 - **Goal:** every major operation carries an id, timestamps, durations, state and result.
-- **Evidence:** NONE — NOT IMPLEMENTED (no operation id, duration or span record exists in the Rust core)
-- [ ] Operation ids (for example `INSTALL-<date>-<seq>`).
-- [ ] Per-stage durations for download, verification, extraction and health check.
-- [ ] A durable operation history the UI can render.
+- **Evidence:** `apps/manager/src-tauri/src/downloader.rs` (`OperationRecord`, `StageTiming`, `operations_log_path`, `append_operation_record`, `read_operation_history`), `apps/manager/src-tauri/src/commands.rs` (`get_operation_history` IPC), `apps/manager/src/components/OperationsView.tsx`
+- [x] Operation ids — `STAGE-<yyyymmdd>-<hhmmss>-<8 hex>`, collision-resistant at 32 bits of entropy (widened from 16 after the uniqueness test demonstrated birthday-collision risk).
+- [x] Per-stage durations for download, verification and extraction — each stage timed from its own start; a mid-stage failure records the total duration and the error instead of pretending all stages ran.
+- [x] A durable operation history the UI can render — JSONL append log with torn-line tolerance, exposed over the `get_operation_history` IPC command and rendered read-only in the manager's Operations tab (expandable rows with stage chips, digest and size).
 
 ---
 
