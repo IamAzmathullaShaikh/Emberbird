@@ -12,6 +12,7 @@ import type {
   StagedAsset,
   StageProgress,
   DoctorProbe,
+  LifecycleReport,
 } from './types';
 
 declare global {
@@ -45,6 +46,11 @@ export async function checkForUpdates(): Promise<UpdateStatus> {
 
 export async function runDoctorScan(): Promise<DoctorProbe[]> {
   return invokeTauri<DoctorProbe[]>('run_doctor_scan');
+}
+
+/** The reconciled runtime lifecycle (PH-02 engine surfaced for PH-08). */
+export async function getLifecycleReport(): Promise<LifecycleReport> {
+  return invokeTauri<LifecycleReport>('get_lifecycle_report');
 }
 
 // E3C.4: the legacy latest-releases IPC wrapper was removed — release truth

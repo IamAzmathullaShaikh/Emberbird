@@ -58,14 +58,34 @@ class TestTypeDrift(unittest.TestCase):
             self.assertIn(field, ts, f'UpgradePreflight field {field!r} missing from types.ts')
 
     def test_doctor_probe_fields_present_in_ts(self):
-        """DoctorProbe fields must be in types.ts."""
+        """Every DoctorProbe field in Rust must appear in types.ts.
+
+        Derived from the Rust struct rather than a hardcoded list: a field added
+        to `DoctorProbe` without the TypeScript mirror is invisible to a baked-in
+        list, which is exactly the drift this guard exists to catch.
+        """
+        rust_fields = extract_rust_struct_fields(RUST_SRC / 'doctor.rs', 'DoctorProbe')
+        self.assertTrue(
+            rust_fields,
+            'failed to parse DoctorProbe from doctor.rs — the guard is blind, not the code clean',
+        )
         ts = ts_types_content()
-        expected_fields = [
-            'probe_id', 'domain', 'title', 'status', 'severity',
-            'summary', 'details', 'remediation_cmd', 'can_autofix'
-        ]
-        for field in expected_fields:
-            self.assertIn(field, ts, f'DoctorProbe field {field!r} missing from types.ts')
+        missing = sorted(field for field in rust_fields if field not in ts)
+        self.assertEqual(
+            missing, [],
+            f'DoctorProbe fields declared in Rust but missing from types.ts: {missing}',
+        )
+
+    def test_doctor_probe_ph05_fields_mirrored(self):
+        """PH-05 added evidence, timestamp and verification to each probe."""
+        ts = ts_types_content()
+        for field in ['evidence', 'timestamp', 'verification', 'captured_at']:
+            self.assertIn(field, ts, f'PH-05 field {field!r} missing from types.ts')
+        for token in ['NOT_ATTEMPTED', 'VERIFIED', 'STILL_FAILING']:
+            self.assertIn(
+                token, ts,
+                f'PH-05 verification token {token!r} missing from types.ts',
+            )
 
     def test_stage_progress_fields_present_in_ts(self):
         """StageProgress fields must be in types.ts."""
@@ -73,6 +93,53 @@ class TestTypeDrift(unittest.TestCase):
         expected_fields = ['phase', 'received_bytes', 'total_bytes', 'message']
         for field in expected_fields:
             self.assertIn(field, ts, f'StageProgress field {field!r} missing from types.ts')
+
+    def test_lifecycle_report_fields_present_in_ts(self):
+        """Every LifecycleReport field in Rust must appear in types.ts.
+
+        Derived from the Rust struct: a field added to `LifecycleReport`
+        without the TypeScript mirror is invisible to a baked-in list.
+        """
+        rust_fields = extract_rust_struct_fields(RUST_SRC / 'runtime_state.rs', 'LifecycleReport')
+        self.assertTrue(
+            rust_fields,
+            'failed to parse LifecycleReport from runtime_state.rs — the guard is blind, not the code clean',
+        )
+        ts = ts_types_content()
+        missing = sorted(field for field in rust_fields if field not in ts)
+        self.assertEqual(
+            missing, [],
+            f'LifecycleReport fields declared in Rust but missing from types.ts: {missing}',
+        )
+
+    def test_lifecycle_state_values_in_ts(self):
+        """All 14 RuntimeState values must exist in types.ts.
+
+        Derived from the Rust enum rather than a hardcoded list, so a state
+        added on the Rust side without the TS mirror fails here.
+        """
+        content = (RUST_SRC / 'runtime_state.rs').read_text(encoding='utf-8')
+        match = re.search(
+            r'pub enum RuntimeState\s*\{([^}]+)\}', content, re.DOTALL
+        )
+        self.assertIsNotNone(match, 'failed to parse the RuntimeState enum')
+        variants = [
+            v.strip() for v in match.group(1).split(',')
+            if v.strip() and not v.strip().startswith('//')
+        ]
+        self.assertEqual(len(variants), 14, f'expected 14 lifecycle states, found {variants}')
+        # serde(rename_all = "SCREAMING_SNAKE_CASE") — the wire names are the
+        # camel-case conversion, not the Rust identifiers.
+        def screaming_snake(name: str) -> str:
+            return re.sub(r'(?<!^)(?=[A-Z])', '_', name).upper()
+
+        ts = ts_types_content()
+        for variant in variants:
+            wire = screaming_snake(variant)
+            self.assertIn(
+                f"'{wire}'", ts,
+                f'RuntimeState {variant!r} (wire: {wire!r}) missing from types.ts',
+            )
 
     def test_backup_metadata_fields_present_in_ts(self):
         """BackupMetadata fields must be in types.ts."""

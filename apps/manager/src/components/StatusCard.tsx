@@ -7,6 +7,7 @@ import { StatusOverview } from './StatusOverview';
 import { SubsystemControls } from './SubsystemControls';
 import { QuickSetupPanel } from './QuickSetupPanel';
 import { InstallerWizard } from './InstallerWizard';
+import { LifecycleBadge } from './LifecycleBadge';
 
 /**
  * Subsystem dashboard orchestrator.
@@ -21,6 +22,7 @@ export const StatusCard: React.FC = () => {
   const refreshStatus = useEmberStore((s) => s.refreshStatus);
   const stageProgress = useEmberStore((s) => s.stageProgress);
   const setStageProgress = useEmberStore((s) => s.setStageProgress);
+  const lifecycle = useEmberStore((s) => s.lifecycle);
 
   const [selectedEdition, setSelectedEdition] = useState<WsaEdition>(RECOMMENDED_WSA_EDITION);
   const [manualPath, setManualPath] = useState('');
@@ -153,8 +155,14 @@ export const StatusCard: React.FC = () => {
   };
 
   return (
-    <div className="p-6 rounded-2xl bg-surface-raised/50 border border-border-DEFAULT space-y-4">
+    <div data-testid="status-card" className="p-6 rounded-2xl bg-surface-raised/50 border border-border-DEFAULT space-y-4">
       <StatusOverview status={status} />
+
+      {/* The reconciled runtime lifecycle (PH-02 engine) — the surface the
+          dashboard presents alongside install state. */}
+      <div className="flex items-center justify-between">
+        <LifecycleBadge report={lifecycle} />
+      </div>
 
       <SubsystemControls
         status={status}

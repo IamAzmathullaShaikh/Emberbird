@@ -173,6 +173,12 @@ export interface DoctorProbe {
   details: string;
   remediation_cmd?: string | null;
   can_autofix: boolean;
+  /** PH-05: the observation backing this verdict. */
+  evidence: string;
+  /** PH-05: capture time of the observation (UTC, RFC 3339). */
+  timestamp: string;
+  /** PH-05: whether a remediation was re-probed and cleared the fault. */
+  verification: 'NOT_ATTEMPTED' | 'VERIFIED' | 'STILL_FAILING' | 'N/A';
 }
 
 export interface DoctorReportData {
@@ -187,8 +193,56 @@ export interface DoctorReportData {
   passed_count: number;
   warn_count: number;
   fail_count: number;
+  /** PH-05: report-level capture time, so a stored report is dated evidence. */
+  captured_at: string;
   probes: DoctorProbe[];
 }
 
 export type NavigationTab = 'dashboard' | 'updates' | 'backups' | 'restore' | 'doctor' | 'licenses';
+
+// ---------------------------------------------------------------------------
+// Runtime lifecycle (PH-02 engine, PH-08 surface). Mirrors runtime_state.rs.
+// ---------------------------------------------------------------------------
+
+/** Authoritative runtime lifecycle states — mirrors `RuntimeState`. */
+export type RuntimeState =
+  | 'UNKNOWN'
+  | 'NOT_INSTALLED'
+  | 'CHECKING'
+  | 'INSTALLING'
+  | 'INSTALLED'
+  | 'STARTING'
+  | 'RUNNING'
+  | 'STOPPING'
+  | 'STOPPED'
+  | 'DEGRADED'
+  | 'BROKEN'
+  | 'UPDATING'
+  | 'ROLLING_BACK'
+  | 'UNINSTALLING';
+
+/** One recorded lifecycle move — mirrors `StateChange`. */
+export interface LifecycleStateChange {
+  from: RuntimeState;
+  to: RuntimeState;
+  /** UTC, RFC 3339 with milliseconds. */
+  at: string;
+  reason: string;
+}
+
+/** How a fresh process reconciled its persisted lifecycle — mirrors `ReconciliationOutcome`. */
+export type ReconciliationOutcome =
+  | { kind: 'FRESH'; state: RuntimeState }
+  | { kind: 'RECOVERED'; recovered: RuntimeState; state: RuntimeState; action: string }
+  | { kind: 'UNREADABLE'; reason: string };
+
+/** The reconciled lifecycle plus its audit tail — mirrors `LifecycleReport`. */
+export interface LifecycleReport {
+  state: RuntimeState;
+  /** Whether an operation is in flight; conflicting actions must be withheld. */
+  busy: boolean;
+  legal_next: RuntimeState[];
+  outcome: ReconciliationOutcome;
+  history_tail: LifecycleStateChange[];
+}
 

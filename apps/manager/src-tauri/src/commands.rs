@@ -5,16 +5,29 @@ use crate::coordinator::{
 };
 use crate::detector::{detect_subsystem, WsaStatus};
 use crate::doctor::DoctorProbe;
-use crate::downloader::{stage_asset, StagedAsset, STAGE_PROGRESS_EVENT};
+use crate::downloader::{stage_asset_from_candidates, StagedAsset, STAGE_PROGRESS_EVENT};
 use crate::env::{resolve_environment, ManagerEnvConfig};
 use crate::registry::{list_backups, prune_backups as prune_backups_impl, RestoreCandidate};
 use crate::registry_truth::latest_published_wsa_release;
 use crate::releases::{clean_version, is_update_available, ReleaseInfo, UpdateStatus};
 use crate::restore::{execute_restore_impl, RestoreResult};
+use crate::runtime_state::LifecycleReport;
 
 #[tauri::command]
 pub fn detect_wsa_status() -> Result<WsaStatus, String> {
     Ok(detect_subsystem())
+}
+
+/// The reconciled runtime lifecycle (PH-02 engine, PH-08 surface feed).
+///
+/// Detection runs on the blocking pool: it shells out to the Windows package
+/// manager and can take hundreds of milliseconds, and the lifecycle command is
+/// called on every dashboard refresh.
+#[tauri::command]
+pub async fn get_lifecycle_report() -> Result<LifecycleReport, String> {
+    tauri::async_runtime::spawn_blocking(crate::runtime_state::lifecycle_report)
+        .await
+        .map_err(|e| format!("Lifecycle report task failed: {}", e))
 }
 
 #[tauri::command]
@@ -108,11 +121,22 @@ pub async fn download_and_stage_release(
         })?;
 
     let window = app_handle.clone();
-    stage_asset(&asset.source_url, &asset.sha256, move |progress| {
-        use tauri::Emitter;
-        let _ = window.emit(STAGE_PROGRESS_EVENT, progress);
-    })
-    .await
+    // PH-40: try the registry's primary URL, then its mirrors. Verification
+    // is against the registry digest for every candidate; a mirror that
+    // serves different bytes is reported as a mismatch, never accepted
+    // silently.
+    let mirrors = asset.mirrors.clone();
+    let report = stage_asset_from_candidates(
+        &asset.source_url,
+        &mirrors,
+        &asset.sha256,
+        move |progress| {
+            use tauri::Emitter;
+            let _ = window.emit(STAGE_PROGRESS_EVENT, progress);
+        },
+    )
+    .await?;
+    Ok(report.asset)
 }
 
 #[tauri::command]

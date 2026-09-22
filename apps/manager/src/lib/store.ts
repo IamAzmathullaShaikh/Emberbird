@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import { detectWsaStatus, checkForUpdates as fetchUpdates } from './ipc';
+import { detectWsaStatus, checkForUpdates as fetchUpdates, getLifecycleReport } from './ipc';
 import { normalizeStatusPayload } from './state';
-import type { WsaStatus, UpdateStatus, StageProgress, NavigationTab } from './types';
+import type { WsaStatus, UpdateStatus, StageProgress, NavigationTab, LifecycleReport } from './types';
 
 export type NotificationType = 'success' | 'warning' | 'error' | 'info';
 
@@ -23,10 +23,14 @@ export interface EmberStore {
   loadingStatus: boolean;
   checkingUpdates: boolean;
   notifications: Notification[];
+  /** The reconciled runtime lifecycle (PH-02 engine), or null while loading. */
+  lifecycle: LifecycleReport | null;
 
   // ── Actions ───────────────────────────────────────────────────────────────
   /** Probe the host WSA state. Surfaces errors as notifications — never swallows them. */
   refreshStatus: () => Promise<void>;
+  /** Pull the reconciled runtime lifecycle report. */
+  refreshLifecycle: () => Promise<void>;
   /** Check for WSA updates from the registry. */
   checkForUpdates: () => Promise<void>;
   /** Navigate to a tab. */
@@ -50,6 +54,7 @@ export const useEmberStore = create<EmberStore>((set, get) => ({
   loadingStatus: false,
   checkingUpdates: false,
   notifications: [],
+  lifecycle: null,
 
   // ── Actions ───────────────────────────────────────────────────────────────
   refreshStatus: async () => {
@@ -63,6 +68,28 @@ export const useEmberStore = create<EmberStore>((set, get) => ({
       get().addNotification({
         type: 'error',
         title: 'Status detection failed',
+        message,
+        durationMs: 7000,
+      });
+    }
+    // The lifecycle reconciliation rides the same cadence as detection: every
+    // caller that refreshes install truth also refreshes lifecycle truth.
+    await get().refreshLifecycle();
+  },
+
+  refreshLifecycle: async () => {
+    try {
+      const res = await getLifecycleReport();
+      set({ lifecycle: res });
+    } catch (err) {
+      // The lifecycle engine refused or the IPC bridge failed: the surface
+      // must not present a guessed state, so lifecycle stays null and the
+      // badge keeps rendering "Checking lifecycle…" while a notification
+      // carries the failure (Zero-Mock law).
+      const message = err instanceof Error ? err.message : String(err);
+      get().addNotification({
+        type: 'error',
+        title: 'Lifecycle reconciliation failed',
         message,
         durationMs: 7000,
       });
