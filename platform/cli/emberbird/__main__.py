@@ -210,6 +210,26 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     return report.exit_code
 
 
+def cmd_diagnostics(args: argparse.Namespace) -> int:
+    diagnostics = _load_engine("diagnostics")
+    doctor = _load_engine("doctor")
+    out_dir = Path(args.out).resolve() if args.out else Path.cwd()
+    try:
+        summary = diagnostics.build_bundle(out_dir, doctor.DoctorEngine().run_diagnostics)
+    except Exception as exc:  # noqa: BLE001 - the CLI must explain, never traceback
+        print(f"emberbird diagnostics: bundle generation failed: {exc}")
+        return 1
+    if args.json:
+        print(json.dumps(summary, indent=2))
+    else:
+        print(f"Diagnostic bundle written: {summary['archive']}")
+        print(f"Sanitizer redactions: {summary['redactions']}")
+        for name, digest in summary["files"].items():
+            print(f"  {name}  sha256:{digest}")
+        print("Share the zip; the README inside carries the JSON digest.")
+    return 0
+
+
 def cmd_lifecycle(args: argparse.Namespace) -> int:
     """Report the reconciled runtime lifecycle from the persisted snapshot.
 
@@ -319,6 +339,17 @@ def build_parser() -> argparse.ArgumentParser:
         "overridable via EMBERBIRD_LIFECYCLE_PATH)",
     )
 
+    diagnostics_parser = sub.add_parser(
+        "diagnostics",
+        help="produce the sanitized emberbird-diagnostics bundle (PH-27)",
+    )
+    diagnostics_parser.add_argument("--json", action="store_true", help="machine-readable summary")
+    diagnostics_parser.add_argument(
+        "--out",
+        default=None,
+        help="output directory (default: current directory)",
+    )
+
     return parser
 
 
@@ -337,6 +368,7 @@ def main(argv: list[str] | None = None) -> int:
         "version": cmd_version,
         "status": cmd_status,
         "doctor": cmd_doctor,
+        "diagnostics": cmd_diagnostics,
         "lifecycle": cmd_lifecycle,
     }
     handler = handlers.get(args.command)
