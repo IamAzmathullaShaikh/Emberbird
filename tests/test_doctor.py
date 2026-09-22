@@ -11,6 +11,7 @@ import json
 import socket
 import sys
 import unittest
+from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -25,6 +26,7 @@ from doctor import (
     ProbeResult,
     ProbeSeverity,
     ProbeStatus,
+    VerificationState,
     probe_adb_loopback,
     probe_appx_service,
     probe_developer_mode,
@@ -269,6 +271,106 @@ class TestDoctorEngine(unittest.TestCase):
             code, logs = engine.apply_remediation()
             self.assertEqual(code, 2)
             self.assertTrue(any("ELEVATION REQUIRED" in log for log in logs))
+
+
+def _report_with(probes: list[ProbeResult]) -> DoctorReport:
+    """A report wrapping specific probes, for testing remediation verification."""
+    return DoctorReport(
+        platform_name="Emberbird",
+        version="test",
+        system_os="Test",
+        os_release="1",
+        architecture="x86_64",
+        overall_status=ProbeStatus.FAIL,
+        exit_code=1,
+        total_probes=len(probes),
+        passed_count=0,
+        warn_count=0,
+        fail_count=len(probes),
+        probes=probes,
+    )
+
+
+def _probe(probe_id: str, status: ProbeStatus) -> ProbeResult:
+    return ProbeResult(
+        probe_id=probe_id,
+        domain="TEST",
+        title="synthetic",
+        status=status,
+        severity=ProbeSeverity.INFO,
+        summary="synthetic probe",
+        details="synthetic observation",
+    )
+
+
+class TestDoctorEvidenceContract(unittest.TestCase):
+    """PH-05: every probe reports evidence, a capture time and verification.
+
+    The roadmap requires each probe to answer *what was observed*, *when*, and
+    *was a remediation actually verified to fix it* — and to never report an
+    unverified fix as a success.
+    """
+
+    def test_every_probe_reports_a_timestamp_and_evidence(self):
+        probes = DoctorEngine().run_diagnostics().probes
+        self.assertTrue(probes, "the engine reported no probes at all")
+        for probe in probes:
+            self.assertTrue(probe.timestamp, f"{probe.probe_id} has no capture timestamp")
+            datetime.fromisoformat(probe.timestamp.replace("Z", "+00:00"))
+            self.assertTrue(
+                probe.evidence,
+                f"{probe.probe_id} reports a verdict with no evidence",
+            )
+            self.assertEqual(
+                probe.verification,
+                VerificationState.NOT_ATTEMPTED,
+                f"{probe.probe_id} must not claim a verified fix on a plain scan",
+            )
+
+    def test_report_dict_carries_the_capture_time_and_probe_fields(self):
+        payload = DoctorEngine().run_diagnostics().to_dict()
+        self.assertTrue(payload["captured_at"], "a report must be dated evidence")
+        for probe in payload["probes"]:
+            for key in ("evidence", "timestamp", "verification"):
+                self.assertIn(key, probe, f"{probe['probe_id']} dict missing {key}")
+
+    def test_evidence_falls_back_to_the_observation_channel(self):
+        probe = _probe("PRB-99", ProbeStatus.PASS)
+        self.assertEqual(probe.to_dict()["evidence"], "synthetic observation")
+
+    def test_verification_reports_still_failing_when_the_fault_persists(self):
+        engine = DoctorEngine()
+        with patch.object(
+            DoctorEngine, "run_diagnostics",
+            return_value=_report_with([_probe("PRB-99", ProbeStatus.FAIL)]),
+        ):
+            self.assertEqual(
+                engine._verify_remediation("PRB-99"), VerificationState.STILL_FAILING
+            )
+
+    def test_verification_reports_verified_only_when_the_probe_passes(self):
+        engine = DoctorEngine()
+        with patch.object(
+            DoctorEngine, "run_diagnostics",
+            return_value=_report_with([_probe("PRB-99", ProbeStatus.PASS)]),
+        ):
+            self.assertEqual(engine._verify_remediation("PRB-99"), VerificationState.VERIFIED)
+
+    def test_verification_is_never_reported_when_the_rescan_fails(self):
+        engine = DoctorEngine()
+        with patch.object(DoctorEngine, "run_diagnostics", side_effect=RuntimeError("boom")):
+            self.assertEqual(
+                engine._verify_remediation("PRB-01"), VerificationState.NOT_ATTEMPTED
+            )
+
+    def test_unverifiable_probe_is_not_attempted(self):
+        engine = DoctorEngine()
+        with patch.object(
+            DoctorEngine, "run_diagnostics", return_value=_report_with([]),
+        ):
+            self.assertEqual(
+                engine._verify_remediation("PRB-404"), VerificationState.NOT_ATTEMPTED
+            )
 
 
 if __name__ == "__main__":

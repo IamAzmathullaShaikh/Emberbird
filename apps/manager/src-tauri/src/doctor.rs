@@ -9,7 +9,13 @@
 //! Safe by default (read-only inspection), zero-PII (no user paths, names, or
 //! hardware serials in output), and honest on every branch — a failed query is
 //! WARN, never a fabricated PASS.
+//!
+//! PH-05 adds three fields to every probe: `timestamp` (when the observation
+//! was captured), `evidence` (the observation backing the verdict), and
+//! `verification` (whether a remediation was re-probed and found to clear the
+//! fault). The Python engine remains the contract for all three.
 
+use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 
@@ -41,6 +47,16 @@ pub struct DoctorProbe {
     pub details: String,
     pub remediation_cmd: Option<String>,
     pub can_autofix: bool,
+    /// PH-05: the observation backing this verdict. Mirrors `details`, which is
+    /// this engine's observation channel, unless a probe recorded something
+    /// more specific (for example a remediation re-probe result).
+    pub evidence: String,
+    /// PH-05: capture time of the observation (UTC, RFC 3339).
+    pub timestamp: String,
+    /// PH-05: did a remediation actually clear the fault? One of
+    /// `NOT_ATTEMPTED`, `VERIFIED`, `STILL_FAILING`, `N/A`. Scanning never
+    /// claims a fix was verified.
+    pub verification: String,
 }
 
 /// Run all 12 diagnostic probes in contract order (PRB-01 → PRB-12).
@@ -87,11 +103,21 @@ fn probe(
         status,
         severity,
         summary,
+        evidence: details.clone(),
         details,
         remediation_cmd: None,
         can_autofix: false,
+        timestamp: Utc::now().to_rfc3339(),
+        verification: VERIFICATION_NOT_ATTEMPTED.to_string(),
     }
 }
+
+/// PH-05 verification tokens, kept in lockstep with the Python engine's
+/// `VerificationState` enum.
+pub const VERIFICATION_NOT_ATTEMPTED: &str = "NOT_ATTEMPTED";
+pub const VERIFICATION_VERIFIED: &str = "VERIFIED";
+pub const VERIFICATION_STILL_FAILING: &str = "STILL_FAILING";
+pub const VERIFICATION_NOT_APPLICABLE: &str = "N/A";
 
 /// Attach a remediation command that the platform's `--fix` mode may apply.
 fn autofix(mut p: DoctorProbe, cmd: &str) -> DoctorProbe {
@@ -939,5 +965,40 @@ mod tests {
                 );
             }
         }
+    }
+
+    /// PH-05: every probe reports when it was captured, what it observed, and
+    /// that no remediation has been verified yet on a plain scan.
+    #[test]
+    fn every_probe_carries_timestamp_evidence_and_unverified_state() {
+        for p in run_doctor_scan() {
+            assert!(
+                !p.timestamp.is_empty(),
+                "{} has no capture timestamp",
+                p.probe_id
+            );
+            chrono::DateTime::parse_from_rfc3339(&p.timestamp)
+                .unwrap_or_else(|e| panic!("{} timestamp is not RFC 3339: {e}", p.probe_id));
+            assert!(
+                !p.evidence.is_empty(),
+                "{} reports a verdict with no evidence",
+                p.probe_id
+            );
+            assert_eq!(
+                p.verification, VERIFICATION_NOT_ATTEMPTED,
+                "{} must not claim a verified remediation on a plain scan",
+                p.probe_id
+            );
+        }
+    }
+
+    /// PH-05: the verification vocabulary is shared with the Python engine, so
+    /// the two surfaces cannot drift apart on what "verified" means.
+    #[test]
+    fn verification_tokens_match_the_python_engine() {
+        assert_eq!(VERIFICATION_NOT_ATTEMPTED, "NOT_ATTEMPTED");
+        assert_eq!(VERIFICATION_VERIFIED, "VERIFIED");
+        assert_eq!(VERIFICATION_STILL_FAILING, "STILL_FAILING");
+        assert_eq!(VERIFICATION_NOT_APPLICABLE, "N/A");
     }
 }

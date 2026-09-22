@@ -1,0 +1,9 @@
+[project]
+name = "emberbird-cli"
+version = "1.0.0"
+description = "Emberbird command-line interface — diagnostics, status and registry truth (stdlib only)"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+emberbird = "emberbird.__main__:main"

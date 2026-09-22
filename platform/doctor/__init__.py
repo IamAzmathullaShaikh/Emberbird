@@ -28,6 +28,7 @@ import socket
 import subprocess
 import sys
 from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Optional
@@ -47,6 +48,24 @@ class ProbeSeverity(str, Enum):
     CRITICAL = "CRITICAL"
 
 
+class VerificationState(str, Enum):
+    """PH-05: did a remediation actually clear the fault?
+
+    Applying a fix is not the same as fixing the fault. A remediation that
+    exits 0 only proves the command ran; this records the re-probe result.
+    """
+
+    NOT_ATTEMPTED = "NOT_ATTEMPTED"
+    VERIFIED = "VERIFIED"
+    STILL_FAILING = "STILL_FAILING"
+    NOT_APPLICABLE = "N/A"
+
+
+def utc_now_iso() -> str:
+    """Single source of truth for probe/report capture times (UTC, ISO-8601)."""
+    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
 @dataclass
 class ProbeResult:
     probe_id: str
@@ -58,6 +77,22 @@ class ProbeResult:
     details: str
     remediation_cmd: Optional[str] = None
     can_autofix: bool = False
+    # PH-05 — every probe reports its observation, when it was captured, and
+    # whether any remediation was verified to clear it.
+    evidence: str = ""
+    timestamp: str = ""
+    verification: VerificationState = VerificationState.NOT_ATTEMPTED
+
+    def __post_init__(self) -> None:
+        # Stamped at construction, so no probe can report without a capture time.
+        if not self.timestamp:
+            self.timestamp = utc_now_iso()
+        # `details` is this engine's observation channel, so it is the evidence
+        # unless a probe recorded something more specific. Resolved here rather
+        # than in `to_dict`, so the object and its serialized form cannot
+        # disagree about what was observed.
+        if not self.evidence:
+            self.evidence = self.details
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -70,6 +105,9 @@ class ProbeResult:
             "details": self.details,
             "remediation_cmd": self.remediation_cmd,
             "can_autofix": self.can_autofix,
+            "evidence": self.evidence,
+            "timestamp": self.timestamp,
+            "verification": self.verification.value,
         }
 
 
@@ -87,6 +125,8 @@ class DoctorReport:
     warn_count: int
     fail_count: int
     probes: list[ProbeResult]
+    # PH-05 — report-level capture time, so a stored report is dated evidence.
+    captured_at: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -101,6 +141,7 @@ class DoctorReport:
             "passed_count": self.passed_count,
             "warn_count": self.warn_count,
             "fail_count": self.fail_count,
+            "captured_at": self.captured_at or utc_now_iso(),
             "probes": [p.to_dict() for p in self.probes],
         }
 
@@ -777,6 +818,7 @@ class DoctorEngine:
             passed_count=passed,
             warn_count=warns,
             fail_count=fails,
+            captured_at=utc_now_iso(),
             probes=results,
         )
 
@@ -819,8 +861,47 @@ class DoctorEngine:
             args = cmd.split()
             code, stdout, stderr = run_cmd(args, timeout=60)
             if code == 0:
-                logs.append(f"[+] Successfully applied fix for {p.probe_id}.")
+                # PH-05: a fix that exits 0 is not evidence the fault is gone.
+                # Re-probe and record what the machine actually reports now.
+                verified = self._verify_remediation(p.probe_id)
+                p.verification = verified
+                p.evidence = (
+                    f"remediation `{cmd}` exited 0; re-probe {p.probe_id} "
+                    f"reported {verified.value}"
+                )
+                if verified is VerificationState.VERIFIED:
+                    logs.append(
+                        f"[+] Successfully applied fix for {p.probe_id} "
+                        "(verified: the probe now passes)."
+                    )
+                else:
+                    logs.append(
+                        f"[!] Applied fix for {p.probe_id}, but the fault is not cleared "
+                        f"(re-probe: {verified.value})."
+                    )
             else:
+                p.verification = VerificationState.STILL_FAILING
                 logs.append(f"[-] Remediation for {p.probe_id} exited with code {code}: {stderr or stdout}")
 
         return 0, logs
+
+    def _verify_remediation(self, probe_id: str) -> VerificationState:
+        """Re-probe after a remediation and report whether the fault cleared.
+
+        Returns VERIFIED when the probe now passes, STILL_FAILING when it still
+        reports a fault, NOT_APPLICABLE for an inapplicable probe, and
+        NOT_ATTEMPTED when the re-scan could not be completed — which is never
+        reported as success.
+        """
+        try:
+            report = self.run_diagnostics()
+        except Exception:
+            return VerificationState.NOT_ATTEMPTED
+        for probe in report.probes:
+            if probe.probe_id == probe_id:
+                if probe.status == ProbeStatus.PASS:
+                    return VerificationState.VERIFIED
+                if probe.status == ProbeStatus.NOT_APPLICABLE:
+                    return VerificationState.NOT_APPLICABLE
+                return VerificationState.STILL_FAILING
+        return VerificationState.NOT_ATTEMPTED
